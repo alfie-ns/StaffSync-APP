@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- fundamental colours -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- general background colours -->
+    <color name="neutral_background">#F9FAFB</color> <!-- light grey -->
+    <color name="accent_white">#FFFFFF</color> <!-- white accent -->
+
+    <!-- employee screen colours -->
+    <color name="teal_deep">#00474D</color> <!-- rich deep teal -->
+    <color name="teal_medium">#006D77</color> <!-- medium teal -->
+    <color name="teal_light">#94D2BD</color> <!-- light teal -->
+
+    <!-- admin-screen colours -->
+    <color name="admin_deep">#1A237E</color> <!-- deep indigo -->
+    <color name="admin_medium">#3949AB</color> <!-- rich royal blue -->
+    <color name="admin_light">#5C6BC0</color> <!-- lighter indigo -->
+
+</resources>
