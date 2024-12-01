@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">StaffSyncApp</string>
+    <string name="continue_string">Continue…</string>
+    <string name="staffsync_heading">StaffSync</string>
 </resources>
