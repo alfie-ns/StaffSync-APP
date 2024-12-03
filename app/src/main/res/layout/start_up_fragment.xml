@@ -57,6 +57,6 @@
         android:textColor="@android:color/white"
         android:textSize="35sp"/>
 
-    <!-- TODO: [ ] switch ALL hardcoded texts to string resources -->
+    <!-- TODO: [X] switch hardcoded texts to string resources -->
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,5 +1,23 @@
 <resources>
     <string name="app_name">StaffSyncApp</string>
+
     <string name="continue_string">Continue…</string>
     <string name="staffsync_heading">StaffSync</string>
+
+    <string name="sign_in_topbar_heading">Sign In</string>
+    <string name="login">Login</string>
+    <string name="login_btn_txt">Login</string>
+    <string name="account_locked_alert">Account is locked. Please contact admin</string>
+    <string name="anomaly_alert">Anomaly detected</string>
+    <string name="verify_identity_prompt">Verify Identity</string>
+    <string name="incorrect_login">Incorrect email or password</string>
+    <string name="password_toggle_icon_description">Toggle password visibility</string>
+    <string name="password_placeholder_string">Password</string>
+    <string name="password_icon_description">Password input field icon</string>
+    <string name="email_format_error_string">Email format is invalid</string>
+    <string name="ea_placeholder_string">Email address</string>
+    <string name="email_icon_description">Email address input field</string>
+    <string name="please_sign_in_string">Please sign in to continue</string>
+    <string name="welcome_back_string">Welcome back</string>
+    <string name="back_button_description">Navigate back to previous page</string>
 </resources>

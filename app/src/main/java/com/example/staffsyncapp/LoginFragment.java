@@ -1,0 +1,221 @@
+package com.example.staffsyncapp; // Main package for the fragment
+
+// Android libraries for UI, logging, and data handling
+import android.os.Bundle;
+import android.util.Log;
+import android.util.Patterns;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.text.method.PasswordTransformationMethod;
+import android.graphics.Color;
+import android.content.ContentValues;
+
+// additional AndroidX imports for fragment navigation and annotations
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.navigation.fragment.NavHostFragment;
+
+// data-binding and utility classes specific to the project
+import com.example.staffsyncapp.databinding.LoginFragmentBinding;
+import com.example.staffsyncapp.utils.LocalDataService;
+
+// project-specific utility class for location tracking [ ]
+
+// LoginFragment: extend/inherit general Android Fragment functionality
+public class LoginFragment extends Fragment { // core tracking variables for security measures
+    private LoginFragmentBinding binding;
+    private static final String TAG = "LoginFragment";
+    private boolean isPasswordVisible = false; // initialise password visibility state as non visible
+
+    // security constants
+    private static final int MAX_LOGIN_ATTEMPTS = 3;
+    private int loginAttempts = 0;
+    private long lastLoginAttempt = 0;
+    private static final long LOCKOUT_DURATION = 900000; // 15-minutes lockout duration in milliseconds
+
+
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
+                             Bundle savedInstanceState) { // 1- create view
+        binding = LoginFragmentBinding.inflate(inflater, container, false); // 2- inflate fragment's layout
+        return binding.getRoot(); // 3- return the root view of the inflated layout
+    }
+
+
+    @Override
+    public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
+        super.onViewCreated(view, savedInstanceState);
+
+        // 1a- create a test admin account
+        LocalDataService dbHelper = new LocalDataService(requireContext());
+        ContentValues adminValues = new ContentValues();
+        adminValues.put("email", "alfie@staffsync.com");
+        adminValues.put("password", dbHelper.hashPassword("alfie123"));
+        adminValues.put("is_admin", 1);
+
+        try {
+            dbHelper.getWritableDatabase().insertOrThrow("users", null, adminValues);
+            Log.d(TAG, "Created new admin account successfully");
+        } catch (Exception e) {
+            Log.d(TAG, "Admin creation failed");
+        }
+
+        // 1b - create a test user account
+        ContentValues userValues = new ContentValues();
+        userValues.put("email", "user@staffsync.com");
+        userValues.put("password", dbHelper.hashPassword("user123"));
+        userValues.put("is_admin", 0); // not admin
+
+        long userId = -1;
+        try {
+            userId = dbHelper.getWritableDatabase().insertOrThrow("users", null, userValues);
+            Log.d(TAG, "Created new user account successfully");
+        } catch (Exception e) {
+            Log.d(TAG, "User creation failed");
+        }
+
+        // 2a- create a test employee account if user creation succeeded
+        if (userId != -1) {
+            ContentValues employeeValues = new ContentValues();
+            Log.d(TAG, "Attempting to create employee details for user ID: " + userId);
+            employeeValues.put("user_id", userId);
+            employeeValues.put("full_name", "Test User");
+            employeeValues.put("department", "IT");
+            employeeValues.put("salary", 50000);
+            employeeValues.put("hire_date", "2024-01-01");
+
+            try {
+                dbHelper.getWritableDatabase().insertOrThrow("employee_details", null, employeeValues);
+                Log.d(TAG, "Created employee details successfully");
+            } catch (Exception e) {
+                Log.d(TAG, "Employee details creation failed");
+            }
+        }
+
+        Log.d(TAG, "Created test user with ID: " + userId);
+
+        setupClickListeners();
+        hideAllErrorMessages();
+    }
+
+    private void setupClickListeners() {
+        binding.backArrow.setOnClickListener(v -> {
+            Log.d(TAG, "Back arrow clicked");
+            try {
+                NavHostFragment.findNavController(LoginFragment.this)
+                        .navigate(R.id.action_SecondFragment_to_FirstFragment);
+                Log.d(TAG, "Navigation executed");
+            } catch (Exception e) {
+                Log.e(TAG, "Navigation failed", e);
+            }
+        });
+
+        // password visibility toggle
+        binding.passwordVisibilityToggle.setOnClickListener(v -> {
+            Log.d(TAG, "Password visibility toggle clicked");
+            try {
+                togglePasswordVisibility();
+            } catch (Exception e) {
+                Log.e(TAG, "Password visibility toggle failed", e);
+            }
+        });
+
+        // email input focus listener for validation; validates email if focus is lost
+        binding.emailInput.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                validateEmail();
+            }
+        });
+
+        //  if password container is clicked, focus on password input
+        binding.passwordContainer.setOnClickListener(v -> {
+            binding.passwordInput.requestFocus();
+        });
+
+        // login button click listener; log if clicked
+        binding.loginButton.setOnClickListener(v -> {
+            Log.d(TAG, "Login button clicked");
+            attemptLogin();
+        });
+
+        // login attempt on password input done
+        binding.passwordInput.setOnEditorActionListener((v, actionId, event) -> {
+            attemptLogin();
+            return true;
+        });
+    }
+
+    private void togglePasswordVisibility() { // function to toggle password visibility
+        isPasswordVisible = !isPasswordVisible; // toggle password visibility state as the opposite state
+        if (isPasswordVisible) {
+            binding.passwordInput.setTransformationMethod(null);
+            binding.passwordVisibilityToggle.setAlpha(1.0f); // fully opaque
+        } else {
+            binding.passwordInput.setTransformationMethod(PasswordTransformationMethod.getInstance());
+            binding.passwordVisibilityToggle.setAlpha(0.5f);
+        }
+        // maintain cursor position
+        binding.passwordInput.setSelection(binding.passwordInput.getText().length());
+        Log.d(TAG, "Password visibility: " + isPasswordVisible);
+    }
+
+    private void hideAllErrorMessages() { // function to hide all error messages
+        binding.emailFormatError.setVisibility(View.GONE);
+        binding.incorrectLoginAlert.setVisibility(View.GONE);
+        binding.accountLockedAlert.setVisibility(View.GONE);
+        binding.anomalyAlert.setVisibility(View.GONE);
+        binding.verifyIdentityButton.setVisibility(View.GONE);
+    }
+
+    private boolean validateEmail() { // function to check if email is valid/not-empty and matches email pattern
+        String email = binding.emailInput.getText().toString().trim();
+        if (email.isEmpty() || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            binding.emailFormatError.setVisibility(View.VISIBLE);
+            return false;
+        }
+        binding.emailFormatError.setVisibility(View.GONE);
+        return true;
+    }
+
+    private boolean validatePassword() { // function to validate password; return true if password is NOT empty
+        String password = binding.passwordInput.getText().toString().trim();
+        return !password.isEmpty();
+    }
+
+    private void attemptLogin() { // attempt login function
+        hideAllErrorMessages();
+
+        if (!validateEmail() || !validatePassword()) { // immediately exit if email or password is invalid
+            return;
+        }
+
+        String email = binding.emailInput.getText().toString().trim();
+        String password = binding.passwordInput.getText().toString().trim();
+
+        LocalDataService dbHelper = new LocalDataService(requireContext());
+
+        if (dbHelper.verifyAdminLogin(email, password)) {
+            // admin login successful
+            Log.d(TAG, "Admin login successful");
+            try {
+                NavHostFragment.findNavController(LoginFragment.this)
+                        .navigate(R.id.action_LoginFragment_to_AdminDashboardFragment);
+            } catch (Exception e) {
+                Log.e(TAG, "Navigation to admin dashboard failed", e);
+            }
+        } else {
+            // login failed
+            Log.d(TAG, "Login failed");
+            binding.incorrectLoginAlert.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private boolean shouldShowAnomalyAlert() {
+        // TODO [ ]: anomaly detection logic/algorithm
+        // determine if anomaly alert should be shown
+
+        return false;
+    }
+}
+

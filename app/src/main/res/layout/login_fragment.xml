@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".LoginFragment">
+
+    <!-- upper bar containing back button and title; colored dark blue for contrast -->
+    <View
+        android:id="@+id/header_bar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/teal_deep"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <!-- back button; click ripple effect and white tint -->
+    <ImageView
+        android:id="@+id/back_arrow"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:layout_marginStart="10dp"
+        android:src="@drawable/back_arrow_icon"
+        android:contentDescription="@string/back_button_description"
+        app:tint="@android:color/white"
+        android:clickable="true"
+        android:focusable="true"
+        android:padding="20dp"
+        android:scaleType="fitCenter"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:layout_constraintBottom_toBottomOf="@id/header_bar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/header_bar" />
+
+    <!-- sign-in text in top-bar; wrap_context will adjust the textview's size to fit the text content -->
+    <TextView
+        android:id="@+id/sign_in_header"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:text="@string/sign_in_topbar_heading"
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        app:layout_constraintBottom_toBottomOf="@id/header_bar"
+        app:layout_constraintStart_toEndOf="@id/back_arrow"
+        app:layout_constraintTop_toTopOf="@id/header_bar" />
+
+    <!-- Top-bar end -->
+
+    <!-- relatively large && bold 'welcome back' header -->
+    <TextView
+        android:id="@+id/welcome_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="24dp"
+        android:text="@string/welcome_back_string"
+        android:textColor="@color/teal_deep"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header_bar" />
+
+    <!-- sign-in prompt text -->
+    <TextView
+        android:id="@+id/please_sign_in"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/please_sign_in_string"
+        android:textColor="@color/teal_medium"
+        android:textSize="16sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/welcome_back" />
+
+    <!-- email input container with rounded background; mail icon -->
+    <LinearLayout
+        android:id="@+id/email_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="32dp"
+        android:background="@drawable/input_background"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/please_sign_in">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/mail_icon"
+            android:contentDescription="@string/email_icon_description"/>
+
+
+        <EditText
+            android:id="@+id/email_input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:background="@null"
+            android:hint="@string/ea_placeholder_string"
+            android:inputType="textEmailAddress"
+            android:textSize="16sp" />
+    </LinearLayout>
+
+    <!-- email format error message; this functionality will be implemented in the LoginFragment.java -->
+    <TextView
+        android:id="@+id/email_format_error"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="4dp"
+        android:text="@string/email_format_error_string"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/email_container" />
+
+    <!-- password input container with padlock icon visibility-toggle -->
+    <LinearLayout
+        android:id="@+id/password_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="16dp"
+        android:background="@drawable/input_background"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="12dp"
+        app:layout_constraintTop_toBottomOf="@id/email_container">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/padlock_icon"
+            android:contentDescription="@string/password_icon_description"/>
+        <!-- password input field with hint and password input type(***) -->
+        <EditText
+            android:id="@+id/password_input"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:background="@null"
+            android:hint="@string/password_placeholder_string"
+            android:inputType="textPassword"
+            android:textSize="16sp" />
+        <!-- password visibility toggle with eye icon, clickable, focusable and half-transparent -->
+        <ImageView
+            android:id="@+id/password_visibility_toggle"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_marginStart="8dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:src="@drawable/eye_icon"
+            android:contentDescription="@string/password_toggle_icon_description"
+            android:alpha="0.5"
+            android:background="?attr/selectableItemBackgroundBorderless" />
+    </LinearLayout>
+
+
+
+    <!-- error messages:
+         since these error states are mutually exclusive
+         (they will never show at the same time), all error messages are
+         constrained directly to the password container for optimal layout -->
+    <TextView
+        android:id="@+id/incorrect_login_alert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/incorrect_login"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/password_container" />
+
+    <!-- account locked error message; the admin will be able to lock user's accounts;
+         I will implement this feature later in the admin Java file TODO [ ] -->
+    <TextView
+        android:id="@+id/account_locked_alert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/account_locked_alert"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/password_container" />
+
+    <!-- error message displayed if anomaly is detected;
+         will be hidden by default and only appear if an anomaly is detected;
+         the java code will prevent the user from proceeding to the user's homepage
+         until the anomaly is resolved -->
+    <TextView
+        android:id="@+id/anomaly_alert"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/anomaly_alert"
+        android:textColor="@android:color/holo_red_dark"
+        android:textSize="14sp"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/password_container" />
+
+    <!-- button for further verification if an anomaly is detected;
+         this button will redirect the user to a verification page -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/verify_identity_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="24dp"
+        android:layout_marginTop="8dp"
+        android:text="@string/verify_identity_prompt"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/anomaly_alert" />
+    <!-- set buttons min width to 150 decimal points -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/login_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:minWidth="150dp"
+        android:text="@string/login_btn_txt"
+        android:textAllCaps="false"
+        app:cornerRadius="8dp"
+        android:backgroundTint="@color/teal_deep"
+        app:layout_constraintTop_toBottomOf="@id/verify_identity_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
