@@ -1,6 +1,7 @@
 package com.example.staffsyncapp;
 
 // Android libraries for fragment lifecycle and UI setup
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -17,6 +18,7 @@ import com.example.staffsyncapp.databinding.StartUpFragmentBinding;
 public class StartUpFragment extends Fragment {
 
     private StartUpFragmentBinding binding;
+    private ApiDataService apiService;
 
     @Override
     public View onCreateView(
@@ -31,11 +33,32 @@ public class StartUpFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // initially confirm COMP2000 API service is healthy
+        apiService = new ApiDataService(requireContext());
+        checkApiHealth();
+
         // set an onclick listener for the continue button to navigate to SecondFragment
         binding.continueButton.setOnClickListener(v ->
                 NavHostFragment.findNavController(StartUpFragment.this)
                         .navigate(R.id.action_FirstFragment_to_SecondFragment)
         );
+    }
+
+    private void checkApiHealth() {
+        apiService.checkHealth(response -> {
+            updateApiStatus("API is working".equals(response), response);
+        });
+    }
+
+    private void updateApiStatus(boolean isHealthy, String message) {
+        requireActivity().runOnUiThread(() -> {
+            Drawable icon = getResources().getDrawable( // fetch Android drawable
+                    isHealthy ? android.R.drawable.ic_dialog_info : android.R.drawable.ic_dialog_alert
+            );
+            icon.setBounds(0, 0, icon.getIntrinsicWidth(), icon.getIntrinsicHeight());
+            binding.apiStatusText.setCompoundDrawables(icon, null, null, null);
+            binding.apiStatusText.setText(message);
+        });
     }
 
     @Override // clean up binding object
