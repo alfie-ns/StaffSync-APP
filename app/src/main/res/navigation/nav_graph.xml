@@ -14,7 +14,6 @@
             app:destination="@id/SecondFragment" />
     </fragment>
 
-    <!--login-->
     <fragment
         android:id="@+id/SecondFragment"
         android:name="com.example.staffsyncapp.LoginFragment"
@@ -22,8 +21,18 @@
         <action
             android:id="@+id/action_SecondFragment_to_FirstFragment"
             app:destination="@id/FirstFragment" />
+        <action
+            android:id="@+id/action_LoginFragment_to_AdminDashboardFragment"
+            app:destination="@id/AdminDashboardFragment" />
     </fragment>
 
-
+    <fragment
+        android:id="@+id/AdminDashboardFragment"
+        android:name="com.example.staffsyncapp.AdminDashboardFragment"
+        tools:layout="@layout/admin_dashboard_fragment">
+        <action
+            android:id="@+id/action_AdminDashboardFragment_to_SecondFragment"
+            app:destination="@id/SecondFragment"/>
+    </fragment>
 
 </navigation>

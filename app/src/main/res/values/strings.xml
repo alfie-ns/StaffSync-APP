@@ -20,4 +20,10 @@
     <string name="please_sign_in_string">Please sign in to continue</string>
     <string name="welcome_back_string">Welcome back</string>
     <string name="back_button_description">Navigate back to previous page</string>
+    <string name="search_employees">Search Employees</string>
+    <string name="_5_salary_increase_increment">5% salary-increase increment</string>
+    <string name="manage_holiday_requests">manage_holiday_requests</string>
+    <string name="delete_employee">Delete Employee</string>
+    <string name="admin_icon">Admin icon</string>
+    <string name="admin_portal">Admin Portal</string>
 </resources>

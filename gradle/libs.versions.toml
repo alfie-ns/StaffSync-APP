@@ -11,8 +11,12 @@ navigationFragment = "2.8.4"
 navigationFragmentVersion = "2.7.5"
 navigationUi = "2.8.4"
 navigationUiVersion = "2.7.5"
+playServicesLocation = "21.3.0"
+volley = "1.2.1"
 
 [libraries]
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+volley = { group = "com.android.volley", name = "volley", version.ref = "volley" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 ext-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -26,6 +30,7 @@ navigation-fragment-v275 = { module = "androidx.navigation:navigation-fragment",
 navigation-ui = { group = "androidx.navigation", name = "navigation-ui", version.ref = "navigationUi" }
 navigation-ui-ktx = { module = "androidx.navigation:navigation-ui-ktx", version.ref = "navigationFragment" }
 navigation-ui-v275 = { module = "androidx.navigation:navigation-ui", version.ref = "navigationUiVersion" }
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
