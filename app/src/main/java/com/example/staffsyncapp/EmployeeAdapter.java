@@ -22,15 +22,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHolder> { 
+public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHolder> {
     // EmployeeAdapter class for displaying employee data in a RecyclerView, dynamically
     private static final String TAG = "EmployeeAdapter";
     private final List<Employee> employees;
     private final NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.UK);
     private List<Employee> employeesFull;
 
-    public EmployeeAdapter(List<Employee> employees) {
-        this.employees = employees;
+    public EmployeeAdapter(List<Employee> employees) { // list constructor
+        // create new lists to avoid reference issues
+        this.employees = new ArrayList<>(employees);
         this.employeesFull = new ArrayList<>(employees);
         Log.d(TAG, "EmployeeAdapter initialised with " + employees.size() + " employees");
     }
@@ -73,13 +74,19 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
         return employees.size();
     }
 
-    public void filter(String text) { // filter employees based on search text
+    public void filter(String text) {
         try {
+            // clear current list but preserve the fullList
             employees.clear();
-            if (text.isEmpty()) {
+
+            // if search text is empty, show full list
+            if (text == null || text.isEmpty()) {
                 employees.addAll(employeesFull);
             } else {
-                text = text.toLowerCase(); // case-insensitive search
+                // case-insensitive search
+                text = text.toLowerCase();
+
+                // search through the backup list
                 for (Employee employee : employeesFull) {
                     if (employee.getFirstname().toLowerCase().contains(text) ||
                             employee.getLastname().toLowerCase().contains(text) ||
@@ -89,10 +96,16 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
                     }
                 }
             }
-            notifyDataSetChanged(); // notify the adapter that the data has changed thus refreshing the RecyclerView
-            Log.d(TAG, "Filter applied with text: " + text + ". Results: " + employees.size());
-        } catch (Exception e) {
-            Log.e(TAG, "Error filtering employees", e);
+
+            // notify adapter that data has changed
+            notifyDataSetChanged();
+            Log.d(TAG, "Filter applied with text: '" + text + "'. Results: " + employees.size());
+
+        } catch (Exception e) { // restore the full list if exception
+            Log.e(TAG, "Error filtering employees...", e);
+            employees.clear();
+            employees.addAll(employeesFull);
+            notifyDataSetChanged();
         }
     }
 

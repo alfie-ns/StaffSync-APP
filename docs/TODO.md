@@ -59,6 +59,7 @@
 - [ ] Implement collapse/minimize employee list functionality
 - [ ] Enhance view of clicked employee in list
 - [X] Search employee functionality
+- [X] Improve search employee functionality filter function
 
 #### Authentication & Security
 

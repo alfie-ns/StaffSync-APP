@@ -1,1 +1,1 @@
-# StaffSyncApp
+# StaffSync-APP
