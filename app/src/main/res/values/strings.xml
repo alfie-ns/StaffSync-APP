@@ -26,4 +26,12 @@
     <string name="delete_employee">Delete Employee</string>
     <string name="admin_icon">Admin icon</string>
     <string name="admin_portal">Admin Portal</string>
+    <string name="save_btn">Save</string>
+    <string name="joining_date_yyyy_mm_dd">Joining Date (YYYY-MM-DD)</string>
+    <string name="salary">Salary</string>
+    <string name="department">Department</string>
+    <string name="email">Email</string>
+    <string name="last_name">Last Name</string>
+    <string name="first_name">First Name</string>
+    <string name="add_new_employee">Add New Employee</string>
 </resources>

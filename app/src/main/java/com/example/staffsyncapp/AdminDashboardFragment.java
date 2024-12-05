@@ -10,6 +10,7 @@ import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -240,6 +241,100 @@ public class AdminDashboardFragment extends Fragment {
         });
     }
 
+    private void showAddEmployeeDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_employee, null);
+        builder.setView(dialogView);
+
+        // get references to form fields
+        EditText firstNameInput = dialogView.findViewById(R.id.firstNameInput);
+        EditText lastNameInput = dialogView.findViewById(R.id.lastNameInput);
+        EditText emailInput = dialogView.findViewById(R.id.emailInput);
+        EditText departmentInput = dialogView.findViewById(R.id.departmentInput);
+        EditText salaryInput = dialogView.findViewById(R.id.salaryInput);
+        EditText joiningDateInput = dialogView.findViewById(R.id.joiningDateInput);
+
+        AlertDialog dialog = builder.create();
+
+        // handle save button click
+        dialogView.findViewById(R.id.saveButton).setOnClickListener(v -> {
+            // validate inputs
+            if (validateInputs(firstNameInput, lastNameInput, emailInput,
+                    departmentInput, salaryInput, joiningDateInput)) {
+
+                double salary = Double.parseDouble(salaryInput.getText().toString());
+
+                // call API to add employee; passing the relevant JSON
+                employeeDataService.addEmployee(
+                        firstNameInput.getText().toString(),
+                        lastNameInput.getText().toString(),
+                        emailInput.getText().toString(),
+                        departmentInput.getText().toString(),
+                        salary,
+                        joiningDateInput.getText().toString(),
+                        new ApiDataService.EmployeeAddListener() {
+                            @Override
+                            public void onSuccess(String message) {
+                                dialog.dismiss();
+                                Toast.makeText(requireContext(),
+                                        "Employee added successfully",
+                                        Toast.LENGTH_SHORT).show();
+                                fetchAndShowEmployees(); // Refresh list
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                Toast.makeText(requireContext(),
+                                        "Error: " + error,
+                                        Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                );
+            }
+        });
+
+        dialog.show();
+    }
+
+    private boolean validateInputs(EditText... inputs) {
+        // 1- basic empty check for each field
+        for (EditText input : inputs) {
+            String value = input.getText().toString().trim();
+            if (value.isEmpty()) {
+                input.setError("This field is required");
+                return false;
+            }
+        }
+    
+        // -2 check specific field validations
+        String email = inputs[2].getText().toString().trim();
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            inputs[2].setError("Please enter a valid email address");
+            return false;
+        }
+    
+        // -3 validate salary is an integer > 0
+        try {
+            double salary = Double.parseDouble(inputs[4].getText().toString().trim());
+            if (salary <= 0) {
+                inputs[4].setError("Salary must be greater than 0");
+                return false;
+            }
+        } catch (NumberFormatException e) {
+            inputs[4].setError("Please enter a valid salary");
+            return false;
+        }
+    
+        // -4 validate date format (YYYY-MM-DD)
+        String date = inputs[5].getText().toString().trim();
+        if (!date.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            inputs[5].setError("Date must be in YYYY-MM-DD format");
+            return false;
+        }
+        // 5- success
+        return true;
+    }
+
     private void searchEmployeeById(int id) {
         // Show loading indicator
         binding.progressBar.setVisibility(View.VISIBLE);
@@ -276,6 +371,11 @@ public class AdminDashboardFragment extends Fragment {
     private void setupClickListeners() {
         // click listener to get all employees and display them
         binding.totalEmployeesCard.setOnClickListener(v -> fetchAndShowEmployees());
+
+        binding.addEmployeeBtn.setOnClickListener(v -> { // form to add new employee to the comp2000-api database
+            Log.d(TAG, "Add employee button clicked");
+            showAddEmployeeDialog();
+        });
 
         // logout button functionality
         binding.logoutBtn.setOnClickListener(v -> {

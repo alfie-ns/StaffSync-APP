@@ -41,7 +41,7 @@
                 android:padding="16dp" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
-    <!-- COMP2000 API /health check -->
+    <!-- comp2000 API /health check -->
     <TextView
         android:id="@+id/apiStatusText"
         android:layout_width="wrap_content"

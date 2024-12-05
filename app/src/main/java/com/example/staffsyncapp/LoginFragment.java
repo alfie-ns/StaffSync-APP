@@ -47,7 +47,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 1a- create a test admin account
+        // 1- create a test admin account
         LocalDataService dbHelper = new LocalDataService(requireContext());
         ContentValues adminValues = new ContentValues();
         adminValues.put("email", "alfie@staffsync.com");
@@ -61,7 +61,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
             Log.d(TAG, "Admin creation failed");
         }
 
-        // 1b - create a test user account
+        // 2a - create a test user account
         ContentValues userValues = new ContentValues();
         userValues.put("email", "user@staffsync.com");
         userValues.put("password", dbHelper.hashPassword("user123"));
@@ -75,7 +75,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
             Log.d(TAG, "User creation failed");
         }
 
-        // 2a- create a test employee account if user creation succeeded
+        // 2b- create a test employee account if user creation succeeded
         if (userId != -1) {
             ContentValues employeeValues = new ContentValues();
             Log.d(TAG, "Attempting to create employee details for user ID: " + userId);
@@ -96,6 +96,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
         Log.d(TAG, "Created test user with ID: " + userId);
 
         setupClickListeners();
+
         hideAllErrorMessages();
     }
 
@@ -212,10 +213,9 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
     }
 
     private boolean shouldShowAnomalyAlert() {
-        // TODO [ ]: anomaly detection logic/algorithm
-        // determine if anomaly alert should be shown
-
+        /*  TODO [ ]: anomaly detection logic/algorithm
+            determine if anomaly alert should be shown
+        */
         return false;
     }
 }
-

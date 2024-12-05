@@ -52,12 +52,16 @@ public class ApiDataService {
         void onResponse(String response);
     }
 
+    public interface EmployeeAddListener { // interface for handling employee add operations and responses
+        void onSuccess(String message);
+        void onError(String error);
+    }
+
     // Interface for handling employee fetch operations and responses
     public interface EmployeeFetchListener {
         void onEmployeesFetched(List<Employee> employees); // success callback
         void onError(String error); // failure callback
     }
-
 // --------------------------------------------------------------------------------
     /** [X]
      * GET request to fetch ALL employees
@@ -175,7 +179,52 @@ public class ApiDataService {
         request.setShouldCache(false);
         queue.add(request);
     }
+// ---------------------------------------------------------------------------------
+    /** [X]
+     * POST request to add a new employee
+     * Endpoint: /employees/add
+     */
+    public void addEmployee(String firstname, String lastname, String email, 
+                        String department, double salary, String joiningdate, 
+                        final EmployeeAddListener listener) {
+        String url = BASE_URL + "/employees/add";
+        
+        // Create JSON payload
+        JSONObject jsonBody = new JSONObject();
+        try {
+            jsonBody.put("firstname", firstname);
+            jsonBody.put("lastname", lastname);
+            jsonBody.put("email", email);
+            jsonBody.put("department", department);
+            jsonBody.put("salary", salary);
+            jsonBody.put("joiningdate", joiningdate);
+        } catch (JSONException e) {
+            Log.e(TAG, "Error creating JSON body: " + e.getMessage());
+            listener.onError("Error creating request");
+            return;
+        }
 
+        JsonObjectRequest request = new JsonObjectRequest( // POST request to add employee
+                Request.Method.POST,
+                url,
+                jsonBody,
+                response -> {
+                    Log.d(TAG, "Employee added successfully");
+                    listener.onSuccess("Employee added successfully");
+                },
+                error -> {
+                    String errorMsg = error.networkResponse != null ?
+                            String.format("Network Error (Code %d)", error.networkResponse.statusCode) :
+                            "Error adding employee";
+                    Log.e(TAG, errorMsg);
+                    listener.onError(errorMsg);
+                }
+        );
+
+        request.setShouldCache(false);
+        queue.add(request);
+    }
+// ---------------------------------------------------------------------------------
     // ...
 
     /** [X]
@@ -197,4 +246,5 @@ public class ApiDataService {
         request.setShouldCache(false);
         queue.add(request);
     }
+// --------------------------------------------------------------------------------
 }
