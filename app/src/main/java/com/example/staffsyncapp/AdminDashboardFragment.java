@@ -3,10 +3,8 @@ package com.example.staffsyncapp;
 // Android libraries for UI, data handling, and permissions
 import androidx.appcompat.app.AlertDialog;
 import androidx.navigation.fragment.NavHostFragment;
-import android.database.Cursor;
+
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -18,16 +16,13 @@ import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
-import android.widget.TextView;
 import android.widget.Toast;
-import android.graphics.Color;
 
 // additional AndroidX imports for fragment and annotations
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 // data-binding and utility classes specific to the project
-import com.example.staffsyncapp.R;
 import com.example.staffsyncapp.databinding.AdminDashboardFragmentBinding;
 import com.example.staffsyncapp.utils.LocalDataService;
 
@@ -44,7 +39,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 // Java utilities for collections and list handling
-import java.util.ArrayList;
 import java.util.List;
 
 //import android.widget.ProgressBar; TODO loading bar [ ]
@@ -243,7 +237,7 @@ public class AdminDashboardFragment extends Fragment {
 
     private void showAddEmployeeDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        View dialogView = getLayoutInflater().inflate(R.layout.dialog_add_employee, null);
+        View dialogView = getLayoutInflater().inflate(R.layout.admin_add_employee_dialog, null);
         builder.setView(dialogView);
 
         // get references to form fields

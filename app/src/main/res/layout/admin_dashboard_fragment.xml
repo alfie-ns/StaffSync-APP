@@ -234,7 +234,7 @@
                             android:nestedScrollingEnabled="false"
                             android:overScrollMode="never"
                             tools:itemCount="3"
-                            tools:listitem="@layout/item_employee"/>
+                            tools:listitem="@layout/admin_employee_item_recycler"/>
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
