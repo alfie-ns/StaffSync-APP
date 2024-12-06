@@ -34,4 +34,8 @@
     <string name="last_name">Last Name</string>
     <string name="first_name">First Name</string>
     <string name="add_new_employee">Add New Employee</string>
+    <string name="salary_increment_management">Salary Increment Management</string>
+    <string name="annual_5_increase_for_eligible_employees">Annual 5% increase for eligible employees</string>
+    <string name="check_increments_due">Check Increments Due</string>
+    <string name="leave_requests_amp_salary_management"><![CDATA[Leave Requests & Salary Management]]></string>
 </resources>

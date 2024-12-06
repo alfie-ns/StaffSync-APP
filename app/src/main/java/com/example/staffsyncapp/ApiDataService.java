@@ -2,6 +2,7 @@ package com.example.staffsyncapp;
 
 // Android libraries for logging and context usage testing
 import android.content.Context;
+import android.icu.text.SimpleDateFormat;
 import android.util.Log;
 
 // Volley libraries for making API requests
@@ -20,7 +21,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 /**
  * API requests for employee management using Volley; this file essentially
@@ -33,6 +37,11 @@ import java.util.List;
  - [ ] Update an Employee’s Details: PUT /employees/edit/<int:id>
  - [ ] Delete an Employee: DELETE /employees/delete/<int:id>
  - [X] Health Check: GET /health
+
+ ---
+
+ - [X] Salary Increment
+
  */
 
 public class ApiDataService {
@@ -52,15 +61,31 @@ public class ApiDataService {
         void onResponse(String response);
     }
 
+    public interface IncrementStatusListener { // interface to handle salary increments
+        void onSuccess(List<IncrementStatus> statusList);
+        void onError(String error);
+    }
+
     public interface EmployeeAddListener { // interface for handling employee add operations and responses
         void onSuccess(String message);
         void onError(String error);
     }
 
-    // Interface for handling employee fetch operations and responses
-    public interface EmployeeFetchListener {
+    public interface EmployeeFetchListener { // Interface for handling employee fetch operations and responses
         void onEmployeesFetched(List<Employee> employees); // success callback
         void onError(String error); // failure callback
+    }
+
+    public static class IncrementStatus {
+        public final String name;
+        public final double salary;
+        public final long daysSince;
+
+        public IncrementStatus(String name, double salary, long daysSince) {
+            this.name = name;
+            this.salary = salary;
+            this.daysSince = daysSince;
+        }
     }
 // --------------------------------------------------------------------------------
     /** [X]
@@ -189,7 +214,7 @@ public class ApiDataService {
                         final EmployeeAddListener listener) {
         String url = BASE_URL + "/employees/add";
         
-        // Create JSON payload
+        // create JSON payload
         JSONObject jsonBody = new JSONObject();
         try {
             jsonBody.put("firstname", firstname);
@@ -247,4 +272,52 @@ public class ApiDataService {
         queue.add(request);
     }
 // --------------------------------------------------------------------------------
+    // HELPER FUNCTIONS
+    public static void getIncrementStatus(IncrementStatusListener listener) {
+    String url = BASE_URL + "/employees";
+    JsonArrayRequest request = new JsonArrayRequest(
+            Request.Method.GET,
+            url,
+            null,
+            response -> {
+                try {
+                    List<IncrementStatus> statusList = new ArrayList<>();
+                    for (int i = 0; i < response.length(); i++) {
+                        JSONObject emp = response.getJSONObject(i);
+
+                        // get the basic info I need to check it's working
+                        String name = emp.optString("firstname", "") + " " + emp.optString("lastname", "");
+                        double salary = emp.optDouble("salary", 0.0);
+                        String joiningDate = emp.optString("joiningdate", "");
+
+                        // calculate days since joining
+                        long daysSince = calculateDaysSince(joiningDate);
+
+                        // new increment status object containing employee name, salary, and days since joining;
+                        // this info used to calculate who is due for their annual salary increase
+                        statusList.add(new IncrementStatus(name.trim(), salary, daysSince));
+                    }
+                    listener.onSuccess(statusList);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error checking increments: " + e.getMessage());
+                    listener.onError("Failed to check increments");
+                }
+            },
+            error -> listener.onError("Network error")
+    );
+    request.setShouldCache(false);
+    queue.add(request);
+}
+    private static long calculateDaysSince(String date) {
+        try { // get days - joiningDate
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
+            Date joinDate = sdf.parse(date);
+            Date now = new Date();
+            return TimeUnit.DAYS.convert(now.getTime() - joinDate.getTime(), TimeUnit.MILLISECONDS);
+        } catch (Exception e) {
+            return 0;
+        }
+    }
+
+
 }

@@ -399,7 +399,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Leave Requests &amp; Salary Management"
+                        android:text="@string/leave_requests_amp_salary_management"
                         android:textColor="@color/admin_deep"
                         android:textSize="18sp"
                         android:textStyle="bold"/>
@@ -419,10 +419,11 @@
                             android:orientation="vertical"
                             android:padding="12dp">
 
+
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Automatic Salary Increment"
+                                android:text="@string/salary_increment_management"
                                 android:textColor="@android:color/white"
                                 android:textStyle="bold"/>
 
@@ -430,24 +431,28 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="4dp"
-                                android:text="@string/_5_salary_increase_increment"
+                                android:text="@string/annual_5_increase_for_eligible_employees"
                                 android:textColor="@android:color/white"/>
 
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/checkIncrementsBtn"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="@string/check_increments_due"
+                                android:textAllCaps="false"
+                                app:cornerRadius="8dp"
+                                android:backgroundTint="@color/admin_deep"/>
 
                             <TextView
                                 android:id="@+id/auto_increment_status"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
-                                android:text="test"
                                 android:textColor="@android:color/white"
-                                android:textStyle="bold"
-                                android:clickable="true"
-                                android:focusable="true"
                                 android:textSize="14sp"/>
                         </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                    <!-- TODO Manage Leave & Delete Employee Buttons -->
+                    </com.google.android.material.card.MaterialCardView><!-- TODO Manage Leave & Delete Employee Buttons -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/manageLeaveBtn"
                         android:layout_width="match_parent"

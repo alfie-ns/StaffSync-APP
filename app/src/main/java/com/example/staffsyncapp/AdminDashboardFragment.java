@@ -4,6 +4,14 @@ package com.example.staffsyncapp;
 import androidx.appcompat.app.AlertDialog;
 import androidx.navigation.fragment.NavHostFragment;
 
+import android.database.Cursor;
+import android.view.LayoutInflater;
+import android.widget.TextView;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.appcompat.app.AlertDialog;
+
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -363,12 +371,18 @@ public class AdminDashboardFragment extends Fragment {
     }
 
     private void setupClickListeners() {
+
         // click listener to get all employees and display them
         binding.totalEmployeesCard.setOnClickListener(v -> fetchAndShowEmployees());
 
         binding.addEmployeeBtn.setOnClickListener(v -> { // form to add new employee to the comp2000-api database
             Log.d(TAG, "Add employee button clicked");
             showAddEmployeeDialog();
+        });
+
+        binding.checkIncrementsBtn.setOnClickListener(v -> {
+            Log.d(TAG, "Checking salary increments...");
+            showSalaryIncrementStatus();
         });
 
         // logout button functionality
@@ -403,6 +417,70 @@ public class AdminDashboardFragment extends Fragment {
         });
     }
 
+    // Salary increment functions
+    private void showIncrementDialog(String message, int eligibleCount) {
+        // create and show dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        View dialogView = getLayoutInflater().inflate(R.layout.salary_increment_dialog, null);
+        TextView statusText = dialogView.findViewById(R.id.salary_status_text);
+        MaterialButton processButton = dialogView.findViewById(R.id.process_increments_button);
+
+        // set the text and enable/disable process button based on eligible employees
+        statusText.setText(message);
+        processButton.setEnabled(eligibleCount > 0);
+
+        AlertDialog dialog = builder.setTitle("Salary Increment Status")
+                .setView(dialogView)
+                .setPositiveButton("Close", null)
+                .create();
+
+        // Handle process button click
+        processButton.setOnClickListener(v -> {
+            // TODO [ ]: Implement the actual salary increment processing
+            Snackbar.make(binding.getRoot(),
+                    "Processed salary increments for " + eligibleCount + " employee(s)",
+                    Snackbar.LENGTH_LONG).show();
+            dialog.dismiss();
+        });
+
+        dialog.show();
+    }
+    private void showSalaryIncrementStatus() { // show salary increment status for all employees with showIncrementDialog()
+        ApiDataService.getIncrementStatus(new ApiDataService.IncrementStatusListener() {
+            @Override
+            public void onSuccess(List<ApiDataService.IncrementStatus> statusList) {
+                StringBuilder messageBuilder = new StringBuilder();
+                final int[] eligibleCount = {0};
+
+                for (ApiDataService.IncrementStatus status : statusList) { // iterate through each employee
+                    int daysUntilIncrement = 365 - (int)status.daysSince;
+                    String formattedSalary = String.format("£%.2f", status.salary);
+
+                    if (daysUntilIncrement <= 0) { // if increment is due
+                        messageBuilder.append("✓ ").append(status.name)
+                                .append(" - Due for 5% increase (Current: ")
+                                .append(formattedSalary).append(")\n\n");
+                        eligibleCount[0]++;
+                    } else if (daysUntilIncrement <= 30) { // if increment is due in 30 days
+                        messageBuilder.append("⏰ ").append(status.name)
+                                .append(" - Due in ").append(daysUntilIncrement)
+                                .append(" days (Current: ").append(formattedSalary).append(")\n\n");
+                    } else { // if increment is due in more than 30 days
+                        messageBuilder.append("• ").append(status.name)
+                                .append(" - Due in ").append(daysUntilIncrement)
+                                .append(" days (Current: ").append(formattedSalary).append(")\n\n");
+                    }
+                }
+
+                showIncrementDialog(messageBuilder.toString(), eligibleCount[0]); // show dialog with message and count
+            }
+
+            @Override
+            public void onError(String error) {
+                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
    //----------------------------------------------------------------------------------------------
     // save toggled state
     @Override

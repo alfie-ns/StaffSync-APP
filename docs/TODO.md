@@ -1,10 +1,13 @@
 # TODO
 
+- [ ] talk about the singleton pattern - week11
+- [ ] thread-safe initialisation happens if the synchronized keyword is used
+
 ### Comp2000 API endpoints
 
 - [X] GET /employees
 - [X] GET /employees/get/int{id}
-- [ ] POST /employees/add
+- [X] POST /employees/add
 - [ ] PUT /employees/edit/{id}
 - [ ] DELETE /employees/delete/{id}
 - [X] GET /health
@@ -21,7 +24,7 @@
 
 - [ ] Implement non-monolithic architecture
 - [ ] Create worker threads for API connections
-- [ ] Implement Singleton pattern in LocationTracker
+- [X] Implement Singleton pattern in LocationTracker
 - [X] Implement Observer pattern in StaffDataService
 - [ ] Document pattern choices and benefits
 - [ ] Demonstrate layer interactions
