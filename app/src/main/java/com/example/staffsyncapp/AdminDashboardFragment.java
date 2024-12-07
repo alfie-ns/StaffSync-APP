@@ -4,20 +4,16 @@ package com.example.staffsyncapp;
 import androidx.appcompat.app.AlertDialog;
 import androidx.navigation.fragment.NavHostFragment;
 
-import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.widget.TextView;
 import com.google.android.material.button.MaterialButton;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.android.material.snackbar.Snackbar;
-import androidx.appcompat.app.AlertDialog;
 
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.util.Patterns;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
@@ -421,7 +417,7 @@ public class AdminDashboardFragment extends Fragment {
     private void showIncrementDialog(String message, int eligibleCount) {
         // create and show dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-        View dialogView = getLayoutInflater().inflate(R.layout.salary_increment_dialog, null);
+        View dialogView = getLayoutInflater().inflate(R.layout.admin_salary_increment_dialog, null);
         TextView statusText = dialogView.findViewById(R.id.salary_status_text);
         MaterialButton processButton = dialogView.findViewById(R.id.process_increments_button);
 

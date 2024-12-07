@@ -38,4 +38,8 @@
     <string name="annual_5_increase_for_eligible_employees">Annual 5% increase for eligible employees</string>
     <string name="check_increments_due">Check Increments Due</string>
     <string name="leave_requests_amp_salary_management"><![CDATA[Leave Requests & Salary Management]]></string>
+    <string name="logout">Logout</string>
+    <string name="bottom_nav_home">Home</string>
+    <string name="bottom_nav_profile">Profile</string>
+    <string name="bottom_nav_settings">Settings</string>
 </resources>

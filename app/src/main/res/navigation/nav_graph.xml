@@ -34,5 +34,20 @@
             android:id="@+id/action_AdminDashboardFragment_to_SecondFragment"
             app:destination="@id/SecondFragment"/>
     </fragment>
+    <!-- user fragments -->
+    <fragment
+        android:id="@+id/user_navigation_home"
+        android:name="com.example.staffsyncapp.UserMainFragment"
+        tools:layout="@layout/user_main_body_fragment" />
+
+    <fragment
+        android:id="@+id/user_navigation_profile"
+        android:name="com.example.staffsyncapp.UserProfileFragment"
+        tools:layout="@layout/user_profile_fragment" />
+
+    <fragment
+        android:id="@+id/user_navigation_settings"
+        android:name="com.example.staffsyncapp.UserSettingsFragment"
+        tools:layout="@layout/user_settings_fragment" />
 
 </navigation>
