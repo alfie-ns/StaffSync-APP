@@ -57,6 +57,11 @@ public class ApiDataService {
         this.queue = Volley.newRequestQueue(context); 
     }
 
+    public interface EmployeeDeleteListener { // interface for handling employee deletion operations and responses
+        void onSuccess(String message);
+        void onError(String error);
+    }
+
     public interface HealthCallback { // interface for handling comp2000 health checking responses
         void onResponse(String response);
     }
@@ -250,7 +255,29 @@ public class ApiDataService {
         queue.add(request);
     }
 // ---------------------------------------------------------------------------------
-    // ...
+    public void deleteEmployee(int employeeId, EmployeeDeleteListener listener) {
+        String url = BASE_URL + "/employees/delete/" + employeeId;
+
+        JsonObjectRequest request = new JsonObjectRequest(
+                Request.Method.DELETE,
+                url,
+                null,
+                response -> {
+                    Log.d(TAG, "Employee deleted successfully");
+                    listener.onSuccess("Employee deleted successfully");
+                },
+                error -> {
+                    String errorMsg = error.networkResponse != null ?
+                            String.format("Network Error (Code %d)", error.networkResponse.statusCode) :
+                            "Error deleting employee";
+                    Log.e(TAG, errorMsg);
+                    listener.onError(errorMsg);
+                }
+        );
+
+        request.setShouldCache(false);
+        queue.add(request);
+    }
 
     /** [X]
      * - GET request to test the API is working

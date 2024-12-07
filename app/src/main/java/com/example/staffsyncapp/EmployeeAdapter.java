@@ -4,12 +4,14 @@ package com.example.staffsyncapp;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.util.Log;
 import android.widget.Toast;
 
 // RecyclerView libraries for displaying employee data
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.recyclerview.widget.RecyclerView;
 
 // Employee model class
@@ -21,6 +23,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+//import javax.swing.text.html.ImageView;
+
 public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHolder> {
     // EmployeeAdapter class for displaying employee data in a RecyclerView, dynamically
     private static final String TAG = "EmployeeAdapter";
@@ -28,11 +32,17 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
     private final NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.UK);
     private List<Employee> employeesFull;
 
+    private OnEmployeeDeleteListener deleteListener;
+
     public EmployeeAdapter(List<Employee> employees) { // list constructor
         // create new lists to avoid reference issues
         this.employees = new ArrayList<>(employees);
         this.employeesFull = new ArrayList<>(employees);
         Log.d(TAG, "EmployeeAdapter initialised with " + employees.size() + " employees");
+    }
+
+    public interface OnEmployeeDeleteListener {
+        void onDeleteClicked(Employee employee);
     }
 
     @NonNull
@@ -53,13 +63,20 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
             holder.departmentTextView.setText(employee.getDepartment() != null ? employee.getDepartment() : "N/A");
             holder.salaryTextView.setText(currencyFormatter.format(employee.getSalary()));
 
-            holder.itemView.setOnClickListener(v -> {
-                Toast.makeText(holder.itemView.getContext(),
-                        "Clicked: " + employeeName,
-                        Toast.LENGTH_SHORT).show();
+            holder.deleteIcon.setOnClickListener(v -> { // delete employee bin icon onClickListener
+                if (deleteListener != null) {
+                    new AlertDialog.Builder(holder.itemView.getContext())
+                            .setTitle("Delete Employee")
+                            .setMessage("Are you sure you want to delete " + employeeName + "?")
+                            .setPositiveButton("Yes", (dialog, which) -> {
+                                deleteListener.onDeleteClicked(employee);
+                            })
+                            .setNegativeButton("No", null)
+                            .show();
+                }
             });
-
-        } catch (Exception e) { // catch any exceptions; log and display error message
+    
+        } catch (Exception e) {
             Log.e(TAG, "Error binding employee at position " + position, e);
             holder.nameTextView.setText("Error loading employee");
             holder.emailTextView.setText("N/A");
@@ -73,8 +90,12 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
         return employees.size();
     }
 
+    public void setOnEmployeeDeleteListener(OnEmployeeDeleteListener listener) { // set delete listener
+        this.deleteListener = listener;
+    }
+
     public void filter(String text) {
-        try {
+        try { // TODO SearchByID
             // clear current list but preserve the fullList
             employees.clear();
 
@@ -113,6 +134,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
         final TextView emailTextView;
         final TextView departmentTextView;
         final TextView salaryTextView;
+        final ImageView deleteIcon;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -120,6 +142,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
             emailTextView = itemView.findViewById(R.id.emailTextView);
             departmentTextView = itemView.findViewById(R.id.departmentTextView);
             salaryTextView = itemView.findViewById(R.id.salaryTextView);
+            deleteIcon = itemView.findViewById(R.id.deleteIcon);
         }
     }
 }

@@ -9,7 +9,7 @@
 - [X] GET /employees/get/int{id}
 - [X] POST /employees/add
 - [ ] PUT /employees/edit/{id}
-- [ ] DELETE /employees/delete/{id}
+- [X] DELETE /employees/delete/{id}
 - [X] GET /health
 - [ ] do next api endpoint
 - [ ] incorporate lecture abotu notifications in my app

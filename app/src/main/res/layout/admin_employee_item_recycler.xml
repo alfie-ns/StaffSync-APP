@@ -10,40 +10,56 @@
     app:cardCornerRadius="8dp"
     app:cardElevation="2dp">
 
-    <!-- Container; employee details -->
+    <!-- outer horizontal linear layout -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="16dp">
 
-        <!-- name in bold -->
-        <TextView
-            android:id="@+id/nameTextView"
-            android:layout_width="wrap_content"
+        <!-- Vertical container for employee details -->
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
-            android:textStyle="bold"/>
+            android:layout_weight="1"
+            android:orientation="vertical">
 
-        <!-- email address -->
-        <TextView
-            android:id="@+id/emailTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"/>
+            <!-- name in bold -->
+            <TextView
+                android:id="@+id/nameTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
 
-        <!-- department -->
-        <TextView
-            android:id="@+id/departmentTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"/>
+            <!-- email address -->
+            <TextView
+                android:id="@+id/emailTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"/>
 
-        <!-- salary -->
-        <TextView
-            android:id="@+id/salaryTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"/>
+            <!-- department -->
+            <TextView
+                android:id="@+id/departmentTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"/>
+
+            <!-- salary -->
+            <TextView
+                android:id="@+id/salaryTextView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"/>
+        </LinearLayout>
+        <ImageView
+            android:id="@+id/deleteIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/bin_icon"
+            android:contentDescription="@string/delete_employee_recycler" />
     </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

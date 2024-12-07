@@ -135,21 +135,49 @@ public class AdminDashboardFragment extends Fragment {
 
     }
     //----------------------------------------------------------------------------------------------
+    private void setupEmployeeAdapter(List<Employee> employees) {
+        employeeAdapter = new EmployeeAdapter(employees);
+
+        // Set up the delete listener; 
+        employeeAdapter.setOnEmployeeDeleteListener(employee -> {
+            employeeDataService.deleteEmployee(
+                    employee.getId(),
+                    new ApiDataService.EmployeeDeleteListener() {
+                        @Override
+                        public void onSuccess(String message) {
+                            // refresh the list after deletion
+                            fetchAndShowEmployees();
+                            Toast.makeText(requireContext(),
+                                    "Employee deleted successfully",
+                                    Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            Toast.makeText(requireContext(),
+                                    "Error: " + error,
+                                    Toast.LENGTH_SHORT).show();
+                        }
+                    }
+            );
+        });
+
+        binding.recyclerViewEmployees.setAdapter(employeeAdapter);
+    }
+
     private void fetchAndShowEmployees() {
         ApiDataService.getAllEmployees(new ApiDataService.EmployeeFetchListener() {
             @Override
             public void onEmployeesFetched(List<Employee> employees) {
-                if (getContext() == null) return; 
+                if (getContext() == null) return;
 
                 // hide loading indicator
                 binding.progressBar.setVisibility(View.GONE);
 
                 if (employees != null && !employees.isEmpty()) {
-                    // 1- create and set adapter with employee data
-                    employeeAdapter = new com.example.staffsyncapp.EmployeeAdapter(employees);
-                    binding.recyclerViewEmployees.setAdapter(employeeAdapter);
-
-                    // 2- show list and update employee count
+                    // 1- initialise employee list adapter && assign it
+                    setupEmployeeAdapter(employees);
+                    // 2- display the populated list; update total count
                     binding.recyclerViewEmployees.setVisibility(View.VISIBLE);
                     binding.totalEmployeesCount.setText(String.valueOf(employees.size()));
                 } else {
@@ -165,7 +193,6 @@ public class AdminDashboardFragment extends Fragment {
             }
         });
     }
-
     private void toggleEmployeeList() {
         isEmployeeListExpanded = !isEmployeeListExpanded;
         // save state to SharedPreferences whenever it changes
