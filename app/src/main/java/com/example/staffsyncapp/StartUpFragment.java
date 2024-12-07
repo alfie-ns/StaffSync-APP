@@ -1,6 +1,7 @@
 package com.example.staffsyncapp;
 
 // Android libraries for fragment lifecycle and UI setup
+import android.annotation.SuppressLint;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -21,11 +22,8 @@ public class StartUpFragment extends Fragment {
     private ApiDataService apiService;
 
     @Override
-    public View onCreateView(
-            @NonNull LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState
-    ) {
-        // inflate the layout using view binding
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // store binding reference
         binding = StartUpFragmentBinding.inflate(inflater, container, false);
         return binding.getRoot();
     }
@@ -51,14 +49,20 @@ public class StartUpFragment extends Fragment {
     }
 
     private void updateApiStatus(boolean isHealthy, String message) {
-        requireActivity().runOnUiThread(() -> {
-            Drawable icon = getResources().getDrawable( // fetch Android drawable
-                    isHealthy ? android.R.drawable.ic_dialog_info : android.R.drawable.ic_dialog_alert
-            );
-            icon.setBounds(0, 0, icon.getIntrinsicWidth(), icon.getIntrinsicHeight());
-            binding.apiStatusText.setCompoundDrawables(icon, null, null, null);
-            binding.apiStatusText.setText(message);
-        });
+        // null check to prevent crash
+        if (getActivity() != null && binding != null) {
+            requireActivity().runOnUiThread(() -> {
+                // another null check since binding could be nulled between checks
+                if (binding != null) {
+                    @SuppressLint("UseCompatLoadingForDrawables") Drawable icon = getResources().getDrawable(
+                            isHealthy ? android.R.drawable.ic_dialog_info : android.R.drawable.ic_dialog_alert
+                    );
+                    icon.setBounds(0, 0, icon.getIntrinsicWidth(), icon.getIntrinsicHeight());
+                    binding.apiStatusText.setCompoundDrawables(icon, null, null, null);
+                    binding.apiStatusText.setText(message);
+                }
+            });
+        }
     }
 
     @Override // clean up binding object
