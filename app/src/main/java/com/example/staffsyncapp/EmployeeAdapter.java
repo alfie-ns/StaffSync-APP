@@ -93,9 +93,16 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
     public void setOnEmployeeDeleteListener(OnEmployeeDeleteListener listener) { // set delete listener
         this.deleteListener = listener;
     }
+    
+    // Update adapter's list without changing total employee count
+    public void updateDisplayList(List<Employee> displayedEmployees) {
+        this.employees.clear();
+        this.employees.addAll(displayedEmployees);
+        notifyDataSetChanged(); // refresh the RecyclerView
+    }
 
     public void filter(String text) {
-        try { // TODO SearchByID
+        try { // TODO SearchByID [X]
             // clear current list but preserve the fullList
             employees.clear();
 

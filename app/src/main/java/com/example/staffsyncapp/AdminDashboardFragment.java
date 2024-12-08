@@ -53,13 +53,13 @@ public class AdminDashboardFragment extends Fragment {
 
     /*
     TODO:
-        - [x] AdminDashboardFragmentBinding
-        - [ ] incorporate DatabaseHelper db
-        - [x] logout functionality
+        - [X] AdminDashboardFragmentBinding
+        - [X] incorporate local db
+        - [X] logout functionality
         - [ ] notifications 1: get notifications alerting
-        - [x] fetch ALL employees from comp2000
-        - [x] list employees searched for; filteredList
-        - [ ] EmployeeList2: when an id is searched for, allow to remove the id and thus the app stops searching for it
+        - [X] fetch ALL employees from comp2000
+        - [X] list employees searched for; filteredList
+        - [X] EmployeeList2: when an id is searched for, allow to remove the id and thus the app stops searching for it
         - [ ] notifications 2; make notification allow to be pressed
               on to take them to the relevant info, add actions
               to notifications, it should let the admin
@@ -67,6 +67,7 @@ public class AdminDashboardFragment extends Fragment {
               and if so it should probably give some insight in
               the notification(maybe using Gemini?)
         - [ ] employee account to submit leave requests 
+
 
     */
 
@@ -79,6 +80,7 @@ public class AdminDashboardFragment extends Fragment {
     private LocalDataService dbHelper;
     private ApiDataService employeeDataService;
     private ProgressBar progressBar;
+    private int totalEmployeeCount = 0;
 
     // Employee search functionality variables
     private EditText searchEmployeeInput;
@@ -91,9 +93,23 @@ public class AdminDashboardFragment extends Fragment {
     private View employeeListContent;
     private static final String EMPLOYEE_LIST_EXPANDED_KEY = "employee_list_expanded"; // toggle-state key
 
-    // preferences
+    // shared preferences' used to store the toggle state
     private SharedPreferences sharedPreferences;
     
+    //----------------------------------------------------------------------------------------------
+    // Classes
+    private class SearchTextWatcher implements TextWatcher { // search text change class; watches for changes in search input and triggers the filtering
+        @Override
+        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+    
+        @Override
+        public void onTextChanged(CharSequence s, int start, int before, int count) {
+            handleSearchTextChange(s.toString().trim());
+        }
+    
+        @Override
+        public void afterTextChanged(Editable s) {} // all 3 methods must be implemented in TextWatcher even if empty
+    }
     //----------------------------------------------------------------------------------------------
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) { // set up binding; database and API services
@@ -135,6 +151,46 @@ public class AdminDashboardFragment extends Fragment {
 
     }
     //----------------------------------------------------------------------------------------------
+    // Search functionality
+    private void handleSearchTextChange(String searchText) {
+        if (binding.searchByIdCheckbox.isChecked()) {
+            handleIdSearch(searchText);
+        } else {
+            handleNameSearch(searchText);
+        }
+    }
+    
+    private void handleIdSearch(String searchText) {
+        if (!searchText.isEmpty()) {
+            try {
+                int employeeId = Integer.parseInt(searchText);
+                searchEmployeeById(employeeId);
+            } catch (NumberFormatException e) {
+                showInvalidIdError();
+            }
+        } else {
+            fetchAndShowEmployees();  // Reset when empty
+        }
+    }
+    
+    private void handleNameSearch(String searchText) {
+        if (employeeAdapter != null) {
+            employeeAdapter.filter(searchText);
+        }
+    }
+    
+    private void showInvalidIdError() {
+        Toast.makeText(requireContext(),
+                "Please enter a valid ID number",
+                Toast.LENGTH_SHORT).show();
+    }
+    
+    private void setupSearchFunctionality() {
+        EditText searchInput = binding.searchEmployee;
+        searchInput.addTextChangedListener(new SearchTextWatcher());
+    }
+    //----------------------------------------------------------------------------------------------
+    // Employee management
     private void setupEmployeeAdapter(List<Employee> employees) {
         employeeAdapter = new EmployeeAdapter(employees);
 
@@ -164,7 +220,7 @@ public class AdminDashboardFragment extends Fragment {
 
         binding.recyclerViewEmployees.setAdapter(employeeAdapter);
     }
-
+    
     private void fetchAndShowEmployees() {
         ApiDataService.getAllEmployees(new ApiDataService.EmployeeFetchListener() {
             @Override
@@ -175,6 +231,7 @@ public class AdminDashboardFragment extends Fragment {
                 binding.progressBar.setVisibility(View.GONE);
 
                 if (employees != null && !employees.isEmpty()) {
+                    totalEmployeeCount = employees.size();
                     // 1- initialise employee list adapter && assign it
                     setupEmployeeAdapter(employees);
                     // 2- display the populated list; update total count
@@ -193,79 +250,41 @@ public class AdminDashboardFragment extends Fragment {
             }
         });
     }
-    private void toggleEmployeeList() {
-        isEmployeeListExpanded = !isEmployeeListExpanded;
-        // save state to SharedPreferences whenever it changes
-        sharedPreferences.edit()
-                .putBoolean(EMPLOYEE_LIST_EXPANDED_KEY, isEmployeeListExpanded)
-                .apply();
-        updateEmployeeListVisibility();
-    }
+    
+    private void searchEmployeeById(int id) {
+        binding.progressBar.setVisibility(View.VISIBLE); // show loading indicator
 
-    private void updateEmployeeListVisibility() {
-        if (isEmployeeListExpanded) {
-            // expand animation
-            employeeListContent.setVisibility(View.VISIBLE);
-            employeeListContent.animate()
-                    .alpha(1f)
-                    .setDuration(200)
-                    .start();
-            collapseButton.animate()
-                    .rotation(0f)
-                    .setDuration(200)
-                    .start();
-        } else {
-            // collapse animation
-            employeeListContent.animate()
-                    .alpha(0f)
-                    .setDuration(200)
-                    .withEndAction(() ->
-                            employeeListContent.setVisibility(View.GONE))
-                    .start();
-            collapseButton.animate()
-                    .rotation(180f)
-                    .setDuration(200)
-                    .start();
-        }
-    }
-
-    private void setupSearchFunctionality() {
-        EditText searchInput = binding.searchEmployee; // 1- bind to respective .xml elements (search box and checkbox)
-        CheckBox searchByIdCheckbox = binding.searchByIdCheckbox;
-        // 2- set up text change listener
-        searchInput.addTextChangedListener(new TextWatcher() {
+        // Create interface to handle the response
+        ApiDataService.EmployeeFetchListener listener = new ApiDataService.EmployeeFetchListener() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {} // required empty method for TextWatcher interface
-
-            @Override // 3- define and execute search functionality
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                String searchText = s.toString().trim();
-
-                if (searchByIdCheckbox.isChecked()) {
-                    // 4- search by ID only if text is not empty
-                    if (!searchText.isEmpty()) {
-                        try { // try to parse the input as an integer(employee ID)
-                            int employeeId = Integer.parseInt(searchText);
-                            searchEmployeeById(employeeId);
-                        } catch (NumberFormatException e) {
-                            Toast.makeText(requireContext(),
-                                    "Please enter a valid ID number",
-                                    Toast.LENGTH_SHORT).show();
-                        }
-                    }
-                } else {
-                    // search all employees by name, email, or department
+            public void onEmployeesFetched(List<Employee> employees) {
+                binding.progressBar.setVisibility(View.GONE);
+                if (employees != null && !employees.isEmpty()) {
                     if (employeeAdapter != null) {
-                        employeeAdapter.filter(searchText);
+                        employeeAdapter.updateDisplayList(employees); // update existing adapter
+                    } else {
+                        setupEmployeeAdapter(employees); // create new adapter if none exists
                     }
+                    // don't update total count as it should show ALL employees
                 }
             }
 
             @Override
-            public void afterTextChanged(Editable s) {}
-        });
-    }
+            public void onError(String error) {
+                if (getContext() == null) return;
 
+                binding.progressBar.setVisibility(View.GONE);
+                Toast.makeText(requireContext(),
+                        "Error: " + error,
+                        Toast.LENGTH_SHORT).show();
+            }
+        };
+
+        // Call the API
+        employeeDataService.getEmployeeById(id, listener);
+    }
+    //----------------------------------------------------------------------------------------------
+    // Dialog management
     private void showAddEmployeeDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         View dialogView = getLayoutInflater().inflate(R.layout.admin_add_employee_dialog, null);
@@ -320,12 +339,13 @@ public class AdminDashboardFragment extends Fragment {
 
         dialog.show();
     }
-
+    //----------------------------------------------------------------------------------------------
+    // Validation
     private boolean validateInputs(EditText... inputs) {
         // 1- basic empty check for each field
         for (EditText input : inputs) {
             String value = input.getText().toString().trim();
-            if (value.isEmpty()) {
+            if (value.isEmpty()) { // if any field is empty
                 input.setError("This field is required");
                 return false;
             }
@@ -359,40 +379,8 @@ public class AdminDashboardFragment extends Fragment {
         // 5- success
         return true;
     }
-
-    private void searchEmployeeById(int id) {
-        // Show loading indicator
-        binding.progressBar.setVisibility(View.VISIBLE);
-
-        // Create interface to handle the response
-        ApiDataService.EmployeeFetchListener listener = new ApiDataService.EmployeeFetchListener() {
-            @Override
-            public void onEmployeesFetched(List<Employee> employees) {
-                //if (getContext() == null) return;
-
-                binding.progressBar.setVisibility(View.GONE);
-                if (employees != null && !employees.isEmpty()) {
-                    employeeAdapter = new com.example.staffsyncapp.EmployeeAdapter(employees);
-                    binding.recyclerViewEmployees.setAdapter(employeeAdapter);
-                    binding.totalEmployeesCount.setText(String.valueOf(employees.size()));
-                }
-            }
-
-            @Override
-            public void onError(String error) {
-                if (getContext() == null) return;
-
-                binding.progressBar.setVisibility(View.GONE);
-                Toast.makeText(requireContext(),
-                        "Error: " + error,
-                        Toast.LENGTH_SHORT).show();
-            }
-        };
-
-        // Call the API
-        employeeDataService.getEmployeeById(id, listener);
-    }
-
+    //----------------------------------------------------------------------------------------------
+    // UI setup
     private void setupClickListeners() {
 
         // click listener to get all employees and display them
@@ -439,7 +427,43 @@ public class AdminDashboardFragment extends Fragment {
             }
         });
     }
+    
+    private void toggleEmployeeList() {
+        isEmployeeListExpanded = !isEmployeeListExpanded;
+        // save state to SharedPreferences whenever it changes
+        sharedPreferences.edit()
+                .putBoolean(EMPLOYEE_LIST_EXPANDED_KEY, isEmployeeListExpanded)
+                .apply();
+        updateEmployeeListVisibility();
+    }
 
+    private void updateEmployeeListVisibility() {
+        if (isEmployeeListExpanded) {
+            // expand animation
+            employeeListContent.setVisibility(View.VISIBLE);
+            employeeListContent.animate()
+                    .alpha(1f)
+                    .setDuration(200)
+                    .start();
+            collapseButton.animate()
+                    .rotation(0f)
+                    .setDuration(200)
+                    .start();
+        } else {
+            // collapse animation
+            employeeListContent.animate()
+                    .alpha(0f)
+                    .setDuration(200)
+                    .withEndAction(() ->
+                            employeeListContent.setVisibility(View.GONE))
+                    .start();
+            collapseButton.animate()
+                    .rotation(180f)
+                    .setDuration(200)
+                    .start();
+        }
+    }
+    //----------------------------------------------------------------------------------------------
     // Salary increment functions
     private void showIncrementDialog(String message, int eligibleCount) {
         // create and show dialog
@@ -468,6 +492,7 @@ public class AdminDashboardFragment extends Fragment {
 
         dialog.show();
     }
+    
     private void showSalaryIncrementStatus() { // show salary increment status for all employees with showIncrementDialog()
         ApiDataService.getIncrementStatus(new ApiDataService.IncrementStatusListener() {
             @Override

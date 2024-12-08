@@ -1,6 +1,6 @@
 # TODO
 
-- [ ] talk about the singleton pattern - week11
+- [ ] talk about the singleton pattern learnt in week11
 - [ ] thread-safe initialisation happens if the synchronized keyword is used
 
 ### Comp2000 API endpoints
@@ -11,12 +11,12 @@
 - [ ] PUT /employees/edit/{id}
 - [X] DELETE /employees/delete/{id}
 - [X] GET /health
-- [ ] do next api endpoint
-- [ ] incorporate lecture abotu notifications in my app
-- [ ] localdataservice
+- [X] do next api endpoint
+- [ ] incorporate lecture about notifications in my app
+- [X] LocalDataService
 - [ ] user login; i need to workout why user's not logging in
   it could either be the database account entry or navigation?
-- [ ] ensure the comments are capitialised at the top of the file
+- [ ] ensure the comments are capitialised at the top of the file or important functions
 
 ## Core Technical Implementation (40%)
 
@@ -42,7 +42,7 @@
   - [ ] DELETE operations
 - [ ] Error handling in parallel operations
 - [X] Basic API connection
-- [ ] Test getAllEmployees function
+- [X] Test getAllEmployees function
 - [X] Figure out how to test admin dashboard
 - [X] Figure out how to integrate the API into the app
 - [ ] Implement proper thread management
@@ -68,7 +68,7 @@
 
 - [X] Login security implementation
 - [X] Admin login functionality
-- [ ] User login functionality
+- [X] User login functionality
 - [ ] Implement forgot password feature
 - [ ] Location tracking
 - [ ] Device recognition
