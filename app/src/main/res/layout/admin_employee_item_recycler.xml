@@ -24,13 +24,27 @@
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <!-- name in bold -->
-            <TextView
-                android:id="@+id/nameTextView"
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textStyle="bold"/>
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                <!-- name in bold -->
+                <TextView
+                    android:id="@+id/nameTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="16sp"
+                    android:textStyle="bold"/>
+
+                <TextView
+                    android:id="@+id/idTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:textSize="14sp"
+                    android:textColor="@android:color/darker_gray"/>
+            </LinearLayout>
 
             <!-- email address -->
             <TextView

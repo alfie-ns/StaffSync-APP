@@ -26,10 +26,11 @@ import java.util.Locale;
 //import javax.swing.text.html.ImageView;
 
 public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHolder> {
-    // EmployeeAdapter class for displaying employee data in a RecyclerView, dynamically
+    // EmployeeAdapter class for displaying employee data in a RecyclerView, dynamically; going to be used elsewhere in the future
     private static final String TAG = "EmployeeAdapter";
     private final List<Employee> employees;
     private final NumberFormat currencyFormatter = NumberFormat.getCurrencyInstance(Locale.UK);
+    private static final String ID_FORMAT = "(ID: %d)"; // defined static to be accessible app-wide via EmployeeAdapter.ID_FORMAT
     private List<Employee> employeesFull;
 
     private OnEmployeeDeleteListener deleteListener;
@@ -59,6 +60,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
             String employeeName = employee.getName();
 
             holder.nameTextView.setText(employeeName.isEmpty() ? "N/A" : employeeName);
+            holder.idTextView.setText(String.format(Locale.UK, ID_FORMAT, employee.getId())); // use UK locale for consistent ID formatting
             holder.emailTextView.setText(employee.getEmail() != null ? employee.getEmail() : "N/A");
             holder.departmentTextView.setText(employee.getDepartment() != null ? employee.getDepartment() : "N/A");
             holder.salaryTextView.setText(currencyFormatter.format(employee.getSalary()));
@@ -67,7 +69,8 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
                 if (deleteListener != null) {
                     new AlertDialog.Builder(holder.itemView.getContext())
                             .setTitle("Delete Employee")
-                            .setMessage("Are you sure you want to delete " + employeeName + "?")
+                            .setMessage("Are you sure you want to delete " + employeeName + " " +
+                                    String.format(Locale.UK, ID_FORMAT, employee.getId()) + "?")
                             .setPositiveButton("Yes", (dialog, which) -> {
                                 deleteListener.onDeleteClicked(employee);
                             })
@@ -138,6 +141,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
 
     public static class ViewHolder extends RecyclerView.ViewHolder { // ViewHolder for caching employee data views thus no repeated findViewById() calls
         final TextView nameTextView;
+        final TextView idTextView;
         final TextView emailTextView;
         final TextView departmentTextView;
         final TextView salaryTextView;
@@ -146,6 +150,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
             nameTextView = itemView.findViewById(R.id.nameTextView);
+            idTextView = itemView.findViewById(R.id.idTextView);
             emailTextView = itemView.findViewById(R.id.emailTextView);
             departmentTextView = itemView.findViewById(R.id.departmentTextView);
             salaryTextView = itemView.findViewById(R.id.salaryTextView);
