@@ -40,7 +40,7 @@
 
         @Override // SQL DATABASE CREATION
         public void onCreate(SQLiteDatabase db) {
-            // 1. Create Users table; core authentication; role management
+            // 1- Create Users table; core authentication; role management
             db.execSQL("CREATE TABLE users (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "email TEXT UNIQUE," +
@@ -50,7 +50,7 @@
                     "last_login DATETIME," +
                     "created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
 
-            // 2. Employee details; personal and employment information
+            // 2- Employee details; personal and employment information
             db.execSQL("CREATE TABLE employee_details (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "user_id INTEGER UNIQUE," +
@@ -63,7 +63,7 @@
                     "used_leave INTEGER DEFAULT 0," +             // track used days
                     "FOREIGN KEY(user_id) REFERENCES users(id))");
 
-            // 3. Leave requests; manage holiday bookings
+            // 3- Leave requests; manage holiday bookings
             db.execSQL("CREATE TABLE leave_requests (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "employee_id INTEGER," +
@@ -77,7 +77,7 @@
                     "updated_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
                     "FOREIGN KEY(employee_id) REFERENCES users(id))");
 
-            // 4. Notification preferences; manage user notification settings
+            // 4- Notification preferences; manage user notification settings
             db.execSQL("CREATE TABLE notification_preferences (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "user_id INTEGER UNIQUE," +
@@ -86,7 +86,7 @@
                     "email_notifications INTEGER DEFAULT 1," +
                     "FOREIGN KEY(user_id) REFERENCES users(id))");
 
-            //5. Notification log; store all notifications sent to users
+            //5- Notification log; store all notifications sent to users
             db.execSQL("CREATE TABLE notification_log (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "user_id INTEGER," +
@@ -97,7 +97,7 @@
                     "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
                     "FOREIGN KEY(user_id) REFERENCES users(id))");
 
-            // 6. Salary Increment Creation
+            // 6- Salary Increment Creation
             db.execSQL("ALTER TABLE employee_details ADD COLUMN last_increment_date DATE");
             db.execSQL("ALTER TABLE employee_details ADD COLUMN next_increment_date DATE");
 

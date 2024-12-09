@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".ProfileFragment">
+    tools:context=".UserProfileFragment">
 
     <!-- teal deep header bar; contains back arrow and title -->
     <View
