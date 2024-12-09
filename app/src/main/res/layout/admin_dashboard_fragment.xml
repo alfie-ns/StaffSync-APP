@@ -189,8 +189,16 @@
                             android:layout_height="wrap_content"
                             android:text="Search by ID"
                             android:textStyle="bold"
-                            android:layoutDirection="rtl"
-                            /> <!-- checkbox to toggle search by ID^ -->
+                            android:layoutDirection="rtl" /> <!-- checkbox to toggle search by ID -->
+                        <ImageButton
+                            android:id="@+id/refreshEmployeesBtn"
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/refresh_icon"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:padding="2dp"
+                            android:scaleType="fitCenter"
+                            android:contentDescription="Refresh employee list" />
                             
                         <ImageButton
                             android:id="@+id/collapseEmployeeList"

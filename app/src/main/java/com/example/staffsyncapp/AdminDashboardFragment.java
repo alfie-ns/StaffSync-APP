@@ -383,6 +383,12 @@ public class AdminDashboardFragment extends Fragment {
     // UI setup
     private void setupClickListeners() {
 
+        binding.refreshEmployeesBtn.setOnClickListener(v -> {
+            Log.d(TAG, "Refresh employees list requested");
+            binding.progressBar.setVisibility(View.VISIBLE);  // show loading whilst fetching
+            fetchAndShowEmployees(); // effectively refreshes/synchronises the RecyclerView with the API data
+        });
+
         // click listener to get all employees and display them
         binding.totalEmployeesCard.setOnClickListener(v -> fetchAndShowEmployees());
 
