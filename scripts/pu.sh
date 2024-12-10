@@ -1,6 +1,8 @@
 #!/bin/bash
 
-# Git Commit Importance Script
+# Git Pull-Push Commits Script
+
+git pull origin main || exit 1
 
 set -e  # Exit immediately if a command exits with a non-zero status
 
