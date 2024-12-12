@@ -420,6 +420,58 @@ public class AdminDashboardFragment extends Fragment {
 
         dialog.show();
     }
+
+    private void showDeleteEmployeeDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        View dialogView = getLayoutInflater().inflate(R.layout.admin_delete_employee_dialog, null);
+        builder.setView(dialogView);
+
+        // get reference to input field
+        EditText employeeIdInput = dialogView.findViewById(R.id.employeeIdInput);
+
+        AlertDialog dialog = builder.create();
+
+        // set positive and negative buttons after creating dialog
+        dialog.setButton(AlertDialog.BUTTON_POSITIVE, "Delete", (dialogInterface, i) -> {
+            String idText = employeeIdInput.getText().toString().trim();
+            if (!idText.isEmpty()) {
+                try {
+                    int employeeId = Integer.parseInt(idText);
+                    employeeDataService.deleteEmployee(
+                            employeeId,
+                            new ApiDataService.EmployeeDeleteListener() {
+                                @Override
+                                public void onSuccess(String message) {
+                                    dialog.dismiss();
+                                    fetchAndShowEmployees();  // Refresh list
+                                    Toast.makeText(requireContext(),
+                                            "Employee deleted successfully",
+                                            Toast.LENGTH_SHORT).show();
+                                }
+
+                                @Override
+                                public void onError(String error) {
+                                    Toast.makeText(requireContext(),
+                                            "Error: " + error,
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                } catch (NumberFormatException e) {
+                    employeeIdInput.setError("Please enter a valid ID");
+                }
+            } else {
+                employeeIdInput.setError("ID is required");
+            }
+        });
+
+        dialog.setButton(AlertDialog.BUTTON_NEGATIVE, "Cancel", (dialogInterface, i) -> dialog.dismiss());
+
+        // add dialog title
+        dialog.setTitle("Delete Employee");
+
+        dialog.show();
+    }
     // Validation
     private boolean validateInputs(EditText... inputs) {
         // 1- basic empty check for each field
@@ -473,12 +525,17 @@ public class AdminDashboardFragment extends Fragment {
         binding.totalEmployeesCard.setOnClickListener(v -> fetchAndShowEmployees());
 
         binding.addEmployeeBtn.setOnClickListener(v -> { // form to add new employee to the comp2000-api database
-            Log.d(TAG, "Add employee button clicked");
+            Log.d(TAG, "Add employee button clicked...");
             showAddEmployeeDialog();
         });
 
+        binding.deleteEmployeeBtn.setOnClickListener(v -> {
+            Log.d(TAG, "Delete employee button clicked...");
+            showDeleteEmployeeDialog();
+        });
+
         binding.checkIncrementsBtn.setOnClickListener(v -> {
-            Log.d(TAG, "Checking salary increments...");
+            Log.d(TAG, "checking salary increments...");
             showSalaryIncrementStatus();
         });
 

@@ -45,4 +45,5 @@
     <string name="delete_employee_recycler">Delete employee</string>
     <string name="update_employee">Update employee</string>
     <string name="save">Save</string>
+    <string name="enter_employee_id">Enter Employee ID</string>
 </resources>

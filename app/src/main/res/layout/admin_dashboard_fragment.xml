@@ -482,16 +482,6 @@
                         android:textAllCaps="false"
                         app:cornerRadius="8dp"
                         android:backgroundTint="@color/admin_medium"/>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/viewEmployeesBtn"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="View Employee Details"
-                        android:textAllCaps="false"
-                        app:cornerRadius="8dp"
-                        android:backgroundTint="@color/admin_medium"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
