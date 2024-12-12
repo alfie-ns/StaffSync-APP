@@ -20,6 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -33,9 +34,9 @@ import java.util.concurrent.TimeUnit;
  
  - [X] Get All Employees: GET /employees:
  - [X] Get Employee by ID: GET /employees/get/<int:id>
- - [ ] Add a New Employee: POST /employees/add
- - [ ] Update an Employee’s Details: PUT /employees/edit/<int:id>
- - [ ] Delete an Employee: DELETE /employees/delete/<int:id>
+ - [X] Add a New Employee: POST /employees/add
+ - [X] Update an Employee’s Details: PUT /employees/edit/<int:id>
+ - [X] Delete an Employee: DELETE /employees/delete/<int:id>
  - [X] Health Check: GET /health
 
  ---
@@ -54,33 +55,40 @@ public class ApiDataService {
     // set context and initialise Volley request queue
     public ApiDataService(Context context) {
         this.context = context;
-        this.queue = Volley.newRequestQueue(context); 
+        queue = Volley.newRequestQueue(context); // access Volley request queue
     }
 
-    public interface EmployeeDeleteListener { // interface for handling employee deletion operations and responses
+    // listener interfaces for API requests to handle success and error responses ---
+    public interface EmployeeDeleteListener { 
         void onSuccess(String message);
         void onError(String error);
     }
 
-    public interface HealthCallback { // interface for handling comp2000 health checking responses
+    public interface HealthCallback { 
         void onResponse(String response);
     }
 
-    public interface IncrementStatusListener { // interface to handle salary increments
+    public interface IncrementStatusListener { 
         void onSuccess(List<IncrementStatus> statusList);
         void onError(String error);
     }
 
-    public interface EmployeeAddListener { // interface for handling employee add operations and responses
+    public interface EmployeeAddListener { 
         void onSuccess(String message);
         void onError(String error);
     }
 
-    public interface EmployeeFetchListener { // Interface for handling employee fetch operations and responses
+    public interface EmployeeFetchListener { 
         void onEmployeesFetched(List<Employee> employees); // success callback
         void onError(String error); // failure callback
     }
 
+    public interface EmployeeUpdateListener { 
+        void onSuccess(String message);
+        void onError(String error);
+    }
+// --------------------------------------------------------------------------------
+    // IncrementStatus class to store employee data for salary increment
     public static class IncrementStatus {
         public final String name;
         public final double salary;
@@ -255,6 +263,66 @@ public class ApiDataService {
         queue.add(request);
     }
 // ---------------------------------------------------------------------------------
+    /** [X]
+     * PUT request to update an employee's details
+     * Endpoint: /employees/edit/<int:id>
+     */
+    public void updateEmployee(int id, String firstname, String lastname, String email,
+                               String department, double salary, String joiningdate,
+                               EmployeeUpdateListener listener) {
+        String url = BASE_URL + "/employees/edit/" + id;
+
+        try {
+            JSONObject jsonBody = new JSONObject();
+            jsonBody.put("firstname", firstname);
+            jsonBody.put("lastname", lastname);
+            jsonBody.put("email", email);
+            jsonBody.put("department", department);
+            jsonBody.put("salary", salary);
+
+            // format date from EditText's timestamp (EEE, dd MMM yyyy) to API required format (YYYY-MM-DD)
+            SimpleDateFormat inputFormat = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.UK);
+            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
+            try {
+                Date date = inputFormat.parse(joiningdate);
+                String formattedDate = outputFormat.format(date);
+                jsonBody.put("joiningdate", formattedDate);
+            } catch (ParseException e) {
+                // If parsing fails, try to use the original date assuming it's already YYYY-MM-DD
+                jsonBody.put("joiningdate", joiningdate);
+            }
+
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.PUT,
+                    url,
+                    jsonBody,
+                    response -> {
+                        Log.d(TAG, "Update successful: " + response.toString());
+                        listener.onSuccess("Employee updated successfully");
+                    },
+                    error -> {
+                        String errorMessage = "";
+                        if (error.networkResponse != null) {
+                            errorMessage = new String(error.networkResponse.data);
+                            Log.e(TAG, "Error updating employee: " + errorMessage);
+                        }
+                        listener.onError("Error: " + errorMessage);
+                    }
+            );
+
+            Log.d(TAG, "Sending update request with body: " + jsonBody.toString());
+            request.setShouldCache(false);
+            queue.add(request);
+
+        } catch (JSONException e) {
+            listener.onError("Error creating request: " + e.getMessage());
+        }
+    }
+// ---------------------------------------------------------------------------------
+    /** [X]
+     * DELETE request to delete an employee by ID
+     * Endpoint: /employees/delete/<int:id>
+     */
     public void deleteEmployee(int employeeId, EmployeeDeleteListener listener) {
         String url = BASE_URL + "/employees/delete/" + employeeId;
 
@@ -278,12 +346,11 @@ public class ApiDataService {
         request.setShouldCache(false);
         queue.add(request);
     }
-
+// ---------------------------------------------------------------------------------
     /** [X]
      * - GET request to test the API is working
      * - Endpoint: /health
      */
-
     public void checkHealth(HealthCallback callback) {
         String url = BASE_URL + "/health";
         Log.d(TAG, "Testing API health");
@@ -345,6 +412,4 @@ public class ApiDataService {
             return 0;
         }
     }
-
-
 }

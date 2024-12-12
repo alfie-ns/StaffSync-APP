@@ -43,4 +43,6 @@
     <string name="bottom_nav_profile">Profile</string>
     <string name="bottom_nav_settings">Settings</string>
     <string name="delete_employee_recycler">Delete employee</string>
+    <string name="update_employee">Update employee</string>
+    <string name="save">Save</string>
 </resources>

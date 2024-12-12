@@ -68,6 +68,14 @@
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
         <ImageView
+            android:id="@+id/pencilIcon"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_gravity="center_vertical"
+            android:layout_marginEnd="16dp"
+            android:src="@drawable/pencil_icon"
+            android:contentDescription="@string/update_employee"/>
+        <ImageView
             android:id="@+id/deleteIcon"
             android:layout_width="24dp"
             android:layout_height="24dp"

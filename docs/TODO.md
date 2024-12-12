@@ -2,16 +2,21 @@
 
 - [ ] talk about the singleton pattern learnt in week11
 - [ ] thread-safe initialisation happens if the synchronized keyword is used
+- [ ] get delete employee button working; pass the id to delete any employee regardless of where it is in the list
 
 ### Comp2000 API endpoints
 
 - [X] GET /employees
 - [X] GET /employees/get/int{id}
 - [X] POST /employees/add
-- [ ] PUT /employees/edit/{id}
+- [X] PUT /employees/edit/{id}
 - [X] DELETE /employees/delete/{id}
 - [X] GET /health
-- [X] do next api endpoint
+
+---
+
+
+
 - [ ] incorporate lecture about notifications in my app
 - [X] LocalDataService
 - [ ] user login; i need to workout why user's not logging in
@@ -36,10 +41,10 @@
 ### API Integration & Threading
 
 - [ ] Implement worker threads for API operations; implement endpoints into the app
-  - [ ] GET operations
-  - [ ] POST operations
+  - [X] GET operations
+  - [X] POST operations
   - [ ] PUT operations
-  - [ ] DELETE operations
+  - [X] DELETE operations
 - [ ] Error handling in parallel operations
 - [X] Basic API connection
 - [X] Test getAllEmployees function
@@ -52,14 +57,14 @@
 #### Admin Features
 
 - [ ] Employee management:
-  - [ ] Add new employee user details
-  - [ ] View employee details for verification
+  - [X] Add new employee user details
+  - [X] View employee details for verification
   - [ ] Edit employee details
-  - [ ] Delete employee records
+  - [X] Delete employee records
 - [ ] Automatic 5% salary increment after one year
 - [ ] View and manage holiday requests
 - [ ] Push notification system
-- [ ] Implement collapse/minimize employee list functionality
+- [X] Implement collapse/minimize employee list functionality
 - [ ] Enhance view of clicked employee in list
 - [X] Search employee functionality
 - [X] Improve search employee functionality filter function
@@ -85,6 +90,7 @@
 - [ ] Holiday request submission
 - [ ] Notification preferences management
 - [ ] 30-day holiday allowance management
+- [ ] Remember getIncrementStatus for employee-side fragments
 
 ### Database Implementation
 
@@ -102,7 +108,7 @@
 - [ ] Screen size adaptation
 - [ ] Implement HCI principles:
 
-  - [ ] Clear navigation
+  - [X] Clear navigation
   - [ ] Consistent layout
   - [ ] Error feedback
   - [ ] User control
@@ -123,7 +129,7 @@
   - [ ] Holiday requests and responses
   - [ ] Employee detail changes
   - [ ] Salary increments
-  - [ ] New employees
+  - [X] New employees
   - [ ] Employee departures
   - [ ] Employee birthdays
   - [ ] Employee anniversaries

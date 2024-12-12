@@ -34,6 +34,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
     private List<Employee> employeesFull;
 
     private OnEmployeeDeleteListener deleteListener;
+    private OnEmployeeUpdateListener updateListener;
 
     public EmployeeAdapter(List<Employee> employees) { // list constructor
         // create new lists to avoid reference issues
@@ -44,6 +45,10 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
 
     public interface OnEmployeeDeleteListener {
         void onDeleteClicked(Employee employee);
+    }
+
+    public interface OnEmployeeUpdateListener {
+        void onUpdateClicked(Employee employee);
     }
 
     @NonNull
@@ -78,6 +83,13 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
                             .show();
                 }
             });
+
+            holder.updateIcon.setOnClickListener(v -> {
+                if (updateListener != null) {
+                    updateListener.onUpdateClicked(employee);
+                }
+            });
+
     
         } catch (Exception e) {
             Log.e(TAG, "Error binding employee at position " + position, e);
@@ -95,6 +107,10 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
 
     public void setOnEmployeeDeleteListener(OnEmployeeDeleteListener listener) { // set delete listener
         this.deleteListener = listener;
+    }
+
+    public void setOnEmployeeUpdateListener(OnEmployeeUpdateListener listener) {
+        this.updateListener = listener;
     }
     
     // Update adapter's list without changing total employee count
@@ -146,6 +162,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
         final TextView departmentTextView;
         final TextView salaryTextView;
         final ImageView deleteIcon;
+        final ImageView updateIcon;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -155,6 +172,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
             departmentTextView = itemView.findViewById(R.id.departmentTextView);
             salaryTextView = itemView.findViewById(R.id.salaryTextView);
             deleteIcon = itemView.findViewById(R.id.deleteIcon);
+            updateIcon = itemView.findViewById(R.id.pencilIcon);
         }
     }
 }

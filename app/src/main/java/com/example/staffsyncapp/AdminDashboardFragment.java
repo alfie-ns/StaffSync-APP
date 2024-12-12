@@ -218,6 +218,10 @@ public class AdminDashboardFragment extends Fragment {
             );
         });
 
+        employeeAdapter.setOnEmployeeUpdateListener(employee -> {
+            showUpdateDialog(requireContext(), employee);
+        });
+
         binding.recyclerViewEmployees.setAdapter(employeeAdapter);
     }
     
@@ -339,7 +343,83 @@ public class AdminDashboardFragment extends Fragment {
 
         dialog.show();
     }
-    //----------------------------------------------------------------------------------------------
+
+    private void showUpdateDialog(Context context, Employee employee) {
+        Log.d(TAG, "Original date from employee: " + employee.getJoiningdate());
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        View dialogView = getLayoutInflater().inflate(R.layout.admin_update_employee_dialog, null);
+
+        // get input fields
+        EditText firstNameInput = dialogView.findViewById(R.id.firstNameInput);
+        EditText lastNameInput = dialogView.findViewById(R.id.lastNameInput);
+        EditText emailInput = dialogView.findViewById(R.id.emailInput);
+        EditText departmentInput = dialogView.findViewById(R.id.departmentInput);
+        EditText salaryInput = dialogView.findViewById(R.id.salaryInput);
+        EditText joiningDateInput = dialogView.findViewById(R.id.joiningDateInput);
+
+        // pre-populate fields with current values
+        firstNameInput.setText(employee.getFirstname());
+        lastNameInput.setText(employee.getLastname());
+        emailInput.setText(employee.getEmail());
+        departmentInput.setText(employee.getDepartment());
+        salaryInput.setText(String.valueOf(employee.getSalary()));
+        joiningDateInput.setText(employee.getJoiningdate());
+        Log.d(TAG, "Date after EditText: " + joiningDateInput.getText().toString());
+        AlertDialog dialog = builder.setView(dialogView).create();
+
+        dialogView.findViewById(R.id.updateButton).setOnClickListener(v -> {
+            // get current values and keep original if unchanged
+            String newFirstName = firstNameInput.getText().toString().trim();
+            String newLastName = lastNameInput.getText().toString().trim();
+            String newEmail = emailInput.getText().toString().trim();
+            String newDepartment = departmentInput.getText().toString().trim();
+            String newJoiningDate = joiningDateInput.getText().toString().trim();
+
+            // keep original value if empty or unchanged
+            if (newFirstName.isEmpty()) newFirstName = employee.getFirstname();
+            if (newLastName.isEmpty()) newLastName = employee.getLastname();
+            if (newEmail.isEmpty()) newEmail = employee.getEmail();
+            if (newDepartment.isEmpty()) newDepartment = employee.getDepartment();
+            if (newJoiningDate.isEmpty()) newJoiningDate = employee.getJoiningdate();
+
+            // parse salary, keep original if empty or invalid
+            double newSalary = employee.getSalary();
+            String salaryStr = salaryInput.getText().toString().trim();
+            if (!salaryStr.isEmpty()) {
+                try {
+                    newSalary = Double.parseDouble(salaryStr);
+                } catch (NumberFormatException e) {
+                    Toast.makeText(context, "Please enter a valid salary", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+
+            employeeDataService.updateEmployee(
+                    employee.getId(),
+                    newFirstName,
+                    newLastName,
+                    newEmail,
+                    newDepartment,
+                    newSalary,
+                    newJoiningDate,
+                    new ApiDataService.EmployeeUpdateListener() {
+                        @Override
+                        public void onSuccess(String message) {
+                            dialog.dismiss();
+                            fetchAndShowEmployees();
+                            Toast.makeText(context, "Employee updated successfully", Toast.LENGTH_SHORT).show();
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            Toast.makeText(context, "Error: " + error, Toast.LENGTH_SHORT).show();
+                        }
+                    }
+            );
+        });
+
+        dialog.show();
+    }
     // Validation
     private boolean validateInputs(EditText... inputs) {
         // 1- basic empty check for each field
