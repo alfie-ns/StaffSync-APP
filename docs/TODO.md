@@ -3,6 +3,8 @@
 - [ ] talk about the singleton pattern learnt in week11
 - [ ] thread-safe initialisation happens if the synchronized keyword is used
 - [ ] get delete employee button working; pass the id to delete any employee regardless of where it is in the list
+- [X] reinstate bare notification system
+- [ ] implement the notification system i.e. holiday requests, employee detail changes, salary increments, new employees, employee departures, employee birthdays, employee anniversaries, employee promotions/demotions, anomaly detection alerts
 
 ### Comp2000 API endpoints
 

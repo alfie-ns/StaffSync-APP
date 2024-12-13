@@ -2,10 +2,14 @@ package com.example.staffsyncapp;
 
 // Android libraries for UI, data handling, and permissions
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.app.ActivityCompat;
 import androidx.navigation.fragment.NavHostFragment;
 
+import android.content.pm.PackageManager;
 import android.view.LayoutInflater;
 import android.widget.TextView;
+
+import com.example.staffsyncapp.utils.AdminNotificationService;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -86,11 +90,15 @@ public class AdminDashboardFragment extends Fragment {
 
     private AdminEmployeeAdapter adminEmployeeAdapter;
 
-    // employee list collapse functionality variables
+    // Employee list collapse functionality variables
     private boolean isEmployeeListExpanded = true;
     private ImageButton collapseButton;
     private View employeeListContent;
     private static final String EMPLOYEE_LIST_EXPANDED_KEY = "employee_list_expanded"; // toggle-state key
+
+    private static final String HOLIDAY_NOTIFICATIONS_KEY = "holiday_notifications";
+    private static final String EMAIL_NOTIFICATIONS_KEY = "email_notifications";
+    private AdminNotificationService notificationService;
 
     // shared preferences' used to store the toggle state
     private SharedPreferences sharedPreferences;
@@ -139,6 +147,17 @@ public class AdminDashboardFragment extends Fragment {
 
         setupClickListeners(); // check each click listener
         setupSearchFunctionality(); // setup employee list search functionality
+
+        notificationService = new AdminNotificationService(requireContext()); // setup notification service
+
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) { // check for notification permissions
+            if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS)
+                    != PackageManager.PERMISSION_GRANTED) {
+                ActivityCompat.requestPermissions(requireActivity(),
+                        new String[]{android.Manifest.permission.POST_NOTIFICATIONS},
+                        100);
+            }
+        }
 
         collapseButton = binding.collapseEmployeeList; // collapse list button
         employeeListContent = binding.employeeListContent;
@@ -561,37 +580,85 @@ public class AdminDashboardFragment extends Fragment {
     //----------------------------------------------------------------------------------------------
     // UI setup
     private void setupClickListeners() {
-
-        // click listener to open edit employees via the respective id dialog
+        // edit employee dialog via pencil icon
         binding.pencilIcon.setOnClickListener(v -> {
             showEditEmployeeDialog();
         });
 
+        // refresh employee list
         binding.refreshEmployeesBtn.setOnClickListener(v -> {
-            Log.d(TAG, "Refresh employees list requested");
+            Log.d(TAG, "refresh employees list requested");
             binding.progressBar.setVisibility(View.VISIBLE);  // show loading whilst fetching
             fetchAndShowEmployees(); // effectively refreshes/synchronises the RecyclerView with the API data
         });
 
-        // click listener to get all employees and display them
+        // fetch and display all employees
         binding.totalEmployeesCard.setOnClickListener(v -> fetchAndShowEmployees());
 
+        // add new employee dialog
         binding.addEmployeeBtn.setOnClickListener(v -> { // form to add new employee to the comp2000-api database
-            Log.d(TAG, "Add employee button clicked...");
+            Log.d(TAG, "add employee button clicked...");
             showAddEmployeeDialog();
         });
 
+        // delete employee dialog
         binding.deleteEmployeeBtn.setOnClickListener(v -> {
-            Log.d(TAG, "Delete employee button clicked...");
+            Log.d(TAG, "delete employee button clicked...");
             showDeleteEmployeeDialog();
         });
 
+        // check salary increments
         binding.checkIncrementsBtn.setOnClickListener(v -> {
             Log.d(TAG, "checking salary increments...");
             showSalaryIncrementStatus();
         });
 
-        // logout button functionality
+        // notification controls setup
+        binding.notificationSwitch.setChecked(
+                sharedPreferences.getBoolean(HOLIDAY_NOTIFICATIONS_KEY, true));
+
+        binding.emailSwitch.setChecked(
+                sharedPreferences.getBoolean(EMAIL_NOTIFICATIONS_KEY, true));
+
+        // holiday notifications toggle
+        binding.notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            try {
+                sharedPreferences.edit()
+                        .putBoolean(HOLIDAY_NOTIFICATIONS_KEY, isChecked)
+                        .apply();
+
+                if (isChecked) {
+                    notificationService.sendHolidayNotification(
+                            "holiday notifications enabled",
+                            "you will now receive holiday request notifications"
+                    );
+                }
+                Log.d(TAG, "holiday notifications " + (isChecked ? "enabled" : "disabled"));
+            } catch (Exception e) {
+                Log.e(TAG, "failed to save holiday notification setting", e);
+            }
+        });
+
+        // email notifications toggle
+        binding.emailSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            try {
+                sharedPreferences.edit()
+                        .putBoolean(EMAIL_NOTIFICATIONS_KEY, isChecked)
+                        .apply();
+
+                if (isChecked) {
+                    notificationService.sendSystemNotification(
+                            "email notifications enabled",
+                            "you will now receive email notifications"
+                    );
+                }
+                Log.d(TAG, "email notifications " + (isChecked ? "enabled" : "disabled"));
+            } catch (Exception e) {
+                Log.e(TAG, "failed to save email notification setting", e);
+            }
+        });
+
+        // logout functionality
         binding.logoutBtn.setOnClickListener(v -> {
             Log.d(TAG, "processing admin logout...");
             try {
@@ -611,18 +678,18 @@ public class AdminDashboardFragment extends Fragment {
 
                 // show success message
                 Toast.makeText(requireContext(),
-                        "Logged out successfully",
+                        "logged out successfully",
                         Toast.LENGTH_SHORT).show();
 
             } catch (Exception e) {
-                Log.e(TAG, "Logout failed", e);
+                Log.e(TAG, "logout failed", e);
                 Toast.makeText(requireContext(),
-                        "Logout failed; please try again",
+                        "logout failed; please try again",
                         Toast.LENGTH_SHORT).show();
             }
         });
     }
-    
+
     private void toggleEmployeeList() {
         isEmployeeListExpanded = !isEmployeeListExpanded;
         // save state to SharedPreferences whenever it changes
