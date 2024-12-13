@@ -16,7 +16,6 @@ import android.util.Log;
 import android.util.Patterns;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
@@ -78,7 +77,7 @@ public class AdminDashboardFragment extends Fragment {
     // Core variables
     private AdminDashboardFragmentBinding binding;
     private LocalDataService dbHelper;
-    private ApiDataService employeeDataService;
+    private AdminApiDataService employeeDataService;
     private ProgressBar progressBar;
     private int totalEmployeeCount = 0;
 
@@ -115,7 +114,7 @@ public class AdminDashboardFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) { // set up binding; database and API services
         binding = AdminDashboardFragmentBinding.inflate(inflater, container, false);
         dbHelper = new LocalDataService(requireContext());
-        employeeDataService = new ApiDataService(requireContext());
+        employeeDataService = new AdminApiDataService(requireContext());
         return binding.getRoot();
     }
     @Override // override to initialise UI components and set up listeners
@@ -198,7 +197,7 @@ public class AdminDashboardFragment extends Fragment {
         employeeAdapter.setOnEmployeeDeleteListener(employee -> {
             employeeDataService.deleteEmployee(
                     employee.getId(),
-                    new ApiDataService.EmployeeDeleteListener() {
+                    new AdminApiDataService.EmployeeDeleteListener() {
                         @Override
                         public void onSuccess(String message) {
                             // refresh the list after deletion
@@ -226,7 +225,7 @@ public class AdminDashboardFragment extends Fragment {
     }
     
     private void fetchAndShowEmployees() {
-        ApiDataService.getAllEmployees(new ApiDataService.EmployeeFetchListener() {
+        AdminApiDataService.getAllEmployees(new AdminApiDataService.EmployeeFetchListener() {
             @Override
             public void onEmployeesFetched(List<Employee> employees) {
                 if (getContext() == null) return;
@@ -259,7 +258,7 @@ public class AdminDashboardFragment extends Fragment {
         binding.progressBar.setVisibility(View.VISIBLE); // show loading indicator
 
         // Create interface to handle the response
-        ApiDataService.EmployeeFetchListener listener = new ApiDataService.EmployeeFetchListener() {
+        AdminApiDataService.EmployeeFetchListener listener = new AdminApiDataService.EmployeeFetchListener() {
             @Override
             public void onEmployeesFetched(List<Employee> employees) {
                 binding.progressBar.setVisibility(View.GONE);
@@ -320,7 +319,7 @@ public class AdminDashboardFragment extends Fragment {
                         departmentInput.getText().toString(),
                         salary,
                         joiningDateInput.getText().toString(),
-                        new ApiDataService.EmployeeAddListener() {
+                        new AdminApiDataService.EmployeeAddListener() {
                             @Override
                             public void onSuccess(String message) {
                                 dialog.dismiss();
@@ -402,7 +401,7 @@ public class AdminDashboardFragment extends Fragment {
                     newDepartment,
                     newSalary,
                     newJoiningDate,
-                    new ApiDataService.EmployeeUpdateListener() {
+                    new AdminApiDataService.EmployeeUpdateListener() {
                         @Override
                         public void onSuccess(String message) {
                             dialog.dismiss();
@@ -439,7 +438,7 @@ public class AdminDashboardFragment extends Fragment {
                     int employeeId = Integer.parseInt(idText);
                     employeeDataService.deleteEmployee(
                             employeeId,
-                            new ApiDataService.EmployeeDeleteListener() {
+                            new AdminApiDataService.EmployeeDeleteListener() {
                                 @Override
                                 public void onSuccess(String message) {
                                     dialog.dismiss();
@@ -637,13 +636,13 @@ public class AdminDashboardFragment extends Fragment {
     }
     
     private void showSalaryIncrementStatus() { // show salary increment status for all employees with showIncrementDialog()
-        ApiDataService.getIncrementStatus(new ApiDataService.IncrementStatusListener() {
+        AdminApiDataService.getIncrementStatus(new AdminApiDataService.IncrementStatusListener() {
             @Override
-            public void onSuccess(List<ApiDataService.IncrementStatus> statusList) {
+            public void onSuccess(List<AdminApiDataService.IncrementStatus> statusList) {
                 StringBuilder messageBuilder = new StringBuilder();
                 final int[] eligibleCount = {0};
 
-                for (ApiDataService.IncrementStatus status : statusList) { // iterate through each employee
+                for (AdminApiDataService.IncrementStatus status : statusList) { // iterate through each employee
                     int daysUntilIncrement = 365 - (int)status.daysSince;
                     String formattedSalary = String.format("£%.2f", status.salary);
 

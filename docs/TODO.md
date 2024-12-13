@@ -15,8 +15,7 @@
 
 ---
 
-
-
+- [ ] log into user account
 - [ ] incorporate lecture about notifications in my app
 - [X] LocalDataService
 - [ ] user login; i need to workout why user's not logging in

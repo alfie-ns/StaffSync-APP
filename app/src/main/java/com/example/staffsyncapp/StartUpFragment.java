@@ -19,7 +19,7 @@ import com.example.staffsyncapp.databinding.StartUpFragmentBinding;
 public class StartUpFragment extends Fragment {
 
     private StartUpFragmentBinding binding;
-    private ApiDataService apiService;
+    private AdminApiDataService apiService;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -32,7 +32,7 @@ public class StartUpFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // initially confirm COMP2000 API service is healthy
-        apiService = new ApiDataService(requireContext());
+        apiService = new AdminApiDataService(requireContext());
         checkApiHealth();
 
         // set an onclick listener for the continue button to navigate to SecondFragment

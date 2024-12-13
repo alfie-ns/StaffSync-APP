@@ -45,7 +45,7 @@ import java.util.concurrent.TimeUnit;
 
  */
 
-public class ApiDataService {
+public class AdminApiDataService {
     private static final String TAG = "ApiDataService"; // log tag
     private static final String BASE_URL = "http://10.224.41.11/comp2000"; // api's base url
 
@@ -53,7 +53,7 @@ public class ApiDataService {
     private Context context; 
 
     // set context and initialise Volley request queue
-    public ApiDataService(Context context) {
+    public AdminApiDataService(Context context) {
         this.context = context;
         queue = Volley.newRequestQueue(context); // access Volley request queue
     }
