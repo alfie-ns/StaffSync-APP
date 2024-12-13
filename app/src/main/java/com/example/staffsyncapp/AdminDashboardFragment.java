@@ -420,6 +420,54 @@ public class AdminDashboardFragment extends Fragment {
         dialog.show();
     }
 
+    private void showEditEmployeeDialog() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        View dialogView = getLayoutInflater().inflate(R.layout.admin_edit_employee_id_dialog, null);
+        builder.setView(dialogView);
+
+        // get reference to input field
+        EditText employeeIdInput = dialogView.findViewById(R.id.employeeIdInput);
+
+        AlertDialog dialog = builder.create();
+
+        // handle find button click
+        dialogView.findViewById(R.id.findButton).setOnClickListener(v -> {
+            String idText = employeeIdInput.getText().toString().trim();
+            if (!idText.isEmpty()) {
+                try {
+                    int employeeId = Integer.parseInt(idText);
+                    employeeDataService.getEmployeeById(
+                            employeeId,
+                            new AdminApiDataService.EmployeeFetchListener() {
+                                @Override
+                                public void onEmployeesFetched(List<Employee> employees) {
+                                    if (employees != null && !employees.isEmpty()) {
+                                        dialog.dismiss();
+                                        showUpdateDialog(requireContext(), employees.get(0));
+                                    } else {
+                                        employeeIdInput.setError("Employee not found");
+                                    }
+                                }
+
+                                @Override
+                                public void onError(String error) {
+                                    Toast.makeText(requireContext(),
+                                            "Error: " + error,
+                                            Toast.LENGTH_SHORT).show();
+                                }
+                            }
+                    );
+                } catch (NumberFormatException e) {
+                    employeeIdInput.setError("Please enter a valid ID");
+                }
+            } else {
+                employeeIdInput.setError("ID is required");
+            }
+        });
+
+        dialog.show();
+    }
+
     private void showDeleteEmployeeDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         View dialogView = getLayoutInflater().inflate(R.layout.admin_delete_employee_dialog, null);
@@ -513,6 +561,11 @@ public class AdminDashboardFragment extends Fragment {
     //----------------------------------------------------------------------------------------------
     // UI setup
     private void setupClickListeners() {
+
+        // click listener to open edit employees via the respective id dialog
+        binding.pencilIcon.setOnClickListener(v -> {
+            showEditEmployeeDialog();
+        });
 
         binding.refreshEmployeesBtn.setOnClickListener(v -> {
             Log.d(TAG, "Refresh employees list requested");

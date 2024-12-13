@@ -280,6 +280,28 @@
                         app:iconGravity="textStart"
                         app:cornerRadius="8dp"
                         android:backgroundTint="@color/admin_deep"/>
+                    <!-- TODO [ ] enter ID then start editing the respective employee -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/pencilIcon"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="@string/edit_an_employee_btn"
+                        android:textAllCaps="false"
+                        app:icon="@drawable/pencil_icon"
+                        app:iconGravity="textStart"
+                        app:cornerRadius="8dp"
+                        android:backgroundTint="@color/admin_deep"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/deleteEmployeeBtn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/delete_employee"
+                        android:textAllCaps="false"
+                        app:cornerRadius="8dp"
+                        android:backgroundTint="@color/admin_deep"/>
 
                     <TextView
                         android:id="@+id/duplicateIdError"
@@ -472,16 +494,6 @@
                         app:iconGravity="textStart"
                         app:cornerRadius="8dp"
                         android:backgroundTint="@color/admin_deep"/>
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/deleteEmployeeBtn"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:text="@string/delete_employee"
-                        android:textAllCaps="false"
-                        app:cornerRadius="8dp"
-                        android:backgroundTint="@color/admin_medium"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
         </LinearLayout>

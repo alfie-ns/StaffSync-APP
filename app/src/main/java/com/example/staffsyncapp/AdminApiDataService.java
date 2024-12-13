@@ -1,6 +1,7 @@
 package com.example.staffsyncapp;
 
 // Android libraries for logging and context usage testing
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.icu.text.SimpleDateFormat;
 import android.util.Log;
@@ -335,7 +336,7 @@ public class AdminApiDataService {
                     listener.onSuccess("Employee deleted successfully");
                 },
                 error -> {
-                    String errorMsg = error.networkResponse != null ?
+                    @SuppressLint("DefaultLocale") String errorMsg = error.networkResponse != null ?
                             String.format("Network Error (Code %d)", error.networkResponse.statusCode) :
                             "Error deleting employee";
                     Log.e(TAG, errorMsg);
