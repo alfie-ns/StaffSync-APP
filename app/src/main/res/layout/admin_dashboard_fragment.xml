@@ -300,6 +300,8 @@
                         android:layout_marginTop="8dp"
                         android:text="@string/delete_employee"
                         android:textAllCaps="false"
+                        app:icon="@drawable/bin_icon"
+                        app:iconGravity="textStart"
                         app:cornerRadius="8dp"
                         android:backgroundTint="@color/admin_deep"/>
 
@@ -482,7 +484,7 @@
                                 android:textColor="@android:color/white"
                                 android:textSize="14sp"/>
                         </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView><!-- TODO Manage Leave & Delete Employee Buttons -->
+                    </com.google.android.material.card.MaterialCardView><!-- TODO [ ] Manage Leave & Delete Employee Buttons -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/manageLeaveBtn"
                         android:layout_width="match_parent"
