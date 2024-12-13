@@ -84,7 +84,7 @@ public class AdminDashboardFragment extends Fragment {
     // Employee search functionality variables
     private EditText searchEmployeeInput;
 
-    private com.example.staffsyncapp.EmployeeAdapter employeeAdapter;
+    private AdminEmployeeAdapter adminEmployeeAdapter;
 
     // employee list collapse functionality variables
     private boolean isEmployeeListExpanded = true;
@@ -173,8 +173,8 @@ public class AdminDashboardFragment extends Fragment {
     }
     
     private void handleNameSearch(String searchText) {
-        if (employeeAdapter != null) {
-            employeeAdapter.filter(searchText);
+        if (adminEmployeeAdapter != null) {
+            adminEmployeeAdapter.filter(searchText);
         }
     }
     
@@ -191,10 +191,10 @@ public class AdminDashboardFragment extends Fragment {
     //----------------------------------------------------------------------------------------------
     // Employee management
     private void setupEmployeeAdapter(List<Employee> employees) {
-        employeeAdapter = new EmployeeAdapter(employees);
+        adminEmployeeAdapter = new AdminEmployeeAdapter(employees);
 
         // Set up the delete listener; 
-        employeeAdapter.setOnEmployeeDeleteListener(employee -> {
+        adminEmployeeAdapter.setOnEmployeeDeleteListener(employee -> {
             employeeDataService.deleteEmployee(
                     employee.getId(),
                     new AdminApiDataService.EmployeeDeleteListener() {
@@ -217,11 +217,11 @@ public class AdminDashboardFragment extends Fragment {
             );
         });
 
-        employeeAdapter.setOnEmployeeUpdateListener(employee -> {
+        adminEmployeeAdapter.setOnEmployeeUpdateListener(employee -> {
             showUpdateDialog(requireContext(), employee);
         });
 
-        binding.recyclerViewEmployees.setAdapter(employeeAdapter);
+        binding.recyclerViewEmployees.setAdapter(adminEmployeeAdapter);
     }
     
     private void fetchAndShowEmployees() {
@@ -263,8 +263,8 @@ public class AdminDashboardFragment extends Fragment {
             public void onEmployeesFetched(List<Employee> employees) {
                 binding.progressBar.setVisibility(View.GONE);
                 if (employees != null && !employees.isEmpty()) {
-                    if (employeeAdapter != null) {
-                        employeeAdapter.updateDisplayList(employees); // update existing adapter
+                    if (adminEmployeeAdapter != null) {
+                        adminEmployeeAdapter.updateDisplayList(employees); // update existing adapter
                     } else {
                         setupEmployeeAdapter(employees); // create new adapter if none exists
                     }

@@ -16,7 +16,7 @@ import androidx.navigation.fragment.NavHostFragment;
 // define databinding for start-up fragment
 import com.example.staffsyncapp.databinding.StartUpFragmentBinding;
 
-public class StartUpFragment extends Fragment {
+public class BaseStartUpFragment extends Fragment {
 
     private StartUpFragmentBinding binding;
     private AdminApiDataService apiService;
@@ -37,7 +37,7 @@ public class StartUpFragment extends Fragment {
 
         // set an onclick listener for the continue button to navigate to SecondFragment
         binding.continueButton.setOnClickListener(v ->
-                NavHostFragment.findNavController(StartUpFragment.this)
+                NavHostFragment.findNavController(BaseStartUpFragment.this)
                         .navigate(R.id.action_FirstFragment_to_SecondFragment)
         );
     }

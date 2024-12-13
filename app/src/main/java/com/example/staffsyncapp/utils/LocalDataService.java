@@ -86,7 +86,7 @@
                     "email_notifications INTEGER DEFAULT 1," +
                     "FOREIGN KEY(user_id) REFERENCES users(id))");
 
-            //5- Notification log; store all notifications sent to users
+            // 5- Notification log; store all notifications sent to users
             db.execSQL("CREATE TABLE notification_log (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "user_id INTEGER," +
@@ -281,5 +281,5 @@
             ContentValues values = new ContentValues();
             values.put("is_locked", 1); // set is_locked to 1(success)
             return db.update("users", values, "email = ?", new String[]{email}) > 0;
-    }
+        }
     }

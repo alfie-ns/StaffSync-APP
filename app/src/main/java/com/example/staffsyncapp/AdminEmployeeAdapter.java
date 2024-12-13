@@ -7,7 +7,6 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.util.Log;
-import android.widget.Toast;
 
 // RecyclerView libraries for displaying employee data
 import androidx.annotation.NonNull;
@@ -25,7 +24,7 @@ import java.util.Locale;
 
 //import javax.swing.text.html.ImageView;
 
-public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHolder> {
+public class AdminEmployeeAdapter extends RecyclerView.Adapter<AdminEmployeeAdapter.ViewHolder> {
     // EmployeeAdapter class for displaying employee data in a RecyclerView, dynamically; going to be used elsewhere in the future
     private static final String TAG = "EmployeeAdapter";
     private final List<Employee> employees;
@@ -36,7 +35,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
     private OnEmployeeDeleteListener deleteListener;
     private OnEmployeeUpdateListener updateListener;
 
-    public EmployeeAdapter(List<Employee> employees) { // list constructor
+    public AdminEmployeeAdapter(List<Employee> employees) { // list constructor
         // create new lists to avoid reference issues
         this.employees = new ArrayList<>(employees);
         this.employeesFull = new ArrayList<>(employees);

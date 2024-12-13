@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.text.method.PasswordTransformationMethod;
-import android.graphics.Color;
 import android.content.ContentValues;
 
 // additional AndroidX imports for fragment navigation and annotations
@@ -23,7 +22,7 @@ import com.example.staffsyncapp.utils.LocalDataService;
 // project-specific utility class for location tracking [ ]
 
 // LoginFragment: extend/inherit general Android Fragment functionality
-public class LoginFragment extends Fragment { // core tracking variables for security measures
+public class BaseLoginFragment extends Fragment { // core tracking variables for security measures
     private LoginFragmentBinding binding;
     private static final String TAG = "LoginFragment";
     private boolean isPasswordVisible = false; // initialise password visibility state as non visible
@@ -104,7 +103,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
         binding.backArrow.setOnClickListener(v -> {
             Log.d(TAG, "Back arrow clicked");
             try {
-                NavHostFragment.findNavController(LoginFragment.this)
+                NavHostFragment.findNavController(BaseLoginFragment.this)
                         .navigate(R.id.action_SecondFragment_to_FirstFragment);
                 Log.d(TAG, "Navigation executed");
             } catch (Exception e) {
@@ -200,7 +199,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
             // admin login successful
             Log.d(TAG, "Admin login successful");
             try {
-                NavHostFragment.findNavController(LoginFragment.this)
+                NavHostFragment.findNavController(BaseLoginFragment.this)
                         .navigate(R.id.action_LoginFragment_to_AdminDashboardFragment);
             } catch (Exception e) {
                 Log.e(TAG, "Navigation to admin dashboard failed", e);
