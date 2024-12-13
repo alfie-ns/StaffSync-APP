@@ -42,7 +42,7 @@ public class StartUpFragment extends Fragment {
         );
     }
 
-    private void checkApiHealth() {
+    private void checkApiHealth() { // function to use comp2000 health API endpoint
         apiService.checkHealth(response -> {
             updateApiStatus("API is working".equals(response), response);
         });

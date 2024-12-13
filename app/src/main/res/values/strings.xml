@@ -46,4 +46,9 @@
     <string name="update_employee">Update employee</string>
     <string name="save">Save</string>
     <string name="enter_employee_id">Enter Employee ID</string>
+    <string name="Employees_text_resource">Employees</string>
+    <string name="add_new_employee_admin_dashboard">Add New Employee</string>
+    <string name="pending_requests">Pending Requests</string>
+    <string name="total_employees">Total Employees</string>
+    <string name="logout_admin_dashboard">Logout</string>
 </resources>
