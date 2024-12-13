@@ -16,6 +16,7 @@
 ---
 
 - [ ] log into user account
+- [X] get 2000 last lecture checklist
 - [ ] incorporate lecture about notifications in my app
 - [X] LocalDataService
 - [ ] user login; i need to workout why user's not logging in
