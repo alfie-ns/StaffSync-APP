@@ -33,7 +33,11 @@ get_commit_details() {
     read custom_message
     echo >&2
 
-    echo "${importance_text}: ${custom_message}"
+    if [ "$importance_text" = "Trivial" ]; then
+        echo "${importance_text}"
+    else
+        echo "${importance_text}: ${custom_message}"
+    fi
 }
 
 # Function to selectively add files to staging

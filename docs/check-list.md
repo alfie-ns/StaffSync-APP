@@ -8,15 +8,15 @@ This checklist is to help you work out if you have included everything in your s
 
 ### [ ] Scenario-Based
 
-- Your coursework should be based on the scenario provided in the appendix in the assessment brief.
+- [ ] Your coursework should be based on the scenario provided in the appendix in the assessment brief.
 
 ---
 
 ### [ ] Design and Storyboard
 
-- You may either use the final app design created in CW1 or create a new design that includes all app interfaces if you’ve made updates.
-- Clearly explain your design choices in the report, linking them to the design principles covered in the lectures.
-- Your storyboard should accurately illustrate the functionality of the final solution being submitted.
+- [X] You may either use the final app design created in CW1 or create a new design that includes all app interfaces if you’ve made updates.
+- [ ] Clearly explain your design choices in the report, linking them to the design principles covered in the lectures.
+- [ ] Your storyboard should accurately illustrate the functionality of the final solution being submitted.
 
 ---
 
@@ -29,7 +29,7 @@ This checklist is to help you work out if you have included everything in your s
 ### [ ] API Integration
 
 - Connect your app to the provided API to retrieve and display data. Ensure the following functionalities:
-  - **Admin Users**: Perform all actions for managing all employees.
+  - **[X] Admin Users**: Perform all actions for managing all employees.
   - **Employee Users**: View their details and edit their names.
   - **Leave Management**: Leave should be approved by admin before it is updated on the main database via API.
 
@@ -37,7 +37,8 @@ This checklist is to help you work out if you have included everything in your s
 
 ### [ ] Local Database
 
-- Use SQLite for storing login information and other relevant data locally.
+- [X] Use SQLite for storing login information and other relevant data locally.
+
 - Clearly separate functionalities for different user types in the application.
 
 ---
