@@ -22,7 +22,7 @@ import com.example.staffsyncapp.utils.LocalDataService;
 // project-specific utility class for location tracking [ ]
 
 // LoginFragment: extend/inherit general Android Fragment functionality
-public class BaseLoginFragment extends Fragment { // core tracking variables for security measures
+public class LoginFragment extends Fragment { // core tracking variables for security measures
     private LoginFragmentBinding binding;
     private static final String TAG = "LoginFragment";
     private boolean isPasswordVisible = false; // initialise password visibility state as non visible
@@ -103,7 +103,7 @@ public class BaseLoginFragment extends Fragment { // core tracking variables for
         binding.backArrow.setOnClickListener(v -> {
             Log.d(TAG, "Back arrow clicked");
             try {
-                NavHostFragment.findNavController(BaseLoginFragment.this)
+                NavHostFragment.findNavController(LoginFragment.this)
                         .navigate(R.id.action_SecondFragment_to_FirstFragment);
                 Log.d(TAG, "Navigation executed");
             } catch (Exception e) {
@@ -183,10 +183,10 @@ public class BaseLoginFragment extends Fragment { // core tracking variables for
         return !password.isEmpty();
     }
 
-    private void attemptLogin() { // attempt login function
+    private void attemptLogin() {
         hideAllErrorMessages();
 
-        if (!validateEmail() || !validatePassword()) { // immediately exit if email or password is invalid
+        if (!validateEmail() || !validatePassword()) {
             return;
         }
 
@@ -195,17 +195,27 @@ public class BaseLoginFragment extends Fragment { // core tracking variables for
 
         LocalDataService dbHelper = new LocalDataService(requireContext());
 
+        // 1- check if it's an admin login
         if (dbHelper.verifyAdminLogin(email, password)) {
-            // admin login successful
             Log.d(TAG, "Admin login successful");
             try {
-                NavHostFragment.findNavController(BaseLoginFragment.this)
+                NavHostFragment.findNavController(LoginFragment.this)
                         .navigate(R.id.action_LoginFragment_to_AdminDashboardFragment);
             } catch (Exception e) {
                 Log.e(TAG, "Navigation to admin dashboard failed", e);
             }
-        } else {
-            // login failed
+        }
+        // 2- not admin, try user login
+        else if (dbHelper.verifyUserLogin(email, password)) {
+            Log.d(TAG, "User login successful");
+            try {
+                NavHostFragment.findNavController(LoginFragment.this)
+                        .navigate(R.id.action_LoginFragment_to_UserMainFragment);
+            } catch (Exception e) {
+                Log.e(TAG, "Navigation to user dashboard failed", e);
+            }
+        }
+        else {
             Log.d(TAG, "Login failed");
             binding.incorrectLoginAlert.setVisibility(View.VISIBLE);
         }

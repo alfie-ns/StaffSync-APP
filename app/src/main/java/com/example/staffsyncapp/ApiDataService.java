@@ -46,7 +46,7 @@ import java.util.concurrent.TimeUnit;
 
  */
 
-public class AdminApiDataService {
+public class ApiDataService {
     private static final String TAG = "ApiDataService"; // log tag
     private static final String BASE_URL = "http://10.224.41.11/comp2000"; // api's base url
 
@@ -54,7 +54,7 @@ public class AdminApiDataService {
     private Context context; 
 
     // set context and initialise Volley request queue
-    public AdminApiDataService(Context context) {
+    public ApiDataService(Context context) {
         this.context = context;
         queue = Volley.newRequestQueue(context); // access Volley request queue
     }
@@ -359,9 +359,9 @@ public class AdminApiDataService {
                 Request.Method.GET,
                 url,
                 null,
-                response -> callback.onResponse("API is working"),
+                response -> callback.onResponse("API is working"), // success callback
                 error -> callback.onResponse(error.getMessage() != null ?
-                        error.getMessage() : "Cannot connect to COMP2000")
+                        error.getMessage() : "Cannot connect to COMP2000") // failure callback
         );
         request.setShouldCache(false);
         queue.add(request);

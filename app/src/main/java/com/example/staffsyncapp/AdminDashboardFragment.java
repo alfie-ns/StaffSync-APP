@@ -9,7 +9,7 @@ import android.content.pm.PackageManager;
 import android.view.LayoutInflater;
 import android.widget.TextView;
 
-import com.example.staffsyncapp.utils.AdminNotificationService;
+import com.example.staffsyncapp.utils.NotificationService;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -81,7 +81,7 @@ public class AdminDashboardFragment extends Fragment {
     // Core variables
     private AdminDashboardFragmentBinding binding;
     private LocalDataService dbHelper;
-    private AdminApiDataService employeeDataService;
+    private ApiDataService employeeDataService;
     private ProgressBar progressBar;
     private int totalEmployeeCount = 0;
 
@@ -98,7 +98,7 @@ public class AdminDashboardFragment extends Fragment {
 
     private static final String HOLIDAY_NOTIFICATIONS_KEY = "holiday_notifications";
     private static final String EMAIL_NOTIFICATIONS_KEY = "email_notifications";
-    private AdminNotificationService notificationService;
+    private NotificationService notificationService;
 
     // shared preferences' used to store the toggle state
     private SharedPreferences sharedPreferences;
@@ -122,7 +122,7 @@ public class AdminDashboardFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) { // set up binding; database and API services
         binding = AdminDashboardFragmentBinding.inflate(inflater, container, false);
         dbHelper = new LocalDataService(requireContext());
-        employeeDataService = new AdminApiDataService(requireContext());
+        employeeDataService = new ApiDataService(requireContext());
         return binding.getRoot();
     }
     @Override // override to initialise UI components and set up listeners
@@ -148,7 +148,7 @@ public class AdminDashboardFragment extends Fragment {
         setupClickListeners(); // check each click listener
         setupSearchFunctionality(); // setup employee list search functionality
 
-        notificationService = new AdminNotificationService(requireContext()); // setup notification service
+        notificationService = new NotificationService(requireContext()); // setup notification service
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) { // check for notification permissions
             if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS)
@@ -216,7 +216,7 @@ public class AdminDashboardFragment extends Fragment {
         adminEmployeeAdapter.setOnEmployeeDeleteListener(employee -> {
             employeeDataService.deleteEmployee(
                     employee.getId(),
-                    new AdminApiDataService.EmployeeDeleteListener() {
+                    new ApiDataService.EmployeeDeleteListener() {
                         @Override
                         public void onSuccess(String message) {
                             // refresh the list after deletion
@@ -244,7 +244,7 @@ public class AdminDashboardFragment extends Fragment {
     }
     
     private void fetchAndShowEmployees() {
-        AdminApiDataService.getAllEmployees(new AdminApiDataService.EmployeeFetchListener() {
+        ApiDataService.getAllEmployees(new ApiDataService.EmployeeFetchListener() {
             @Override
             public void onEmployeesFetched(List<Employee> employees) {
                 if (getContext() == null) return;
@@ -277,7 +277,7 @@ public class AdminDashboardFragment extends Fragment {
         binding.progressBar.setVisibility(View.VISIBLE); // show loading indicator
 
         // Create interface to handle the response
-        AdminApiDataService.EmployeeFetchListener listener = new AdminApiDataService.EmployeeFetchListener() {
+        ApiDataService.EmployeeFetchListener listener = new ApiDataService.EmployeeFetchListener() {
             @Override
             public void onEmployeesFetched(List<Employee> employees) {
                 binding.progressBar.setVisibility(View.GONE);
@@ -338,7 +338,7 @@ public class AdminDashboardFragment extends Fragment {
                         departmentInput.getText().toString(),
                         salary,
                         joiningDateInput.getText().toString(),
-                        new AdminApiDataService.EmployeeAddListener() {
+                        new ApiDataService.EmployeeAddListener() {
                             @Override
                             public void onSuccess(String message) {
                                 dialog.dismiss();
@@ -420,7 +420,7 @@ public class AdminDashboardFragment extends Fragment {
                     newDepartment,
                     newSalary,
                     newJoiningDate,
-                    new AdminApiDataService.EmployeeUpdateListener() {
+                    new ApiDataService.EmployeeUpdateListener() {
                         @Override
                         public void onSuccess(String message) {
                             dialog.dismiss();
@@ -457,7 +457,7 @@ public class AdminDashboardFragment extends Fragment {
                     int employeeId = Integer.parseInt(idText);
                     employeeDataService.getEmployeeById(
                             employeeId,
-                            new AdminApiDataService.EmployeeFetchListener() {
+                            new ApiDataService.EmployeeFetchListener() {
                                 @Override
                                 public void onEmployeesFetched(List<Employee> employees) {
                                     if (employees != null && !employees.isEmpty()) {
@@ -505,7 +505,7 @@ public class AdminDashboardFragment extends Fragment {
                     int employeeId = Integer.parseInt(idText);
                     employeeDataService.deleteEmployee(
                             employeeId,
-                            new AdminApiDataService.EmployeeDeleteListener() {
+                            new ApiDataService.EmployeeDeleteListener() {
                                 @Override
                                 public void onSuccess(String message) {
                                     dialog.dismiss();
@@ -756,13 +756,13 @@ public class AdminDashboardFragment extends Fragment {
     }
     
     private void showSalaryIncrementStatus() { // show salary increment status for all employees with showIncrementDialog()
-        AdminApiDataService.getIncrementStatus(new AdminApiDataService.IncrementStatusListener() {
+        ApiDataService.getIncrementStatus(new ApiDataService.IncrementStatusListener() {
             @Override
-            public void onSuccess(List<AdminApiDataService.IncrementStatus> statusList) {
+            public void onSuccess(List<ApiDataService.IncrementStatus> statusList) {
                 StringBuilder messageBuilder = new StringBuilder();
                 final int[] eligibleCount = {0};
 
-                for (AdminApiDataService.IncrementStatus status : statusList) { // iterate through each employee
+                for (ApiDataService.IncrementStatus status : statusList) { // iterate through each employee
                     int daysUntilIncrement = 365 - (int)status.daysSince;
                     String formattedSalary = String.format("£%.2f", status.salary);
 

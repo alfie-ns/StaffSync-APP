@@ -16,10 +16,10 @@ import androidx.navigation.fragment.NavHostFragment;
 // define databinding for start-up fragment
 import com.example.staffsyncapp.databinding.StartUpFragmentBinding;
 
-public class BaseStartUpFragment extends Fragment {
+public class StartUpFragment extends Fragment {
 
     private StartUpFragmentBinding binding;
-    private AdminApiDataService apiService;
+    private ApiDataService apiService;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -32,12 +32,12 @@ public class BaseStartUpFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         // initially confirm COMP2000 API service is healthy
-        apiService = new AdminApiDataService(requireContext());
+        apiService = new ApiDataService(requireContext());
         checkApiHealth();
 
         // set an onclick listener for the continue button to navigate to SecondFragment
         binding.continueButton.setOnClickListener(v ->
-                NavHostFragment.findNavController(BaseStartUpFragment.this)
+                NavHostFragment.findNavController(StartUpFragment.this)
                         .navigate(R.id.action_FirstFragment_to_SecondFragment)
         );
     }
@@ -65,7 +65,7 @@ public class BaseStartUpFragment extends Fragment {
         }
     }
 
-    @Override // clean up binding object
+    @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;

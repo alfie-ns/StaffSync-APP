@@ -2,7 +2,7 @@
 
 - [ ] talk about the singleton pattern learnt in week11
 - [ ] thread-safe initialisation happens if the synchronized keyword is used
-- [ ] get delete employee button working; pass the id to delete any employee regardless of where it is in the list
+- [X] get delete employee button working; pass the id to delete any employee regardless of where it is in the list
 - [X] reinstate bare notification system
 - [ ] implement the notification system i.e. holiday requests, employee detail changes, salary increments, new employees, employee departures, employee birthdays, employee anniversaries, employee promotions/demotions, anomaly detection alerts
 
@@ -17,7 +17,16 @@
 
 ---
 
-- [ ] log into user account
+### User
+
+- [X] log into user account
+- [ ] fix logout button in different fragments
+- [ ] get full user features working
+
+---
+
+
+
 - [X] get 2000 last lecture checklist
 - [ ] incorporate lecture about notifications in my app
 - [X] LocalDataService

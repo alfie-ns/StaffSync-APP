@@ -1,7 +1,5 @@
     package com.example.staffsyncapp.utils;
 
-    import static android.content.ContentValues.TAG;
-
     import android.content.ContentValues;
     import android.content.Context;
     import android.database.Cursor;
@@ -14,17 +12,41 @@
     import java.util.Date;
     import java.util.Locale;
 
+    /**
+     * Database service handling local data storage and authentication for StaffSync.
+     * Manages user accounts, employee records, leave requests and notifications using SQLite.
+     * 
+     * features:
+     * - User authentication and session management
+     * - Employee details and salary tracking
+     * - Leave request processing
+     * - Notification handling
+     * - Automated salary increment management
+     *
+     * todo:
+     * - [ ] leave request processing
+     * - [ ] notification handling from user and admin
+     * - [ ] automated salary increment management
+     * - [ ] user account management
+     * 
+    */
+
     public class LocalDataService extends SQLiteOpenHelper {
 
         // 1. Constants and Variables ----------------------------------------------
         private static final String DATABASE_NAME = "staffsync.db";
         private static final int DATABASE_VERSION = 1; // starting db version
         private static final String TAG = "DatabaseHelper";
+
         private static Boolean isLoggedIn = false;  // tracks login state
+
         private static final String PREFS_NAME = "StaffSyncPrefs";
         private static final String KEY_ADMIN_LOGGED_IN = "admin_logged_in";
+
         private final Context context;
         private final SQLiteDatabase db;  // thread safety
+
+        private static final String KEY_USER_LOGGED_IN = "user_logged_in";
 
         // 2. Constructor and Database Creation ------------------------------------
         public LocalDataService(Context context) {
@@ -182,6 +204,29 @@
             }
         }
 
+        public boolean verifyUserLogin(String email, String password) {
+            Cursor cursor = db.query(
+                    "users",
+                    new String[]{"password", "is_admin"},
+                    "email = ?",
+                    new String[]{email},
+                    null, null, null
+            );
+
+            try {
+                if (cursor.moveToFirst()) {
+                    String storedPass = cursor.getString(0);
+                    int isAdmin = cursor.getInt(1);
+
+                    // check if user is not admin and password matches
+                    return isAdmin == 0 && hashPassword(password).equals(storedPass);
+                }
+                return false;
+            } finally {
+                cursor.close();
+            }
+        }
+
         public String hashPassword(String password) { // public password hashing method
             return Base64.encodeToString(password.getBytes(), Base64.DEFAULT);
         }
@@ -269,6 +314,159 @@
 
         private String getCurrentDate() {
             return new SimpleDateFormat("yyyy-MM-dd", Locale.UK).format(new Date());
+        }
+
+        // 3. Leave Request Management Methods -------------------------------------------
+
+        public long submitLeaveRequest(int employeeId, String startDate, String endDate, String reason) {
+            // First check if employee has enough leave balance
+            if (!hasEnoughLeaveBalance(employeeId, startDate, endDate)) {
+                return -1; // Insufficient leave balance
+            }
+
+            ContentValues values = new ContentValues();
+            values.put("employee_id", employeeId);
+            values.put("start_date", startDate);
+            values.put("end_date", endDate);
+            values.put("reason", reason);
+            values.put("status", "pending");
+            values.put("days_requested", calculateDaysRequested(startDate, endDate));
+
+            return db.insert("leave_requests", null, values);
+        }
+
+        private boolean hasEnoughLeaveBalance(int employeeId, String startDate, String endDate) {
+            Cursor cursor = db.query(
+                    "employee_details",
+                    new String[]{"annual_leave_allowance", "used_leave"},
+                    "user_id = ?",
+                    new String[]{String.valueOf(employeeId)},
+                    null, null, null
+            );
+
+            if (cursor.moveToFirst()) {
+                int allowance = cursor.getInt(0);
+                int used = cursor.getInt(1);
+                int requested = calculateDaysRequested(startDate, endDate);
+                cursor.close();
+                return (allowance - used) >= requested;
+            }
+            cursor.close();
+            return false;
+        }
+
+        private int calculateDaysRequested(String startDate, String endDate) {
+            try {
+                SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
+                Date start = format.parse(startDate);
+                Date end = format.parse(endDate);
+                return (int) ((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+            } catch (Exception e) {
+                Log.e(TAG, "Error calculating days: " + e.getMessage());
+                return 0;
+            }
+        }
+
+        public Cursor getUserLeaveRequests(int employeeId) {
+            return db.query(
+                    "leave_requests",
+                    null,
+                    "employee_id = ?",
+                    new String[]{String.valueOf(employeeId)},
+                    null, null,
+                    "created_at DESC"
+            );
+        }
+
+        public Cursor getPendingLeaveRequests() {
+            return db.query(
+                    "leave_requests",
+                    null,
+                    "status = ?",
+                    new String[]{"pending"},
+                    null, null,
+                    "created_at ASC"
+            );
+        }
+
+        public boolean updateLeaveRequestStatus(int requestId, String status, String adminResponse) {
+            db.beginTransaction();
+            try {
+                // Get request details first
+                Cursor request = db.query(
+                        "leave_requests",
+                        new String[]{"employee_id", "days_requested", "status"},
+                        "id = ?",
+                        new String[]{String.valueOf(requestId)},
+                        null, null, null
+                );
+
+                if (!request.moveToFirst()) {
+                    request.close();
+                    return false;
+                }
+
+                // Only update used_leave if request is being approved
+                if (status.equals("approved") && !request.getString(2).equals("approved")) {
+                    int employeeId = request.getInt(0);
+                    int daysRequested = request.getInt(1);
+
+                    // Update employee's used leave
+                    Cursor employee = db.query(
+                            "employee_details",
+                            new String[]{"used_leave"},
+                            "user_id = ?",
+                            new String[]{String.valueOf(employeeId)},
+                            null, null, null
+                    );
+
+                    if (employee.moveToFirst()) {
+                        int currentUsedLeave = employee.getInt(0);
+                        ContentValues employeeValues = new ContentValues();
+                        employeeValues.put("used_leave", currentUsedLeave + daysRequested);
+                        db.update("employee_details", employeeValues,
+                                "user_id = ?", new String[]{String.valueOf(employeeId)});
+                    }
+                    employee.close();
+                }
+
+                // Update request status
+                ContentValues values = new ContentValues();
+                values.put("status", status);
+                values.put("admin_response", adminResponse);
+                values.put("updated_at", getCurrentDate());
+
+                db.update("leave_requests", values,
+                        "id = ?", new String[]{String.valueOf(requestId)});
+
+                request.close();
+                db.setTransactionSuccessful();
+                return true;
+            } finally {
+                db.endTransaction();
+            }
+        }
+
+        public boolean isUserLoggedIn() {
+            return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    .getBoolean(KEY_USER_LOGGED_IN, false);
+        }
+
+        public void setUserLoggedIn(boolean status) {
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    .edit()
+                    .putBoolean(KEY_USER_LOGGED_IN, status)
+                    .apply();
+            Log.d(TAG, "User login status updated: " + status);
+        }
+
+        public void logoutUser() {
+            setUserLoggedIn(false);
+            context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+                    .edit()
+                    .remove(KEY_USER_LOGGED_IN)
+                    .apply();
+            Log.d(TAG, "User logged out and session cleared");
         }
 
         public boolean unlockUserAccount(String email) { // account management methods

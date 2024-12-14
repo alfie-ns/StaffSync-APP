@@ -17,7 +17,7 @@ import androidx.core.app.NotificationCompat;
  * - System notifications are default priority, non-urgent notifications.
  */
 
-public class AdminNotificationService {
+public class NotificationService {
     private static final String TAG = "NotificationService";
     private final Context context;
     private final NotificationManager notificationManager;
@@ -26,7 +26,7 @@ public class AdminNotificationService {
     private static final String SYSTEM_CHANNEL = "system_channel";
     private static final int NOTIFICATION_ID = 1;
 
-    public AdminNotificationService(Context context) {
+    public NotificationService(Context context) {
         this.context = context;
         this.notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         createNotificationChannels();

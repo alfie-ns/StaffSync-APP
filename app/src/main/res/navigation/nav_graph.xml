@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="com.example.staffsyncapp.BaseStartUpFragment"
+        android:name="com.example.staffsyncapp.StartUpFragment"
         tools:layout="@layout/start_up_fragment">
         <action
             android:id="@+id/action_FirstFragment_to_SecondFragment"
@@ -16,7 +16,7 @@
 
     <fragment
         android:id="@+id/SecondFragment"
-        android:name="com.example.staffsyncapp.BaseLoginFragment"
+        android:name="com.example.staffsyncapp.LoginFragment"
         tools:layout="@layout/login_fragment">
         <action
             android:id="@+id/action_SecondFragment_to_FirstFragment"
@@ -24,6 +24,9 @@
         <action
             android:id="@+id/action_LoginFragment_to_AdminDashboardFragment"
             app:destination="@id/AdminDashboardFragment" />
+        <action
+            android:id="@+id/action_LoginFragment_to_UserMainFragment"
+            app:destination="@id/user_navigation_home" />
     </fragment>
 
     <fragment
@@ -34,20 +37,41 @@
             android:id="@+id/action_AdminDashboardFragment_to_SecondFragment"
             app:destination="@id/SecondFragment"/>
     </fragment>
+
     <!-- user fragments -->
     <fragment
         android:id="@+id/user_navigation_home"
         android:name="com.example.staffsyncapp.UserMainFragment"
-        tools:layout="@layout/user_main_body_fragment" />
+        tools:layout="@layout/user_main_body_fragment">
+        <action
+            android:id="@+id/action_UserMainFragment_to_UserProfileFragment"
+            app:destination="@id/user_navigation_profile" />
+        <action
+            android:id="@+id/action_UserMainFragment_to_UserSettingsFragment"
+            app:destination="@id/user_navigation_settings" />
+        <action
+            android:id="@+id/action_UserMainFragment_to_SecondFragment"
+            app:destination="@id/SecondFragment"
+            app:popUpTo="@id/SecondFragment"
+            app:popUpToInclusive="true" />
+    </fragment>
 
     <fragment
         android:id="@+id/user_navigation_profile"
         android:name="com.example.staffsyncapp.UserProfileFragment"
-        tools:layout="@layout/user_profile_fragment" />
+        tools:layout="@layout/user_profile_fragment">
+        <action
+            android:id="@+id/action_UserProfileFragment_to_UserMainFragment"
+            app:destination="@id/user_navigation_home" />
+    </fragment>
 
     <fragment
         android:id="@+id/user_navigation_settings"
         android:name="com.example.staffsyncapp.UserSettingsFragment"
-        tools:layout="@layout/user_settings_fragment" />
+        tools:layout="@layout/user_settings_fragment">
+        <action
+            android:id="@+id/action_UserSettingsFragment_to_UserMainFragment"
+            app:destination="@id/user_navigation_home" />
+    </fragment>
 
 </navigation>
