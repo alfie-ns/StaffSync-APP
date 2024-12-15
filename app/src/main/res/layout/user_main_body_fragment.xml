@@ -20,19 +20,19 @@
         android:layout_width="32dp"
         android:layout_height="32dp"
         android:layout_marginStart="16dp"
-        android:src="@drawable/user_icon"
+        android:src="@drawable/home_icon"
         app:tint="@android:color/white"
         app:layout_constraintBottom_toBottomOf="@id/header_bar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/header_bar" />
-    <!-- textview displaying employee name, inbetween back-arrow icon and settings icon -->
+    <!-- textview displaying employee name, inbetween back-arrow icon -->
     <TextView
         android:id="@+id/employee_name"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="48dp"
-        android:text="Sarah Johnson"
+        android:text="Home"
         android:textColor="@android:color/white"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@id/header_bar"
@@ -45,8 +45,6 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginEnd="4dp"
-        android:padding="12dp"
-        android:src="@drawable/user_settings_icon"
         app:tint="@android:color/white"
         android:clickable="true"
         android:focusable="true"

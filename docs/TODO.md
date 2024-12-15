@@ -20,12 +20,12 @@
 ### User
 
 - [X] log into user account
-- [ ] fix logout button in different fragments
+- [X] bottom nav bar
+- [ ] resize icons to be identical sizes across all user fragments
+- [X] fix logout button in settomgs fragment
 - [ ] get full user features working
 
 ---
-
-
 
 - [X] get 2000 last lecture checklist
 - [ ] incorporate lecture about notifications in my app

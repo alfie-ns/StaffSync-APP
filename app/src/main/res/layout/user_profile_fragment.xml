@@ -22,12 +22,11 @@
         android:layout_height="48dp"
         android:layout_marginStart="4dp"
         android:padding="12dp"
-        android:src="@drawable/back_arrow_icon"
+        android:src="@drawable/user_icon"
         app:tint="@android:color/white"
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="go back"
         app:layout_constraintBottom_toBottomOf="@id/header_bar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/header_bar" />
@@ -85,10 +84,10 @@
                         android:id="@+id/employee_id"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/black"
                         android:layout_marginBottom="16dp"
-                        tools:text="EMP123"/>
+                        android:textColor="@android:color/black"
+                        android:textSize="16sp"
+                        tools:text="EMP123" />
 
                     <!-- current info section; displays user details -->
                     <TextView
@@ -235,5 +234,15 @@
             </androidx.cardview.widget.CardView>
         </LinearLayout>
     </ScrollView>
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="?android:attr/windowBackground"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

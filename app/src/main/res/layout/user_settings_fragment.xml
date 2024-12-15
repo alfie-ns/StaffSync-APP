@@ -14,14 +14,14 @@
         android:layout_height="56dp"
         android:background="@color/teal_deep"
         app:layout_constraintTop_toTopOf="parent" />
-
+    <!-- using nav bar, back arrow not needed, thus change to respective fragment icon; minimal changes to xml -->
     <ImageView
         android:id="@+id/back_arrow"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginStart="4dp"
         android:padding="12dp"
-        android:src="@drawable/back_arrow_icon"
+        android:src="@drawable/user_settings_icon"
         app:tint="@android:color/white"
         android:clickable="true"
         android:focusable="true"

@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavController;
 import androidx.navigation.Navigation;
 import com.example.staffsyncapp.databinding.UserMainBodyFragmentBinding;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.example.staffsyncapp.utils.NavigationManager;
 
 /**
  * TODO
@@ -19,6 +19,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
  **/
 public class UserMainFragment extends Fragment {
     private UserMainBodyFragmentBinding binding;
+    private NavigationManager navigationManager;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -29,31 +30,8 @@ public class UserMainFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        setupBottomNavigation();
-    }
-
-    private void setupBottomNavigation() {
-        BottomNavigationView bottomNav = binding.bottomNavigation;
-
-        // Remove the inflateMenu call since it's already set in XML
-        bottomNav.setOnItemSelectedListener(item -> {
-            int itemId = item.getItemId();
-
-            if (itemId == R.id.navigation_home) {
-                // Already on home, do nothing or refresh
-                return true;
-            }
-            else if (itemId == R.id.navigation_profile) {
-                navigateToFragment(R.id.action_UserMainFragment_to_UserProfileFragment);
-                return true;
-            }
-            else if (itemId == R.id.navigation_settings) {
-                navigateToFragment(R.id.action_UserMainFragment_to_UserSettingsFragment);
-                return true;
-            }
-
-            return false;
-        });
+        navigationManager = new NavigationManager(this, binding.bottomNavigation);
+        binding.bottomNavigation.setSelectedItemId(R.id.navigation_home);
     }
 
     /**
@@ -71,6 +49,7 @@ public class UserMainFragment extends Fragment {
             e.printStackTrace();
         }
     }
+
 
     @Override
     public void onDestroyView() {

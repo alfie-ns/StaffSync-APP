@@ -56,6 +56,7 @@
             app:popUpToInclusive="true" />
     </fragment>
 
+
     <fragment
         android:id="@+id/user_navigation_profile"
         android:name="com.example.staffsyncapp.UserProfileFragment"
@@ -77,6 +78,7 @@
             app:destination="@id/SecondFragment"
             app:popUpTo="@id/SecondFragment"
             app:popUpToInclusive="true" />
+
     </fragment>
 
 </navigation>
