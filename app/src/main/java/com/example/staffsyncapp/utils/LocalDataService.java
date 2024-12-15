@@ -480,4 +480,27 @@
             values.put("is_locked", 1); // set is_locked to 1(success)
             return db.update("users", values, "email = ?", new String[]{email}) > 0;
         }
+        // TODO: EMPLOYEE-SIDE
+
+        public int getLoggedInEmployeeId() {
+            SQLiteDatabase db = this.getReadableDatabase();
+            int employeeId = -1; //  value if no employee is logged in
+
+            try {
+                String query = "SELECT employee_id FROM user_sessions WHERE is_active = 1";
+                Cursor cursor = db.rawQuery(query, null);
+
+                if (cursor != null && cursor.moveToFirst()) {
+                    employeeId = cursor.getInt(cursor.getColumnIndex("employee_id"));
+                }
+
+                if (cursor != null) {
+                    cursor.close();
+                }
+            } catch (Exception e) {
+                Log.e("LocalDataService", "Error getting logged in employee ID: " + e.getMessage());
+            }
+
+            return employeeId;
+        }
     }

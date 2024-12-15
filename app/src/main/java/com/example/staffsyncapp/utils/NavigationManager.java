@@ -20,6 +20,7 @@ public class NavigationManager {
     private final NavController navController;
     private final BottomNavigationView bottomNav;
 
+
     public NavigationManager(Fragment fragment, BottomNavigationView bottomNav) {
         this.navController = Navigation.findNavController(fragment.requireActivity(), R.id.nav_host_fragment);
         this.bottomNav = bottomNav;
