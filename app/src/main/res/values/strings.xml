@@ -55,4 +55,6 @@
     <string name="edit_employee_dialog_enter_employee_id">Enter Employee ID</string>
     <string name="edit_employee_dialog_employee_id">Employee ID</string>
     <string name="edit_employee_dialog_find_employee">Find Employee</string>
+    <string name="settings_icon_text">Settings</string>
+    <string name="home_top_bar_title">Home</string>
 </resources>

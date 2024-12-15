@@ -20,7 +20,7 @@
         android:id="@+id/back_arrow"
         android:layout_width="48dp"
         android:layout_height="48dp"
-        android:layout_marginStart="4dp"
+        android:layout_marginStart="12dp"
         android:padding="12dp"
         android:src="@drawable/user_icon"
         app:tint="@android:color/white"

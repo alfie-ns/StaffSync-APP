@@ -1,12 +1,13 @@
 # TODO
 
 - [ ] talk about the singleton pattern learnt in week11
+- [ ] highly secure password to be fetched and pasted in one click
 - [ ] thread-safe initialisation happens if the synchronized keyword is used
 - [X] get delete employee button working; pass the id to delete any employee regardless of where it is in the list
 - [X] reinstate bare notification system
 - [ ] implement the notification system i.e. holiday requests, employee detail changes, salary increments, new employees, employee departures, employee birthdays, employee anniversaries, employee promotions/demotions, anomaly detection alerts
 
-### Comp2000 API endpoints
+### comp2000 API endpoints
 
 - [X] GET /employees
 - [X] GET /employees/get/int{id}
@@ -51,11 +52,12 @@
 
 ### API Integration & Threading
 
-- [ ] Implement worker threads for API operations; implement endpoints into the app
+- [ ] Implement worker threads implement endpoints into the app
   - [X] GET operations
   - [X] POST operations
-  - [ ] PUT operations
+  - [X] PUT operations
   - [X] DELETE operations
+  - [X] HEALTH operations
 - [ ] Error handling in parallel operations
 - [X] Basic API connection
 - [X] Test getAllEmployees function
@@ -107,6 +109,9 @@
 
 - [X] Design database schema
 - [X] Create database
+- [X] Implement SQLite database
+- [X] Store user login details
+- [X] Store user details
 - [ ] Store user location
 - [ ] Store user time
 - [ ] Implement security measures
@@ -194,11 +199,9 @@
 
 ### Version Control
 
-- [ ] Regular GitHub commits:
-  - [ ] Weekly minimum commits
-  - [ ] Meaningful commit messages
-  - [ ] Proper branching strategy
-- [ ] README documentation:
+- [X] Regular GitHub commits:
+  - [X] Weekly minimum commits
+- [X] README documentation:
   - [ ] Setup instructions
   - [ ] Third-party credits
   - [ ] Feature documentation

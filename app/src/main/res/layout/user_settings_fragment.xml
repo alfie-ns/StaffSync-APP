@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent" />
     <!-- using nav bar, back arrow not needed, thus change to respective fragment icon; minimal changes to xml -->
     <ImageView
-        android:id="@+id/back_arrow"
+        android:id="@+id/settings_icon"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginStart="4dp"
@@ -35,11 +35,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
-        android:text="Settings"
+        android:text="@string/settings_icon_text"
         android:textColor="@android:color/white"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@id/header_bar"
-        app:layout_constraintStart_toEndOf="@id/back_arrow"
+        app:layout_constraintStart_toEndOf="@id/settings_icon"
         app:layout_constraintTop_toTopOf="@id/header_bar" />
 
     <!-- logout button -->

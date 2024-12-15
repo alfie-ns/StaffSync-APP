@@ -34,23 +34,6 @@ public class UserMainFragment extends Fragment {
         binding.bottomNavigation.setSelectedItemId(R.id.navigation_home);
     }
 
-    /**
-     * Handles fragment navigation using the Navigation component.
-     * - Takes a navigation action ID from the nav_graph and attempts to navigate,
-     * providing error handling for failed navigation attempts.
-     * 
-     * @param actionId The ID of the navigation action defined in nav_graph.xml
-     */
-    private void navigateToFragment(int actionId) { // navigate to another fragment
-        try {
-            NavController navController = Navigation.findNavController(requireActivity(), R.id.nav_host_fragment);
-            navController.navigate(actionId);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();

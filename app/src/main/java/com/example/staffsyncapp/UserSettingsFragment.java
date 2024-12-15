@@ -30,6 +30,7 @@ public class UserSettingsFragment extends Fragment {
     private LocalDataService dbHelper;
     private NotificationService notificationService;
     private static final String TAG = "UserSettingsFragment";
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = UserSettingsFragmentBinding.inflate(inflater, container, false);
