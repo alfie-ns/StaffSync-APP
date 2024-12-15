@@ -72,6 +72,11 @@
         <action
             android:id="@+id/action_UserSettingsFragment_to_UserMainFragment"
             app:destination="@id/user_navigation_home" />
+        <action
+            android:id="@+id/action_UserSettingsFragment_to_SecondFragment"
+            app:destination="@id/SecondFragment"
+            app:popUpTo="@id/SecondFragment"
+            app:popUpToInclusive="true" />
     </fragment>
 
 </navigation>
