@@ -11,7 +11,7 @@
         android:id="@+id/header_bar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/teal_deep"
+        android:background="?attr/colorPrimary"
         app:layout_constraintTop_toTopOf="parent" />
 
     <!-- back button; click ripple effect and white tint -->
@@ -22,7 +22,7 @@
         android:layout_marginStart="10dp"
         android:src="@drawable/back_arrow_icon"
         android:contentDescription="@string/back_button_description"
-        app:tint="@android:color/white"
+        app:tint="?attr/colorOnPrimary"
         android:clickable="true"
         android:focusable="true"
         android:padding="20dp"
@@ -55,7 +55,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginTop="24dp"
         android:text="@string/welcome_back_string"
-        android:textColor="@color/teal_deep"
+        android:textColor="?attr/colorPrimary"
         android:textSize="24sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"

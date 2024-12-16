@@ -18,6 +18,19 @@
 
 ---
 
+### Design
+
+- [X] dark mode
+- [ ] dark mode 2; better dark-mode colours; implement dark mode respective current toggle state for dark mode for respective user
+- [ ] implement HCI principles:
+  - [X] clear navigation
+  - [ ] consistent layout
+  - [ ] error feedback
+  - [ ] user control
+- [ ] warning message handling
+- [ ] RecyclerViews implementation in user fragments
+- [ ]
+
 ### User
 
 - [X] log into user account

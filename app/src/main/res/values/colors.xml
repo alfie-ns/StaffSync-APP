@@ -5,17 +5,42 @@
     <color name="white">#FFFFFFFF</color>
 
     <!-- general background colours -->
-    <color name="neutral_background">#F9FAFB</color> <!-- light grey -->
-    <color name="accent_white">#FFFFFF</color> <!-- white accent -->
+    <color name="neutral_background">#F9FAFB</color>
+    <color name="accent_white">#FFFFFF</color>
+    <color name="neutral_background_dark">#001618</color>
 
-    <!-- employee screen colours -->
-    <color name="teal_deep">#00474D</color> <!-- rich deep teal -->
-    <color name="teal_medium">#006D77</color> <!-- medium teal -->
-    <color name="teal_light">#94D2BD</color> <!-- light teal -->
+    <!-- light theme colors -->
+    <color name="background">#FFFFFF</color>
+    <color name="text_primary">#000000</color>
 
-    <!-- admin-screen colours -->
-    <color name="admin_deep">#1A237E</color> <!-- deep indigo -->
-    <color name="admin_medium">#3949AB</color> <!-- rich royal blue -->
-    <color name="admin_light">#5C6BC0</color> <!-- lighter indigo -->
+    <!-- employee screen colours - light -->
+    <color name="teal_deep">#00474D</color>
+    <color name="teal_medium">#006D77</color>
+    <color name="teal_light">#94D2BD</color>
+
+    <!-- employee screen colours - dark -->
+    <color name="teal_deep_dark">#004D54</color>
+    <color name="teal_medium_dark">#008891</color>
+    <color name="teal_light_dark">#A5E3D0</color>
+    <color name="teal_dark">#013A3F</color>
+
+    <!-- text colors - dark mode -->
+    <color name="text_primary_dark">#A5E3D0</color>
+    <color name="text_secondary_dark">#94D2BD</color>
+    <color name="card_background_dark">#012A2D</color>
+
+    <!-- admin colors - light -->
+    <color name="admin_deep">#1A237E</color>
+    <color name="admin_medium">#3949AB</color>
+    <color name="admin_light">#5C6BC0</color>
+
+    <!-- admin colors - dark -->
+    <color name="admin_deep_dark">#1A1A40</color>
+    <color name="admin_medium_dark">#2F2F7A</color>
+    <color name="admin_light_dark">#4E4EAA</color>
+
+    <!--    <color name="dark_background">#121212</color>-->
+    <color name="dark_surface">#1E1E1E</color>
+    <color name="dark_card">#2D2D2D</color>
 
 </resources>

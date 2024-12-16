@@ -12,7 +12,7 @@
         android:id="@+id/header_bar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/teal_deep"
+        android:background="?attr/colorPrimary"
         app:layout_constraintTop_toTopOf="parent" />
     <!-- using nav bar, back arrow not needed, thus change to respective fragment icon; minimal changes to xml -->
     <ImageView
@@ -22,7 +22,7 @@
         android:layout_marginStart="4dp"
         android:padding="12dp"
         android:src="@drawable/user_settings_icon"
-        app:tint="@android:color/white"
+        app:tint="?attr/colorOnPrimary"
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/selectableItemBackgroundBorderless"
@@ -36,7 +36,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:text="@string/settings_icon_text"
-        android:textColor="@android:color/white"
+        android:textColor="?attr/colorOnPrimary"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@id/header_bar"
         app:layout_constraintStart_toEndOf="@id/settings_icon"
@@ -50,10 +50,10 @@
         android:layout_marginEnd="8dp"
         android:text="@string/logout"
         android:textAllCaps="false"
-        android:textColor="@android:color/white"
+        android:textColor="?attr/colorOnPrimary"
         android:textSize="14sp"
         app:cornerRadius="8dp"
-        android:backgroundTint="#FF0000"
+        android:backgroundTint="?attr/colorError"
         app:layout_constraintBottom_toBottomOf="@id/header_bar"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="@id/header_bar" />
@@ -74,7 +74,8 @@
             android:padding="16dp">
 
             <!-- general settings card -->
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
+                android:backgroundTint="?attr/colorSurface"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
@@ -91,7 +92,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="General Settings"
-                        android:textColor="@color/teal_deep"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:layout_marginBottom="8dp"/>
@@ -112,7 +113,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@android:drawable/ic_popup_reminder"
-                            app:tint="@color/teal_deep" />
+                            app:tint="?attr/colorPrimary" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -120,7 +121,7 @@
                             android:layout_weight="1"
                             android:layout_marginStart="16dp"
                             android:text="Notification Preferences"
-                            android:textColor="@color/teal_deep"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="16sp" />
                     </LinearLayout>
 
@@ -137,7 +138,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/dark_mode_icon"
-                            app:tint="@color/teal_deep" />
+                            app:tint="?attr/colorPrimary" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -145,7 +146,7 @@
                             android:layout_weight="1"
                             android:layout_marginStart="16dp"
                             android:text="Dark Mode"
-                            android:textColor="@color/teal_deep"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="16sp" />
 
                         <com.google.android.material.switchmaterial.SwitchMaterial
@@ -156,10 +157,11 @@
                     </LinearLayout>
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- privacy & security card -->
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
+                android:backgroundTint="?attr/colorSurface"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
@@ -176,7 +178,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Privacy &amp; Security"
-                        android:textColor="@color/teal_deep"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:layout_marginBottom="8dp"/>
@@ -197,7 +199,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@android:drawable/ic_lock_lock"
-                            app:tint="@color/teal_deep" />
+                            app:tint="?attr/colorPrimary" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -205,16 +207,17 @@
                             android:layout_weight="1"
                             android:layout_marginStart="16dp"
                             android:text="Privacy Settings"
-                            android:textColor="@color/teal_deep"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="16sp" />
                     </LinearLayout>
 
 
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- about card; elevation(for shadow) 4dp -->
-            <androidx.cardview.widget.CardView
+            <com.google.android.material.card.MaterialCardView
+                android:backgroundTint="?attr/colorSurface"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:cardCornerRadius="12dp"
@@ -231,7 +234,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="About"
-                        android:textColor="@color/teal_deep"
+                        android:textColor="?attr/colorPrimary"
                         android:textSize="18sp"
                         android:textStyle="bold"
                         android:layout_marginBottom="8dp"/>
@@ -252,7 +255,7 @@
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@android:drawable/ic_menu_info_details"
-                            app:tint="@color/teal_deep" />
+                            app:tint="?attr/colorPrimary" />
 
                         <TextView
                             android:layout_width="0dp"
@@ -260,11 +263,11 @@
                             android:layout_weight="1"
                             android:layout_marginStart="16dp"
                             android:text="Terms &amp; Documentation"
-                            android:textColor="@color/teal_deep"
+                            android:textColor="?attr/colorPrimary"
                             android:textSize="16sp" />
                     </LinearLayout>
                 </LinearLayout>
-            </androidx.cardview.widget.CardView>
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </ScrollView>
 
@@ -273,7 +276,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="?android:attr/windowBackground"
+        android:background="?attr/colorSurface"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

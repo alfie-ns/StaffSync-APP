@@ -9,6 +9,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
@@ -17,15 +18,16 @@ import com.example.staffsyncapp.databinding.UserSettingsFragmentBinding;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NavigationManager;
 import com.example.staffsyncapp.utils.NotificationService;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
-/*
+/**
 * TODO
 *  [ ] make View Leave History and Pending Requests
 *  [ ] notifications
 *  [ ] dark mode(also implement in adminDashboard
 *  [ ] terms and conditions
 *  [ ] privacy
-* */
+**/
 
 
 
@@ -71,14 +73,14 @@ public class UserSettingsFragment extends Fragment {
 
         binding.darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             sharedPreferences.edit().putBoolean(DARK_MODE_KEY, isChecked).apply();
-            // TODO: Implement dark mode toggle
-            Toast.makeText(requireContext(),
-                    "Dark mode " + (isChecked ? "enabled" : "disabled"),
-                    Toast.LENGTH_SHORT).show();
+            AppCompatDelegate.setDefaultNightMode(
+                isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
+            );
+            requireActivity().recreate();
         });
 
         binding.privacySettings.setOnClickListener(v -> {
-            // TODO: Implement privacy settings
+            // TODO: implement privacy settings
             Toast.makeText(requireContext(), "Privacy settings coming soon", Toast.LENGTH_SHORT).show();
         });
 

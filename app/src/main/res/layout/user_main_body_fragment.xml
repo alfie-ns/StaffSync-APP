@@ -12,7 +12,7 @@
         android:id="@+id/header_bar"
         android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:background="@color/teal_deep"
+        android:background="?attr/colorPrimary"
         app:layout_constraintTop_toTopOf="parent" />
     <!-- user icon on the left side of the header bar, sized 32dp -->
     <ImageView
@@ -22,7 +22,7 @@
         android:layout_marginStart="4dp"
         android:padding="12dp"
         android:src="@drawable/home_icon"
-        app:tint="@android:color/white"
+        app:tint="?attr/colorOnPrimary"
         app:layout_constraintBottom_toBottomOf="@id/header_bar"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@id/header_bar" />
@@ -34,7 +34,7 @@
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
         android:text="@string/home_top_bar_title"
-        android:textColor="@android:color/white"
+        android:textColor="?attr/colorOnPrimary"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@id/header_bar"
         app:layout_constraintStart_toEndOf="@id/user"
@@ -46,7 +46,7 @@
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginEnd="4dp"
-        app:tint="@android:color/white"
+        app:tint="?attr/colorOnPrimary"
         android:clickable="true"
         android:focusable="true"
         android:background="?attr/selectableItemBackgroundBorderless"
@@ -57,7 +57,8 @@
     <!-- END OF TOP-BAR -->
 
     <!-- card view for annual leave status, with elevation and rounded corners -->
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
+    android:backgroundTint="?attr/colorSurface"
         android:id="@+id/leave_status_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -77,7 +78,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Annual Leave Status"
-                android:textColor="@color/teal_deep"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
             <!-- horizontal layout(row) for leave days remaining and book leave button -->
@@ -94,7 +95,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Days Remaining: 24/30"
-                    android:textColor="@color/teal_deep"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="16sp" />
                 <!-- button to book leave: will take user to leave booking screen -->
                 <com.google.android.material.button.MaterialButton
@@ -108,9 +109,10 @@
                     app:rippleColor="@color/teal_deep" />
             </LinearLayout>
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
     <!-- card view for personal details, with elevation and rounded corners -->
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
+        android:backgroundTint="?attr/colorSurface"
         android:id="@+id/personal_details_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -137,7 +139,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Personal Details"
-                    android:textColor="@color/teal_deep"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
                 <!-- edit icon: clickable to take user to edit profile fragment -->
@@ -157,7 +159,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:text="My Employee ID: #17345"
-                android:textColor="@color/teal_deep"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="16sp" />
             <!-- textview displaying department -->
             <TextView
@@ -166,10 +168,10 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:text="Department: Engineering"
-                android:textColor="@color/teal_deep"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="16sp" />
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
     <!-- horizontal layout for view history and pending requests buttons -->
     <LinearLayout
         android:id="@+id/request_section"
@@ -187,7 +189,7 @@
             android:layout_marginEnd="8dp"
             android:layout_weight="1"
             android:text="View Leave History"
-            android:textColor="@color/teal_deep"
+            android:textColor="?attr/colorPrimary"
             android:textAllCaps="false"
             app:cornerRadius="8dp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
@@ -206,7 +208,8 @@
     </LinearLayout>
 
     <!-- employment summary - moved margin bottom to handle nav spacing -->
-    <androidx.cardview.widget.CardView
+    <com.google.android.material.card.MaterialCardView
+        android:backgroundTint="?attr/colorSurface"
         android:id="@+id/quick_stats_card"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -230,7 +233,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Employment Summary"
-                android:textColor="@color/teal_deep"
+                android:textColor="?attr/colorPrimary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -245,7 +248,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Years of Service: 2.5 years"
-                    android:textColor="@color/teal_deep"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="16sp" />
 
                 <TextView
@@ -254,7 +257,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Next Salary Review: 3 months"
-                    android:textColor="@color/teal_deep"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="16sp" />
 
                 <TextView
@@ -263,18 +266,18 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Notifications: Enabled"
-                    android:textColor="@color/teal_deep"
+                    android:textColor="?attr/colorPrimary"
                     android:textSize="16sp" />
             </LinearLayout>
         </LinearLayout>
-    </androidx.cardview.widget.CardView>
+    </com.google.android.material.card.MaterialCardView>
 
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottom_navigation"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
-        android:background="?android:attr/windowBackground"
+        android:background="?attr/colorSurface"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"

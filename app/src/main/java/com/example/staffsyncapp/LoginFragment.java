@@ -1,6 +1,8 @@
 package com.example.staffsyncapp; // Main package for the fragment
 
 // Android libraries for UI, logging, and data handling
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
@@ -12,8 +14,11 @@ import android.content.ContentValues;
 
 // additional AndroidX imports for fragment navigation and annotations
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
+
+import androidx.appcompat.app.AppCompatDelegate;
 
 // data-binding and utility classes specific to the project
 import com.example.staffsyncapp.databinding.LoginFragmentBinding;
@@ -146,6 +151,15 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
         });
     }
 
+    private void loadUserDarkModePreference(String email) { // load preference for dark mode
+        SharedPreferences prefs = requireContext().getSharedPreferences("user_preferences", Context.MODE_PRIVATE);
+        boolean isDarkMode = prefs.getBoolean("dark_mode_" + email, false);
+
+        AppCompatDelegate.setDefaultNightMode(
+                isDarkMode ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
+        );
+    }
+
     private void togglePasswordVisibility() { // function to toggle password visibility
         isPasswordVisible = !isPasswordVisible; // toggle password visibility state as the opposite state
         if (isPasswordVisible) {
@@ -198,6 +212,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
         // 1- check if it's an admin login
         if (dbHelper.verifyAdminLogin(email, password)) {
             Log.d(TAG, "Admin login successful");
+            loadUserDarkModePreference(email);
             try {
                 NavHostFragment.findNavController(LoginFragment.this)
                         .navigate(R.id.action_LoginFragment_to_AdminDashboardFragment);
@@ -208,6 +223,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
         // 2- not admin, try user login
         else if (dbHelper.verifyUserLogin(email, password)) {
             Log.d(TAG, "User login successful");
+            loadUserDarkModePreference(email);
             try {
                 NavHostFragment.findNavController(LoginFragment.this)
                         .navigate(R.id.action_LoginFragment_to_UserMainFragment);

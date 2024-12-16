@@ -2,7 +2,19 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.StaffSyncApp" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        
+        <!-- primary brand colour -->
+        <item name="colorPrimary">@color/teal_deep</item>
+        <item name="colorPrimaryVariant">@color/teal_medium</item>
+        <item name="colorOnPrimary">@color/white</item>
+        
+        <!-- secondary brand colour -->
+        <item name="colorSecondary">@color/teal_medium</item>
+        <item name="colorSecondaryVariant">@color/teal_light</item>
+        <item name="colorOnSecondary">@color/black</item>
+        
+        <!-- status bar colour -->
+        <item name="android:statusBarColor">@color/teal_deep</item>
     </style>
 
     <style name="Theme.StaffSyncApp" parent="Base.Theme.StaffSyncApp" />

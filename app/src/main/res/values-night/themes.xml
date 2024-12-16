@@ -1,7 +1,26 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
     <style name="Base.Theme.StaffSyncApp" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="android:windowBackground">@color/neutral_background_dark</item>
+        <item name="colorPrimary">@color/teal_medium_dark</item>
+        <item name="colorOnPrimary">@color/accent_white</item>
+        <item name="colorSurface">@color/card_background_dark</item>
+        <item name="colorOnSurface">@color/text_primary_dark</item>
+        <item name="cardBackgroundColor">@color/card_background_dark</item>
+        <item name="android:textColorPrimary">@color/text_primary_dark</item>
+        <item name="android:textColorSecondary">@color/text_secondary_dark</item>
+        <item name="materialCardViewStyle">@style/CustomCardView</item>
+    </style>
+
+    <style name="CustomCardView" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/card_background_dark</item>
+    </style>
+
+
+    <style name="TextAppearance.Custom.Primary" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:textColor">@color/text_primary_dark</item>
+    </style>
+
+    <style name="TextAppearance.Custom.Secondary" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:textColor">@color/text_secondary_dark</item>
     </style>
 </resources>
