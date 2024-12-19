@@ -30,7 +30,7 @@ import java.util.Locale;
 * TODO
 *  [ ] make View Leave History and Pending Requests
 *  [ ] notifications
-*  [ ] dark mode(also implement in adminDashboard
+*  [X] dark mode
 *  [ ] terms and conditions
 *  [ ] privacy
 **/
@@ -67,8 +67,11 @@ public class UserSettingsFragment extends Fragment {
     }
 
     private void setupUI() {
-        // Restore dark mode preference
-        binding.darkModeSwitch.setChecked(sharedPreferences.getBoolean(DARK_MODE_KEY, false));
+        SharedPreferences prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        int userId = prefs.getInt("logged_in_employee_id", -1);
+        String userDarkModeKey = DARK_MODE_KEY + "_" + userId;
+        // restore dark mode preference
+        binding.darkModeSwitch.setChecked(sharedPreferences.getBoolean(userDarkModeKey, false));
     }
 
     private void setupClickListeners() {
@@ -80,9 +83,13 @@ public class UserSettingsFragment extends Fragment {
         });
 
         binding.darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            sharedPreferences.edit().putBoolean(DARK_MODE_KEY, isChecked).apply();
+            SharedPreferences prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+            int userId = prefs.getInt("logged_in_employee_id", -1);
+            String userDarkModeKey = DARK_MODE_KEY + "_" + userId;
+
+            sharedPreferences.edit().putBoolean(userDarkModeKey, isChecked).apply();
             AppCompatDelegate.setDefaultNightMode(
-                isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
+                    isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
             );
             requireActivity().recreate();
         });
@@ -100,6 +107,15 @@ public class UserSettingsFragment extends Fragment {
 
     private void handleLogout() {
         try {
+            SharedPreferences prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+            int userId = prefs.getInt("logged_in_employee_id", -1);
+            String userDarkModeKey = DARK_MODE_KEY + "_" + userId;
+
+            // reset dark mode to system default and clear preference
+            sharedPreferences.edit().remove(userDarkModeKey).apply();
+            AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+            requireActivity().recreate();
+
             dbHelper.logoutUser();
 
             NavOptions navOptions = new NavOptions.Builder()
@@ -111,10 +127,10 @@ public class UserSettingsFragment extends Fragment {
 
             Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
+            Log.e("Logout", "Failed to logout: " + e.getMessage());
             Toast.makeText(requireContext(), "Logout failed, please try again", Toast.LENGTH_SHORT).show();
         }
     }
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
