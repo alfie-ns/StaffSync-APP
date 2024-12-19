@@ -2,6 +2,7 @@
 
     import android.content.ContentValues;
     import android.content.Context;
+    import android.content.SharedPreferences;
     import android.database.Cursor;
     import android.database.sqlite.SQLiteDatabase;
     import android.database.sqlite.SQLiteOpenHelper;
@@ -35,7 +36,7 @@
 
         // 1. Constants and Variables ----------------------------------------------
         private static final String DATABASE_NAME = "staffsync.db";
-        private static final int DATABASE_VERSION = 1; // starting db version
+        private static final int DATABASE_VERSION = 2; // starting db version
         private static final String TAG = "DatabaseHelper";
 
         private static Boolean isLoggedIn = false;  // tracks login state
@@ -47,6 +48,9 @@
         private final SQLiteDatabase db;  // thread safety
 
         private static final String KEY_USER_LOGGED_IN = "user_logged_in";
+
+        private static final String TEMP_PASSWORD_PREFIX = "EMP";
+
 
         // 2. Constructor and Database Creation ------------------------------------
         public LocalDataService(Context context) {
@@ -67,9 +71,11 @@
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "email TEXT UNIQUE," +
                     "password TEXT," +
-                    "is_admin INTEGER DEFAULT 0," +  // 0 = employee, 1 = admin
-                    "is_locked INTEGER DEFAULT 0," +  // for security lockouts
+                    "is_admin INTEGER DEFAULT 0," + // 0 = employee, 1 = admin
+                    "is_locked INTEGER DEFAULT 0," +
                     "last_login DATETIME," +
+                    "first_login INTEGER DEFAULT 1," + // 1 = not logged in yet TODO impelemtn first-time login password creation
+                    "employee_id INTEGER," + // store employee id i.e. link to api
                     "created_at DATETIME DEFAULT CURRENT_TIMESTAMP)");
 
             // 2- Employee details; personal and employment information
@@ -119,9 +125,6 @@
                     "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
                     "FOREIGN KEY(user_id) REFERENCES users(id))");
 
-            // 6- Salary Increment Creation
-            db.execSQL("ALTER TABLE employee_details ADD COLUMN last_increment_date DATE");
-            db.execSQL("ALTER TABLE employee_details ADD COLUMN next_increment_date DATE");
 
             Log.d("StaffDataService", "Database tables created successfully");
 
@@ -165,7 +168,9 @@
 
         @Override
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-
+            if (oldVersion < 2) {
+                db.execSQL("ALTER TABLE users ADD COLUMN first_login INTEGER DEFAULT 1");
+            }
         }
 
         private boolean adminExists() {
@@ -176,38 +181,12 @@
             return exists;
         }
 
-        public boolean verifyAdminLogin(String email, String password) {
-            Cursor cursor = db.query( // create admin login cursor
-                    "users",
-                    new String[]{"password", "is_admin"},
-                    "email = ?",
-                    new String[]{email},
-                    null, null, null // no sorting
-            );
-
-            try { // try to verify login
-                if (cursor.moveToFirst()) {
-                    String storedPass = cursor.getString(0);
-                    int isAdmin = cursor.getInt(1);
-                    boolean loginSuccess = isAdmin == 1 && hashPassword(password).equals(storedPass); // verify admin status and match password
-
-                    // set login status if successful
-                    if (loginSuccess) {
-                        setAdminLoggedIn(true);
-                    }
-
-                    return loginSuccess;
-                }
-                return false;
-            } finally {
-                cursor.close();
-            }
-        }
-
         public boolean verifyUserLogin(String email, String password) {
+            Log.d(TAG, "Attempting login for email: " + email);
+
             Cursor cursor = db.query(
                     "users",
-                    new String[]{"password", "is_admin"},
+                    new String[]{"password", "is_admin", "employee_id", "first_login"},
                     "email = ?",
                     new String[]{email},
                     null, null, null
@@ -217,14 +196,36 @@
                 if (cursor.moveToFirst()) {
                     String storedPass = cursor.getString(0);
                     int isAdmin = cursor.getInt(1);
+                    int empId = cursor.getInt(2);
+                    int firstLogin = cursor.getInt(3);
 
-                    // check if user is not admin and password matches
-                    return isAdmin == 0 && hashPassword(password).equals(storedPass);
+                    String hashedAttempt = hashPassword(password);
+                    Log.d(TAG, "Stored hash: " + storedPass + ", Input hash: " + hashedAttempt);
+
+                    boolean passwordMatch = hashedAttempt.equals(storedPass);
+
+                    if (passwordMatch && isAdmin == 0) {
+                        // store employee ID
+                        SharedPreferences prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+                        prefs.edit().putInt("logged_in_employee_id", empId).apply();
+
+                        Log.d(TAG, "Login success, employee ID: " + empId);
+
+                        if (firstLogin == 1) {
+                            Log.d(TAG, "First login, prompt to change password");
+                            // TODO [ ]: password change functionality
+                        }
+
+                        return true;
+                    }
                 }
                 return false;
             } finally {
                 cursor.close();
             }
+        }
+        public String generateTempPassword(int employeeId) {
+            return TEMP_PASSWORD_PREFIX + employeeId;
         }
 
         public String hashPassword(String password) { // public password hashing method
@@ -502,5 +503,50 @@
             }
 
             return employeeId;
+        }
+
+        public void createUserAccount(int employeeId, String email) {
+            String tempPassword = generateTempPassword(employeeId);
+            ContentValues values = new ContentValues();
+            values.put("email", email);
+            values.put("password", hashPassword(tempPassword));
+            values.put("is_admin", 0);
+            values.put("first_login", 1);
+            values.put("employee_id", employeeId); // store employee ID for linking
+
+            try {
+                db.insertOrThrow("users", null, values);
+                Log.d(TAG, "Created user account for employee " + employeeId);
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to create user account: " + e.getMessage());
+            }
+        }
+
+        public boolean verifyAdminLogin(String email, String password) {
+            Cursor cursor = db.query( // create admin login cursor
+                    "users", // table name
+                    new String[]{"password", "is_admin"}, // columns to get
+                    "email = ?", // where clause TODO: make emails unique
+                    new String[]{email},
+                    null, null, null // no grouping, having or sorting
+            );
+
+            try { // try to verify login
+                if (cursor.moveToFirst()) {
+                    String storedPass = cursor.getString(0);
+                    int isAdmin = cursor.getInt(1);
+                    boolean loginSuccess = isAdmin == 1 && hashPassword(password).equals(storedPass); // verify admin status and match password
+
+                    // set login status if successful
+                    if (loginSuccess) {
+                        setAdminLoggedIn(true);
+                    }
+
+                    return loginSuccess;
+                }
+                return false;
+            } finally {
+                cursor.close();
+            }
         }
     }

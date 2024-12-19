@@ -1,8 +1,11 @@
 package com.example.staffsyncapp;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -18,6 +21,7 @@ import com.example.staffsyncapp.models.Employee;
 import com.example.staffsyncapp.utils.NavigationManager;
 
 import java.util.List;
+import java.util.Locale;
 
 
 /** TODO
@@ -31,10 +35,14 @@ public class UserProfileFragment extends Fragment {
     private Employee currentEmployee;
     NavigationManager navigationManager;
 
+    private EmployeeAdapter.EmployeeViewModel employeeViewModel;
+
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = UserProfileFragmentBinding.inflate(inflater, container, false);
         apiService = new ApiDataService(requireContext());
+        employeeViewModel = new EmployeeAdapter.EmployeeViewModel();
         return binding.getRoot();
     }
 
@@ -45,9 +53,29 @@ public class UserProfileFragment extends Fragment {
         navigationManager = new NavigationManager(this, binding.bottomNavigation);
         binding.bottomNavigation.setSelectedItemId(R.id.navigation_profile);
 
-        setupValidation();
+        //setupValidation();
+        setupUI();
         loadEmployeeData();
         setupClickListeners();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        Employee employee = employeeViewModel.getEmployeeLiveData().getValue();
+        if (employee != null) {
+            updateUIWithEmployeeData(employee);
+        } else {
+            loadEmployeeData();
+        }
+    }
+
+    private void setupUI() {
+        // set initial UI state
+        binding.employeeId.setText("Loading...");
+        binding.currentName.setText("Loading...");
+        binding.currentEmail.setText("Loading...");
+        binding.currentSalary.setText("Loading...");
     }
 
     private void setupValidation() {
@@ -99,29 +127,37 @@ public class UserProfileFragment extends Fragment {
     }
 
     private void loadEmployeeData() {
-        // [ ] TODO: get employee ID from shared preferences
-        int employeeId = 967; // [ ] TODO: implement actual logging into the respective employee/id
+        SharedPreferences prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        int employeeId = prefs.getInt("logged_in_employee_id", -1);
 
-        apiService.getEmployeeById(employeeId, new ApiDataService.EmployeeFetchListener() {
-            public void onEmployeesFetched(List<Employee> employees) {
-                if (employees != null && !employees.isEmpty()) {
-                    currentEmployee = employees.get(0);
-                    updateUIWithEmployeeData(currentEmployee);
+        Log.d("UserProfileFragment", "Fetching employee details for ID: " + employeeId);
+
+        if (employeeId != -1) {
+            apiService.getEmployeeById(employeeId, new ApiDataService.EmployeeFetchListener() {
+                @Override
+                public void onEmployeesFetched(List<Employee> employees) {
+                    Log.d("UserProfileFragment", "Fetched employees: " + employees);
+                    if (employees != null && !employees.isEmpty()) {
+                        currentEmployee = employees.get(0);
+                        updateUIWithEmployeeData(currentEmployee);
+                    }
                 }
-            }
 
-            @Override
-            public void onError(String error) {
-                Toast.makeText(requireContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onError(String error) {
+                    if (getContext() != null) {
+                        Toast.makeText(requireContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
     }
 
-    private void updateUIWithEmployeeData(Employee employee) { // update UI with employee data
-        binding.employeeId.setText("EMP" + employee.getId());
+    private void updateUIWithEmployeeData(Employee employee) {
+        binding.employeeId.setText(String.valueOf(employee.getId()));
         binding.currentName.setText(employee.getFirstname() + " " + employee.getLastname());
         binding.currentEmail.setText(employee.getEmail());
-        binding.currentSalary.setText(String.format("£%.2f", employee.getSalary()));
+        binding.currentSalary.setText(String.format(Locale.getDefault(), "£%.2f", employee.getSalary()));
     }
 
     private void setupClickListeners() {

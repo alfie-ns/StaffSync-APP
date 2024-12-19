@@ -1,7 +1,6 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
     <!-- Base application theme. -->
-    <style name="Base.Theme.StaffSyncApp" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your light theme here. -->
+    <style name="Base.Theme.StaffSyncApp" parent="Theme.Material3.DayNight.NoActionBar"> <!-- dark mode -->  
         
         <!-- primary brand colour -->
         <item name="colorPrimary">@color/teal_deep</item>

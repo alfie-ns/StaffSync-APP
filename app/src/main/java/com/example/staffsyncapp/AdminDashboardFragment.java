@@ -69,7 +69,8 @@ public class AdminDashboardFragment extends Fragment {
               approve or deny directly from the notification(maybe,
               and if so it should probably give some insight in
               the notification(maybe using Gemini?)
-        - [ ] employee account to submit leave requests 
+        - [ ] employee account to submit leave requests
+        - [ ] login to respective account based on employee id
 
 
     */
@@ -88,7 +89,7 @@ public class AdminDashboardFragment extends Fragment {
     // Employee search functionality variables
     private EditText searchEmployeeInput;
 
-    private AdminEmployeeAdapter adminEmployeeAdapter;
+    private EmployeeAdapter adminEmployeeAdapter;
 
     // Employee list collapse functionality variables
     private boolean isEmployeeListExpanded = true;
@@ -210,7 +211,7 @@ public class AdminDashboardFragment extends Fragment {
     //----------------------------------------------------------------------------------------------
     // Employee management
     private void setupEmployeeAdapter(List<Employee> employees) {
-        adminEmployeeAdapter = new AdminEmployeeAdapter(employees);
+        adminEmployeeAdapter = new EmployeeAdapter(employees);
 
         // Set up the delete listener; 
         adminEmployeeAdapter.setOnEmployeeDeleteListener(employee -> {
@@ -324,28 +325,30 @@ public class AdminDashboardFragment extends Fragment {
 
         // handle save button click
         dialogView.findViewById(R.id.saveButton).setOnClickListener(v -> {
-            // validate inputs
             if (validateInputs(firstNameInput, lastNameInput, emailInput,
                     departmentInput, salaryInput, joiningDateInput)) {
 
                 double salary = Double.parseDouble(salaryInput.getText().toString());
+                String email = emailInput.getText().toString().trim();
 
-                // call API to add employee; passing the relevant JSON
                 employeeDataService.addEmployee(
                         firstNameInput.getText().toString(),
                         lastNameInput.getText().toString(),
-                        emailInput.getText().toString(),
+                        email,
                         departmentInput.getText().toString(),
                         salary,
                         joiningDateInput.getText().toString(),
                         new ApiDataService.EmployeeAddListener() {
                             @Override
-                            public void onSuccess(String message) {
+                            public void onSuccess(String message, int employeeId, String email) {
+                                LocalDataService dbHelper = new LocalDataService(requireContext());
+                                dbHelper.createUserAccount(employeeId, email);
+
                                 dialog.dismiss();
                                 Toast.makeText(requireContext(),
                                         "Employee added successfully",
                                         Toast.LENGTH_SHORT).show();
-                                fetchAndShowEmployees(); // Refresh list
+                                fetchAndShowEmployees();
                             }
 
                             @Override
@@ -358,7 +361,6 @@ public class AdminDashboardFragment extends Fragment {
                 );
             }
         });
-
         dialog.show();
     }
 
@@ -791,7 +793,7 @@ public class AdminDashboardFragment extends Fragment {
             }
         });
     }
-   //----------------------------------------------------------------------------------------------
+    //----------------------------------------------------------------------------------------------
     // save toggled state
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) { // save collapsed state

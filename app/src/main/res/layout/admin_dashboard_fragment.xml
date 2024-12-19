@@ -280,7 +280,6 @@
                         android:layout_marginTop="6dp"
                         android:text="@string/add_new_employee_admin_dashboard"
                         android:textAllCaps="false"
-                        app:icon="@drawable/user_icon"
                         app:iconGravity="textStart"
                         app:cornerRadius="8dp"
                         android:backgroundTint="@color/admin_deep"/>
@@ -292,7 +291,6 @@
                         android:layout_marginTop="6dp"
                         android:text="@string/edit_an_employee_btn"
                         android:textAllCaps="false"
-                        app:icon="@drawable/pencil_icon"
                         app:iconGravity="textStart"
                         app:cornerRadius="8dp"
                         android:backgroundTint="@color/admin_deep"/>
@@ -304,7 +302,6 @@
                         android:layout_marginTop="6dp"
                         android:text="@string/delete_employee"
                         android:textAllCaps="false"
-                        app:icon="@drawable/bin_icon"
                         app:iconGravity="textStart"
                         app:cornerRadius="8dp"
                         android:backgroundTint="@color/admin_deep"/>

@@ -1,6 +1,11 @@
 package com.example.staffsyncapp;
 
+import static android.content.ContentValues.TAG;
+
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -28,6 +33,8 @@ public class UserMainFragment extends Fragment {
     private Employee currentEmployee;
     private NavigationManager navigationManager;
 
+    private EmployeeAdapter.EmployeeViewModel employeeViewModel;
+
     // TODO: get employee ID from local database
     //LocalDataService dbHelper = new LocalDataService(requireContext());
     //int employeeId = dbHelper.getLoggedInEmployeeId();
@@ -46,11 +53,24 @@ public class UserMainFragment extends Fragment {
         navigationManager = new NavigationManager(this, binding.bottomNavigation);
         binding.bottomNavigation.setSelectedItemId(R.id.navigation_home);
 
+        employeeViewModel = new EmployeeAdapter.EmployeeViewModel();
+
         apiService = new ApiDataService(requireContext());
 
         setupUI();
         loadEmployeeData();
         setupClickListeners();
+    }
+
+    @Override
+    public void onResume() { // resume the employee respective-data-field get
+        super.onResume();
+        Employee employee = employeeViewModel.getEmployeeLiveData().getValue();
+        if (employee != null) {
+            updateUIWithEmployeeData(employee);
+        } else {
+            loadEmployeeData();
+        }
     }
 
     private void setupUI() {
@@ -65,22 +85,28 @@ public class UserMainFragment extends Fragment {
 
     private void loadEmployeeData() {
         // [ ] TODO: get employee ID from shared preferences or passed arguments
-        int employeeId = 1; // TODO: employee = ?
+        SharedPreferences prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        int employeeId = prefs.getInt("logged_in_employee_id", -1);
 
-        apiService.getEmployeeById(employeeId, new ApiDataService.EmployeeFetchListener() {
-            @Override
-            public void onEmployeesFetched(List<Employee> employees) {
-                if (employees != null && !employees.isEmpty()) {
-                    currentEmployee = employees.get(0);
-                    updateUIWithEmployeeData(currentEmployee);
+        if (employeeId != -1) { // if ID is valid then fetch employee data by the respective ID
+            apiService.getEmployeeById(employeeId, new ApiDataService.EmployeeFetchListener() {
+                @Override
+                public void onEmployeesFetched(List<Employee> employees) {
+                    Log.d(TAG, "Fetched employees: " + employees);
+                    if (employees != null && !employees.isEmpty()) {
+                        currentEmployee = employees.get(0);
+                        updateUIWithEmployeeData(currentEmployee);
+                    }
                 }
-            }
 
-            @Override
-            public void onError(String error) {
-                Toast.makeText(requireContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
-            }
-        });
+                @Override
+                public void onError(String error) {
+                    if (getContext() != null) {
+                        Toast.makeText(requireContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
+                    }
+                }
+            });
+        }
     }
 
     private void updateUIWithEmployeeData(Employee employee) {

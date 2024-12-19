@@ -51,7 +51,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // 1- create a test admin account
+        // 1- create the admin account
         LocalDataService dbHelper = new LocalDataService(requireContext());
         ContentValues adminValues = new ContentValues();
         adminValues.put("email", "alfie@staffsync.com");

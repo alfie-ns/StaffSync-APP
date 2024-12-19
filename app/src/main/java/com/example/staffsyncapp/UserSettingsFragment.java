@@ -3,6 +3,7 @@ package com.example.staffsyncapp;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +16,15 @@ import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 
 import com.example.staffsyncapp.databinding.UserSettingsFragmentBinding;
+import com.example.staffsyncapp.models.Employee;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NavigationManager;
+import com.example.staffsyncapp.ApiDataService;
 import com.example.staffsyncapp.utils.NotificationService;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+
+import java.util.List;
+import java.util.Locale;
 
 /**
 * TODO
@@ -36,6 +42,8 @@ public class UserSettingsFragment extends Fragment {
     private LocalDataService dbHelper;
     private SharedPreferences sharedPreferences;
     private NavigationManager navigationManager;
+    private ApiDataService apiService;
+    private Employee currentEmployee;
     private static final String PREFS_NAME = "UserSettings";
     private static final String DARK_MODE_KEY = "dark_mode";
 

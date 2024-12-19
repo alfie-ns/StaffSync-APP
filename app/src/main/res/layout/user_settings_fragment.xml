@@ -125,37 +125,42 @@
                             android:textSize="16sp" />
                     </LinearLayout>
 
-                    <!-- appearance/theme(dark mode) -->
+                    <!-- dark mode setting -->
                     <LinearLayout
                         android:id="@+id/dark_mode_setting"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
-                        android:gravity="center_vertical"
                         android:padding="8dp">
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/dark_mode_icon"
-                            app:tint="?attr/colorPrimary" />
-
-                        <TextView
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
-                            android:layout_marginStart="16dp"
-                            android:text="Dark Mode"
-                            android:textColor="?attr/colorPrimary"
-                            android:textSize="16sp" />
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
 
-                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            <ImageView
+                                android:layout_width="24dp"
+                                android:layout_height="24dp"
+                                android:src="@drawable/dark_mode_icon"
+                                app:tint="?attr/colorPrimary" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="16dp"
+                                android:text="@string/user_settings_dark_mode"
+                                android:textColor="?attr/colorPrimary"
+                                android:textSize="16sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/dark_mode_switch"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="false" />
                     </LinearLayout>
-
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

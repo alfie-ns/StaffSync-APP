@@ -20,15 +20,16 @@ This checklist is to help you work out if you have included everything in your s
 
 ### [ ] Implementation
 
-- Develop your app using Android Studio (Java), ensuring it reflects your design.
+- [X] Develop your app using Android Studio (Java)
+- [ ] ensuring it reflects your design.
 
 ---
 
 ### [ ] API Integration
 
-- Connect your app to the provided API to retrieve and display data. Ensure the following functionalities:
+- [X] Connect your app to the provided API to retrieve and display data. Ensure the following functionalities:
   - **[X] Admin Users**: Perform all actions for managing all employees.
-  - **[ ] Employee Users**: View their details and edit their names.
+  - **[X] Employee Users**: View their details and edit their names.
   - **[ ] Leave Management**: Leave should be approved by admin before it is updated on the main database via API.
 
 ---

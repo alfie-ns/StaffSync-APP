@@ -9,8 +9,6 @@ import android.util.Log;
 // Volley libraries for making API requests
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
-import com.android.volley.Response;
-import com.android.volley.VolleyError;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
@@ -28,7 +26,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-/**
+/** **UNDER CONSTRUCTION**
  * API requests for employee management using Volley; this file essentially
  * makes the API requests to different comp2000-server endpoints; GET, POST, PUT, DELETE.
  * using hr lines to separate out the different requests into their own sections
@@ -40,15 +38,30 @@ import java.util.concurrent.TimeUnit;
  - [X] Delete an Employee: DELETE /employees/delete/<int:id>
  - [X] Health Check: GET /health
 
+ - [ ] Worker Threads to handle API requests
+
  ---
 
  - [X] Salary Increment
 
+ * These functions use dedicated local worker threads to handle network requests in background;
+ * returns data via EmployeeFetchListener callbacks on main thread; they also use
+ * Volley's RequestQueue to handle network requests and responses.
+ * 
+ * Worket Threads:
+ * - [X] getAllEmployees
+ * - [ ] getEmployeeById
+ * - [ ] addEmployee
+ * - [ ] updateEmployee
+ * - [ ] deleteEmployee
+ * - [ ] checkHealth
  */
 
 public class ApiDataService {
     private static final String TAG = "ApiDataService"; // log tag
-    private static final String BASE_URL = "http://10.224.41.11/comp2000"; // api's base url
+    private static final String BASE_URL = "http://10.224.41.11/comp2000"; // base url
+
+    private static ApiWorkerThread workerThread;
 
     private static RequestQueue queue; 
     private Context context; 
@@ -57,6 +70,8 @@ public class ApiDataService {
     public ApiDataService(Context context) {
         this.context = context;
         queue = Volley.newRequestQueue(context); // access Volley request queue
+        workerThread = new ApiWorkerThread(); // 1- initialise worker thread
+        workerThread.start(); 
     }
 
     // various listener interfaces for API requests to handle success and error responses ---
@@ -74,8 +89,8 @@ public class ApiDataService {
         void onError(String error);
     }
 
-    public interface EmployeeAddListener { 
-        void onSuccess(String message);
+    public interface EmployeeAddListener {
+        void onSuccess(String message, int employeeId, String email);
         void onError(String error);
     }
 
@@ -102,7 +117,7 @@ public class ApiDataService {
         }
     }
 // --------------------------------------------------------------------------------
-    /** [X]
+    /** [X] [X]
      * GET request to fetch ALL employees
      * Endpoint: /employees
      */
@@ -110,21 +125,22 @@ public class ApiDataService {
         String url = BASE_URL + "/employees";
         Log.d(TAG, "Attempting to fetch employees from: " + url);
     
-        JsonArrayRequest request = new JsonArrayRequest( // fetch all employees
+        workerThread.queueTask(() -> {
+            Log.d(TAG, "Starting worker thread to fetch employees");
+            JsonArrayRequest request = new JsonArrayRequest(
                 Request.Method.GET,
                 url,
                 null,
-                new Response.Listener<JSONArray>() {
-                    @Override
-                    public void onResponse(JSONArray response) {
-                        try { // parse response; s
-                            List<Employee> employees = new ArrayList<>(); // create list of employees
+                response -> {
+                    workerThread.postToMainThread(() -> {
+                        try {
+                            List<Employee> employees = new ArrayList<>();
                             Log.d(TAG, "Received response. Employee count: " + response.length());
     
                             for (int i = 0; i < response.length(); i++) {
                                 JSONObject employeeObj = response.getJSONObject(i);
                                 
-                                Employee employee = new Employee( // create employee object with each data field
+                                Employee employee = new Employee(
                                     employeeObj.optInt("id", -1),
                                     employeeObj.optString("firstname", "N/A"),
                                     employeeObj.optString("lastname", "N/A"),
@@ -133,21 +149,20 @@ public class ApiDataService {
                                     employeeObj.optDouble("salary", 0.0),
                                     employeeObj.optString("joiningdate", "N/A")
                                 );
-                                employees.add(employee); // add employee to list
+                                employees.add(employee);
                             }
     
                             Log.d(TAG, "Successfully parsed " + employees.size() + " employees");
-                            listener.onEmployeesFetched(employees); // send parsed employee data back to AdminDashboardFragmen
+                            listener.onEmployeesFetched(employees);
     
                         } catch (Exception e) {
                             Log.e(TAG, "Error parsing employee data: " + e.getMessage());
                             listener.onError("Error parsing data: " + e.getMessage());
                         }
-                    }
+                    });
                 },
-                new Response.ErrorListener() {
-                    @Override
-                    public void onErrorResponse(VolleyError error) {
+                error -> {
+                    workerThread.postToMainThread(() -> {
                         String errorMsg;
                         if (error.networkResponse != null) {
                             errorMsg = String.format("Network Error (Code %d): %s", 
@@ -158,15 +173,16 @@ public class ApiDataService {
                         }
                         Log.e(TAG, errorMsg);
                         listener.onError(errorMsg);
-                    }
+                    });
                 }
-        );
+            );
     
-        request.setShouldCache(false);
-        queue.add(request);
+            request.setShouldCache(false);
+            queue.add(request);
+        });
     }
-// --------------------------------------------------------------------------------
-    /** [X]
+    // --------------------------------------------------------------------------------
+    /** [X] [ ]
      * GET request to fetch a particular employee by the respective ID
      * Endpoint: /employees/get/<int:id>
      */
@@ -179,6 +195,7 @@ public class ApiDataService {
                 url,
                 null,
                 response -> {
+                    Log.d(TAG, "API response: " + response);
                     try {
                         // Create a list with single employee
                         List<Employee> employeeList = new ArrayList<>();
@@ -219,16 +236,15 @@ public class ApiDataService {
         queue.add(request);
     }
 // ---------------------------------------------------------------------------------
-    /** [X]
+    /** [X] [ ]
      * POST request to add a new employee
      * Endpoint: /employees/add
      */
-    public void addEmployee(String firstname, String lastname, String email, 
-                        String department, double salary, String joiningdate, 
-                        final EmployeeAddListener listener) {
+    public void addEmployee(String firstname, String lastname, String email,
+                            String department, double salary, String joiningdate,
+                            final EmployeeAddListener listener) {
         String url = BASE_URL + "/employees/add";
-        
-        // create JSON payload
+
         JSONObject jsonBody = new JSONObject();
         try {
             jsonBody.put("firstname", firstname);
@@ -237,23 +253,49 @@ public class ApiDataService {
             jsonBody.put("department", department);
             jsonBody.put("salary", salary);
             jsonBody.put("joiningdate", joiningdate);
+
+            Log.d(TAG, "Request body: " + jsonBody.toString());
         } catch (JSONException e) {
             Log.e(TAG, "Error creating JSON body: " + e.getMessage());
             listener.onError("Error creating request");
             return;
         }
 
-        JsonObjectRequest request = new JsonObjectRequest( // POST request to add employee
+        JsonObjectRequest request = new JsonObjectRequest(
                 Request.Method.POST,
                 url,
                 jsonBody,
                 response -> {
-                    Log.d(TAG, "Employee added successfully");
-                    listener.onSuccess("Employee added successfully");
+                    try {
+                        // get all employees to find the newly created one
+                        getAllEmployees(new EmployeeFetchListener() {
+                            @Override
+                            public void onEmployeesFetched(List<Employee> employees) {
+                                // find employee by email TODO: [ ] ensure to make system to not allow same emails when creating user account
+                                for (Employee emp : employees) {
+                                    if (emp.getEmail().equals(email)) {
+                                        listener.onSuccess("Employee added successfully", emp.getId(), email);
+                                        return;
+                                    }
+                                }
+                                listener.onError("Could not find newly added employee");
+                            }
+
+                            @Override
+                            public void onError(String error) {
+                                listener.onError("Error verifying new employee: " + error);
+                            }
+                        });
+                    } catch (Exception e) {
+                        Log.e(TAG, "Error processing response: " + e.getMessage());
+                        listener.onError("Error processing response");
+                    }
                 },
                 error -> {
                     String errorMsg = error.networkResponse != null ?
-                            String.format("Network Error (Code %d)", error.networkResponse.statusCode) :
+                            String.format("Network Error (Code %d): %s",
+                                    error.networkResponse.statusCode,
+                                    new String(error.networkResponse.data)) :
                             "Error adding employee";
                     Log.e(TAG, errorMsg);
                     listener.onError(errorMsg);
@@ -264,7 +306,7 @@ public class ApiDataService {
         queue.add(request);
     }
 // ---------------------------------------------------------------------------------
-    /** [X]
+    /** [X] [ ]
      * PUT request to update an employee's details
      * Endpoint: /employees/edit/<int:id>
      */
@@ -320,7 +362,7 @@ public class ApiDataService {
         }
     }
 // ---------------------------------------------------------------------------------
-    /** [X]
+    /** [X] [ ]
      * DELETE request to delete an employee by ID
      * Endpoint: /employees/delete/<int:id>
      */
@@ -348,7 +390,7 @@ public class ApiDataService {
         queue.add(request);
     }
 // ---------------------------------------------------------------------------------
-    /** [X]
+    /** [X] [ ]
      * - GET request to test the API is working
      * - Endpoint: /health
      */
@@ -411,6 +453,12 @@ public class ApiDataService {
             return TimeUnit.DAYS.convert(now.getTime() - joinDate.getTime(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
             return 0;
+        }
+    }
+    public void cleanup() { // shut down all running workerThreads
+        if (workerThread != null) {
+            workerThread.shutdown();
+            workerThread = null;
         }
     }
 }

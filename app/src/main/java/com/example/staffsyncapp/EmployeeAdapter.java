@@ -11,6 +11,9 @@ import android.util.Log;
 // RecyclerView libraries for displaying employee data
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.MutableLiveData;
+import androidx.lifecycle.ViewModel;
 import androidx.recyclerview.widget.RecyclerView;
 
 // Employee model class
@@ -24,7 +27,7 @@ import java.util.Locale;
 
 //import javax.swing.text.html.ImageView;
 
-public class AdminEmployeeAdapter extends RecyclerView.Adapter<AdminEmployeeAdapter.ViewHolder> {
+public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHolder> {
     // EmployeeAdapter class for displaying employee data in a RecyclerView, dynamically; going to be used elsewhere in the future
     private static final String TAG = "EmployeeAdapter";
     private final List<Employee> employees;
@@ -35,12 +38,14 @@ public class AdminEmployeeAdapter extends RecyclerView.Adapter<AdminEmployeeAdap
     private OnEmployeeDeleteListener deleteListener;
     private OnEmployeeUpdateListener updateListener;
 
-    public AdminEmployeeAdapter(List<Employee> employees) { // list constructor
+    public EmployeeAdapter(List<Employee> employees) { // list constructor
         // create new lists to avoid reference issues
         this.employees = new ArrayList<>(employees);
         this.employeesFull = new ArrayList<>(employees);
         Log.d(TAG, "EmployeeAdapter initialised with " + employees.size() + " employees");
     }
+
+
 
     public interface OnEmployeeDeleteListener {
         void onDeleteClicked(Employee employee);
@@ -112,7 +117,7 @@ public class AdminEmployeeAdapter extends RecyclerView.Adapter<AdminEmployeeAdap
         this.updateListener = listener;
     }
     
-    // Update adapter's list without changing total employee count
+    // update adapter's list without changing total employee count
     public void updateDisplayList(List<Employee> displayedEmployees) {
         this.employees.clear();
         this.employees.addAll(displayedEmployees);
@@ -154,6 +159,20 @@ public class AdminEmployeeAdapter extends RecyclerView.Adapter<AdminEmployeeAdap
         }
     }
 
+    // define ViewModel for employee data
+    public static class EmployeeViewModel extends ViewModel {
+        private MutableLiveData<Employee> employeeLiveData = new MutableLiveData<>();
+
+        public LiveData<Employee> getEmployeeLiveData() {
+            return employeeLiveData;
+        }
+
+        public void setEmployeeData(Employee employee) {
+            employeeLiveData.setValue(employee);
+        }
+    }
+
+    // define ViewHolder for caching employee data views thus no repeated findViewById() calls
     public static class ViewHolder extends RecyclerView.ViewHolder { // ViewHolder for caching employee data views thus no repeated findViewById() calls
         final TextView nameTextView;
         final TextView idTextView;
