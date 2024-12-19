@@ -60,4 +60,5 @@
     <string name="home_navbar_menu">Home</string>
     <string name="profile_navbar_menu">Profile</string>
     <string name="settings_navbar_menu">Settings</string>
+    <string name="user_settings_dark_mode">Dark Mode</string>
 </resources>

@@ -1,6 +1,7 @@
 package com.example.staffsyncapp;
 
-// Android libraries for UI, data handling, and permissions
+import static com.example.staffsyncapp.utils.SalaryIncrementManager.calculateDaysSince;
+
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.navigation.fragment.NavHostFragment;
@@ -25,6 +26,9 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Toast;
+
+import com.example.staffsyncapp.utils.SalaryIncrementManager;
+import java.util.ArrayList;
 
 // additional AndroidX imports for fragment and annotations
 import androidx.annotation.NonNull;
@@ -613,7 +617,7 @@ public class AdminDashboardFragment extends Fragment {
         // check salary increments
         binding.checkIncrementsBtn.setOnClickListener(v -> {
             Log.d(TAG, "checking salary increments...");
-            showSalaryIncrementStatus();
+            SalaryIncrementManager.showSalaryIncrementStatus();
         });
 
         // notification controls setup
@@ -757,44 +761,33 @@ public class AdminDashboardFragment extends Fragment {
 
         dialog.show();
     }
-    
-    private void showSalaryIncrementStatus() { // show salary increment status for all employees with showIncrementDialog()
-        SalaryIncrementManager.getIncrementStatus(new ApiDataService.IncrementStatusListener() {
+
+    public static void getIncrementStatus(SalaryIncrementManager.IncrementStatusListener listener) {
+        ApiDataService.getAllEmployees(new ApiDataService.EmployeeFetchListener() {
             @Override
-            public void onSuccess(List<ApiDataService.IncrementStatus> statusList) {
-                StringBuilder messageBuilder = new StringBuilder();
-                final int[] eligibleCount = {0};
+            public void onEmployeesFetched(List<Employee> employees) {
+                try {
+                    List<SalaryIncrementManager.IncrementStatus> statusList = new ArrayList<>();
+                    for (Employee emp : employees) {
+                        String name = emp.getFirstname() + " " + emp.getLastname();
+                        double salary = emp.getSalary();
+                        long daysSince = calculateDaysSince(emp.getJoiningdate());
 
-                for (ApiDataService.IncrementStatus status : statusList) { // iterate through each employee
-                    int daysUntilIncrement = 365 - (int)status.daysSince;
-                    String formattedSalary = String.format("£%.2f", status.salary);
-
-                    if (daysUntilIncrement <= 0) { // if increment is due
-                        messageBuilder.append("✓ ").append(status.name)
-                                .append(" - Due for 5% increase (Current: ")
-                                .append(formattedSalary).append(")\n\n");
-                        eligibleCount[0]++;
-                    } else if (daysUntilIncrement <= 30) { // if increment is due in 30 days
-                        messageBuilder.append("⏰ ").append(status.name)
-                                .append(" - Due in ").append(daysUntilIncrement)
-                                .append(" days (Current: ").append(formattedSalary).append(")\n\n");
-                    } else { // if increment is due in more than 30 days
-                        messageBuilder.append("• ").append(status.name)
-                                .append(" - Due in ").append(daysUntilIncrement)
-                                .append(" days (Current: ").append(formattedSalary).append(")\n\n");
+                        statusList.add(new SalaryIncrementManager.IncrementStatus(name.trim(), salary, daysSince));
                     }
+                    listener.onSuccess(statusList);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error processing increments: " + e.getMessage());
+                    listener.onError("Failed to process increments");
                 }
-
-                showIncrementDialog(messageBuilder.toString(), eligibleCount[0]); // show dialog with message and count
             }
 
             @Override
             public void onError(String error) {
-                Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                listener.onError(error);
             }
         });
-    }
-    //----------------------------------------------------------------------------------------------
+    }    //----------------------------------------------------------------------------------------------
     // save toggled state
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) { // save collapsed state

@@ -9,19 +9,19 @@
 - [ ] complete notification preferences system
 - [ ] thread-safe operationgs for database operations
 - [ ] login user account that can interact with the API
-
-
 - [ ] clear search text in the rright side of recyclerview search bar
 - [ ] hav functionality that checks for the first time the newly created user log in, it should ask them to change their password, their should also be a way to change the password in profilefragment
 - [ ] link dark mode state to employee acounts
 - [ ] dark mode in admin fragment
 - [ ] get user fragments working with comp2000 API
 
-[ ] ensure to make system to not allow same emails when creating user accountt
+- [ ] ensure to make system to not allow same emails when creating user accountt
 
 - clarify fully qualified employeeViewModel?
+- 
 
 - [ ] changw password on first loggin
+- [ ] worket threads
 
 ### comp2000 API endpoints
 

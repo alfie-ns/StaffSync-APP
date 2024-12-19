@@ -15,8 +15,13 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
+import com.example.staffsyncapp.models.Employee;
+
 public class SalaryIncrementManager {
     private static final String TAG = "SalaryIncrementManager";
+
+    public static void showSalaryIncrementStatus() {
+    }
 
     public static class IncrementStatus {
         public final String name;
@@ -45,43 +50,33 @@ public class SalaryIncrementManager {
         }
     }
 
-    public static void getIncrementStatus(ApiDataService.IncrementStatusListener listener) {
-        String url = BASE_URL + "/employees";
-        JsonArrayRequest request = new JsonArrayRequest(
-                Request.Method.GET,
-                url,
-                null,
-                response -> {
-                    try {
-                        List<ApiDataService.IncrementStatus> statusList = new ArrayList<>();
-                        for (int i = 0; i < response.length(); i++) {
-                            JSONObject emp = response.getJSONObject(i);
+    public static void getIncrementStatus(IncrementStatusListener listener) {
+        ApiDataService.getAllEmployees(new ApiDataService.EmployeeFetchListener() {
+            @Override
+            public void onEmployeesFetched(List<Employee> employees) {
+                try {
+                    List<IncrementStatus> statusList = new ArrayList<>();
+                    for (Employee emp : employees) {
+                        String name = emp.getFirstname() + " " + emp.getLastname();
+                        double salary = emp.getSalary();
+                        long daysSince = calculateDaysSince(emp.getJoiningdate());
 
-                            // get the basic info I need to check it's working
-                            String name = emp.optString("firstname", "") + " " + emp.optString("lastname", "");
-                            double salary = emp.optDouble("salary", 0.0);
-                            String joiningDate = emp.optString("joiningdate", "");
-
-                            // calculate days since joining
-                            long daysSince = calculateDaysSince(joiningDate);
-
-                            // new increment status object containing employee name, salary, and days since joining;
-                            // this info then used to calculate who is due for their annual salary increase
-                            statusList.add(new ApiDataService.IncrementStatus(name.trim(), salary, daysSince));
-                        }
-                        listener.onSuccess(statusList);
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error checking increments: " + e.getMessage());
-                        listener.onError("Failed to check increments");
+                        statusList.add(new IncrementStatus(name.trim(), salary, daysSince));
                     }
-                },
-                error -> listener.onError("Network error")
-        );
-        request.setShouldCache(false);
-        queue.add(request);
-    }
+                    listener.onSuccess(statusList);
+                } catch (Exception e) {
+                    Log.e(TAG, "Error processing increments: " + e.getMessage());
+                    listener.onError("Failed to process increments");
+                }
+            }
 
-    private static long calculateDaysSince(String date) {
+            @Override
+            public void onError(String error) {
+                listener.onError(error);
+            }
+        });
+    }
+    public static long calculateDaysSince(String date) {
         try { // get days - joiningDate
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
             Date joinDate = sdf.parse(date);
