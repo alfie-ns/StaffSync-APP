@@ -39,7 +39,7 @@ public class ApiWorkerThread extends Thread {
     }
 
     @Override
-    public void run() {
+    public void run() { // execute tasks in the background; while thread if running and NOT interrupted;
         android.os.Process.setThreadPriority(android.os.Process.THREAD_PRIORITY_BACKGROUND);
 
         while (isRunning && !Thread.currentThread().isInterrupted()) {
@@ -47,6 +47,7 @@ public class ApiWorkerThread extends Thread {
                 Runnable task = taskQueue.take();
                 if (task != null) {
                     task.run();
+                    Log.d(TAG, "task executed in background");
                 }
             } catch (InterruptedException e) {
                 Log.e(TAG, "Worker thread interrupted", e);
@@ -59,7 +60,7 @@ public class ApiWorkerThread extends Thread {
         taskQueue.clear();
     }
 
-    public boolean queueTask(Runnable task) { // add a task to the queue if the worker thread is running
+    public boolean queueTask(Runnable task) { // add a task to the queue if the worker thread is already running
         if (task == null || !isRunning) {
             return false;
         }

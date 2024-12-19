@@ -10,6 +10,7 @@ import android.view.LayoutInflater;
 import android.widget.TextView;
 
 import com.example.staffsyncapp.utils.NotificationService;
+import com.example.staffsyncapp.utils.SalaryIncrementManager;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.snackbar.Snackbar;
 
@@ -84,7 +85,7 @@ public class AdminDashboardFragment extends Fragment {
     private LocalDataService dbHelper;
     private ApiDataService employeeDataService;
     private ProgressBar progressBar;
-    private int totalEmployeeCount = 0;
+    private int totalEmployeeCount = 0; // pre-initialise to ensure safe state before first API response
 
     // Employee search functionality variables
     private EditText searchEmployeeInput;
@@ -758,7 +759,7 @@ public class AdminDashboardFragment extends Fragment {
     }
     
     private void showSalaryIncrementStatus() { // show salary increment status for all employees with showIncrementDialog()
-        ApiDataService.getIncrementStatus(new ApiDataService.IncrementStatusListener() {
+        SalaryIncrementManager.getIncrementStatus(new ApiDataService.IncrementStatusListener() {
             @Override
             public void onSuccess(List<ApiDataService.IncrementStatus> statusList) {
                 StringBuilder messageBuilder = new StringBuilder();
@@ -801,9 +802,14 @@ public class AdminDashboardFragment extends Fragment {
         outState.putBoolean("isEmployeeListExpanded", isEmployeeListExpanded);
     }
     // clean up binding -------------------------------------------------------------------------------
-    @Override // freeze resources when view's destroyed
-    public void onDestroyView() { // clean up binding
+    @Override
+    public void onDestroyView() {
         super.onDestroyView();
+        if (employeeDataService != null) {
+            employeeDataService.cleanup();  // ensure all worker threads are terminated to prevent memory leak
+            Log.d(TAG, "Worker thread cleaned up");
+        }
         binding = null;
-    }}
+    }
+}
 

@@ -7,6 +7,8 @@ import android.icu.text.SimpleDateFormat;
 import android.util.Log;
 
 // Volley libraries for making API requests
+import androidx.annotation.WorkerThread;
+
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
@@ -26,7 +28,8 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
-/** **UNDER CONSTRUCTION**
+/** Employee management API service handling 'comp2000' server requests
+ * 
  * API requests for employee management using Volley; this file essentially
  * makes the API requests to different comp2000-server endpoints; GET, POST, PUT, DELETE.
  * using hr lines to separate out the different requests into their own sections
@@ -38,8 +41,6 @@ import java.util.concurrent.TimeUnit;
  - [X] Delete an Employee: DELETE /employees/delete/<int:id>
  - [X] Health Check: GET /health
 
- - [ ] Worker Threads to handle API requests
-
  ---
 
  - [X] Salary Increment
@@ -48,13 +49,13 @@ import java.util.concurrent.TimeUnit;
  * returns data via EmployeeFetchListener callbacks on main thread; they also use
  * Volley's RequestQueue to handle network requests and responses.
  * 
- * Worket Threads:
+ * Worker Threads:
  * - [X] getAllEmployees
- * - [ ] getEmployeeById
- * - [ ] addEmployee
- * - [ ] updateEmployee
- * - [ ] deleteEmployee
- * - [ ] checkHealth
+ * - [X] getEmployeeById
+ * - [X] addEmployee
+ * - [X] updateEmployee
+ * - [X] deleteEmployee
+ * - [X] checkHealth
  */
 
 public class ApiDataService {
@@ -124,14 +125,15 @@ public class ApiDataService {
     public static void getAllEmployees(EmployeeFetchListener listener) {
         String url = BASE_URL + "/employees";
         Log.d(TAG, "Attempting to fetch employees from: " + url);
-    
+
         workerThread.queueTask(() -> {
-            Log.d(TAG, "Starting worker thread to fetch employees");
+            Log.d(TAG, "getAllEmployees: Worker thread executing: " + Thread.currentThread().getName());
             JsonArrayRequest request = new JsonArrayRequest(
                 Request.Method.GET,
                 url,
                 null,
                 response -> {
+                    Log.d(TAG, "getAllEmployees: Response received on thread: " + Thread.currentThread().getName());
                     workerThread.postToMainThread(() -> {
                         try {
                             List<Employee> employees = new ArrayList<>();
@@ -161,152 +163,146 @@ public class ApiDataService {
                         }
                     });
                 },
-                error -> {
-                    workerThread.postToMainThread(() -> {
-                        String errorMsg;
-                        if (error.networkResponse != null) {
-                            errorMsg = String.format("Network Error (Code %d): %s", 
-                                error.networkResponse.statusCode,
-                                new String(error.networkResponse.data));
-                        } else {
-                            errorMsg = "Network error: " + error.getMessage();
-                        }
-                        Log.e(TAG, errorMsg);
-                        listener.onError(errorMsg);
-                    });
-                }
+                error -> workerThread.postToMainThread(() -> {
+                    String errorMsg = error.networkResponse != null ?
+                        String.format(Locale.UK, "Network Error (Code %d)", error.networkResponse.statusCode) :
+                        "Failed to fetch employee data";
+                    Log.e(TAG, errorMsg);
+                    listener.onError(errorMsg);
+                })
             );
     
             request.setShouldCache(false);
             queue.add(request);
         });
     }
-    // --------------------------------------------------------------------------------
-    /** [X] [ ]
+// --------------------------------------------------------------------------------
+    /** [X] [X]
      * GET request to fetch a particular employee by the respective ID
      * Endpoint: /employees/get/<int:id>
      */
     public void getEmployeeById(int id, EmployeeFetchListener listener) {
         String url = BASE_URL + "/employees/get/" + id;
         Log.d(TAG, "Attempting to fetch employee " + id);
-    
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.GET,
-                url,
-                null,
-                response -> {
-                    Log.d(TAG, "API response: " + response);
-                    try {
-                        // Create a list with single employee
-                        List<Employee> employeeList = new ArrayList<>();
-                        
-                        // Parse the response
-                        Employee employee = new Employee(
-                            response.optInt("id", -1),
-                            response.optString("firstname", "N/A"),
-                            response.optString("lastname", "N/A"),
-                            response.optString("email", "N/A"),
-                            response.optString("department", "N/A"),
-                            response.optDouble("salary", 0.0),
-                            response.optString("joiningdate", "N/A")
-                        );
-                        
-                        employeeList.add(employee);
-                        listener.onEmployeesFetched(employeeList);
-                        
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error parsing employee data: " + e.getMessage());
-                        listener.onError("Error parsing employee data");
-                    }
-                },
-                error -> {
-                    String errorMsg;
-                    if (error.networkResponse != null) {
-                        errorMsg = String.format("Network Error (Code %d): %s",
-                                error.networkResponse.statusCode,
-                                new String(error.networkResponse.data));
-                    } else {
-                        errorMsg = "Error fetching employee data";
-                    }
-                    listener.onError(errorMsg);
-                }
-        );
-    
-        request.setShouldCache(false);
-        queue.add(request);
+
+        workerThread.queueTask(() -> {
+            Log.d(TAG, "getEmployeeById: Worker thread executing: " + Thread.currentThread().getName());
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.GET,
+                    url,
+                    null,
+                    response -> {
+                        workerThread.postToMainThread(() -> {
+                            Log.d(TAG, "getEmployeeById: Response received on thread: " + Thread.currentThread().getName());
+                            Log.d(TAG, "API response: " + response);
+                            try {
+                                List<Employee> employeeList = new ArrayList<>();
+                                Employee employee = new Employee(
+                                        response.optInt("id", -1),
+                                        response.optString("firstname", "N/A"),
+                                        response.optString("lastname", "N/A"),
+                                        response.optString("email", "N/A"),
+                                        response.optString("department", "N/A"),
+                                        response.optDouble("salary", 0.0),
+                                        response.optString("joiningdate", "N/A")
+                                );
+                                employeeList.add(employee);
+                                listener.onEmployeesFetched(employeeList);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error parsing employee data: " + e.getMessage());
+                                listener.onError("Error parsing employee data");
+                            }
+                        });
+                    },
+                    error -> workerThread.postToMainThread(() -> {
+                        String errorMsg = error.networkResponse != null ?
+                                String.format(Locale.UK, "Network Error (Code %d)", error.networkResponse.statusCode) :
+                                "Failed to fetch employee data";
+                        Log.e(TAG, errorMsg);
+                        listener.onError(errorMsg);
+                    })
+            );
+
+            request.setShouldCache(false);
+            queue.add(request);
+        });
     }
 // ---------------------------------------------------------------------------------
-    /** [X] [ ]
+    /** [X] [X]
      * POST request to add a new employee
      * Endpoint: /employees/add
      */
-    public void addEmployee(String firstname, String lastname, String email,
+public void addEmployee(String firstname, String lastname, String email,
                             String department, double salary, String joiningdate,
                             final EmployeeAddListener listener) {
         String url = BASE_URL + "/employees/add";
+        Log.d(TAG, "Attempting to add new employee: " + firstname + " " + lastname);
 
-        JSONObject jsonBody = new JSONObject();
-        try {
-            jsonBody.put("firstname", firstname);
-            jsonBody.put("lastname", lastname);
-            jsonBody.put("email", email);
-            jsonBody.put("department", department);
-            jsonBody.put("salary", salary);
-            jsonBody.put("joiningdate", joiningdate);
+        workerThread.queueTask(() -> {
+            Log.d(TAG, "addEmployee: Worker thread executing: " + Thread.currentThread().getName());
 
-            Log.d(TAG, "Request body: " + jsonBody.toString());
-        } catch (JSONException e) {
-            Log.e(TAG, "Error creating JSON body: " + e.getMessage());
-            listener.onError("Error creating request");
-            return;
-        }
+            JSONObject jsonBody = new JSONObject();
+            try {
+                jsonBody.put("firstname", firstname);
+                jsonBody.put("lastname", lastname);
+                jsonBody.put("email", email);
+                jsonBody.put("department", department);
+                jsonBody.put("salary", salary);
+                jsonBody.put("joiningdate", joiningdate);
 
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.POST,
-                url,
-                jsonBody,
-                response -> {
-                    try {
-                        // get all employees to find the newly created one
-                        getAllEmployees(new EmployeeFetchListener() {
-                            @Override
-                            public void onEmployeesFetched(List<Employee> employees) {
-                                // find employee by email TODO: [ ] ensure to make system to not allow same emails when creating user account
-                                for (Employee emp : employees) {
-                                    if (emp.getEmail().equals(email)) {
-                                        listener.onSuccess("Employee added successfully", emp.getId(), email);
-                                        return;
+                Log.d(TAG, "Request body: " + jsonBody.toString());
+
+                JsonObjectRequest request = new JsonObjectRequest(
+                        Request.Method.POST,
+                        url,
+                        jsonBody,
+                        response -> {
+                            Log.d(TAG, "Employee addition successful");
+                            workerThread.postToMainThread(() -> {
+                                getAllEmployees(new EmployeeFetchListener() {
+                                    @Override
+                                    public void onEmployeesFetched(List<Employee> employees) {
+                                        for (Employee emp : employees) {
+                                            if (emp.getEmail().equals(email)) {
+                                                listener.onSuccess("Employee added successfully",
+                                                        emp.getId(), email);
+                                                return;
+                                            }
+                                        }
+                                        listener.onError("Could not verify new employee");
                                     }
-                                }
-                                listener.onError("Could not find newly added employee");
-                            }
 
-                            @Override
-                            public void onError(String error) {
-                                listener.onError("Error verifying new employee: " + error);
-                            }
-                        });
-                    } catch (Exception e) {
-                        Log.e(TAG, "Error processing response: " + e.getMessage());
-                        listener.onError("Error processing response");
-                    }
-                },
-                error -> {
-                    String errorMsg = error.networkResponse != null ?
-                            String.format("Network Error (Code %d): %s",
-                                    error.networkResponse.statusCode,
-                                    new String(error.networkResponse.data)) :
-                            "Error adding employee";
-                    Log.e(TAG, errorMsg);
-                    listener.onError(errorMsg);
-                }
-        );
+                                    @Override
+                                    public void onError(String error) {
+                                        listener.onError("Error verifying new employee: " + error);
+                                    }
+                                });
+                            });
+                        },
+                        error -> workerThread.postToMainThread(() -> {
+                            String errorMsg = error.networkResponse != null ?
+                                    String.format(Locale.UK, "Network Error (Code %d): %s",
+                                            error.networkResponse.statusCode,
+                                            new String(error.networkResponse.data)) :
+                                    "Error adding employee";
+                            Log.e(TAG, errorMsg);
+                            listener.onError(errorMsg);
+                        })
+                );
 
-        request.setShouldCache(false);
-        queue.add(request);
+                request.setShouldCache(false);
+                queue.add(request);
+
+            } catch (JSONException e) {
+                workerThread.postToMainThread(() -> {
+                    Log.e(TAG, "Error creating JSON body: " + e.getMessage());
+                    listener.onError("Error creating request");
+                });
+            }
+        });
     }
 // ---------------------------------------------------------------------------------
-    /** [X] [ ]
+    /** [X] [X]
      * PUT request to update an employee's details
      * Endpoint: /employees/edit/<int:id>
      */
@@ -314,99 +310,133 @@ public class ApiDataService {
                                String department, double salary, String joiningdate,
                                EmployeeUpdateListener listener) {
         String url = BASE_URL + "/employees/edit/" + id;
+        Log.d(TAG, "Attempting to update employee " + id);
 
-        try {
-            JSONObject jsonBody = new JSONObject();
-            jsonBody.put("firstname", firstname);
-            jsonBody.put("lastname", lastname);
-            jsonBody.put("email", email);
-            jsonBody.put("department", department);
-            jsonBody.put("salary", salary);
+        workerThread.queueTask(() -> {
+            Log.d(TAG, "updateEmployee: Worker thread executing: " + Thread.currentThread().getName());
 
-            // format date from EditText's timestamp (EEE, dd MMM yyyy) to API required format (YYYY-MM-DD)
-            SimpleDateFormat inputFormat = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.UK);
-            SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
             try {
-                Date date = inputFormat.parse(joiningdate);
-                String formattedDate = outputFormat.format(date);
-                jsonBody.put("joiningdate", formattedDate);
-            } catch (ParseException e) {
-                // If parsing fails, try to use the original date assuming it's already YYYY-MM-DD
-                jsonBody.put("joiningdate", joiningdate);
+                JSONObject jsonBody = new JSONObject();
+                jsonBody.put("firstname", firstname);
+                jsonBody.put("lastname", lastname);
+                jsonBody.put("email", email);
+                jsonBody.put("department", department);
+                jsonBody.put("salary", salary);
+
+                // format date from EditText's timestamp to API format
+                SimpleDateFormat inputFormat = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.UK);
+                SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
+                try {
+                    Date date = inputFormat.parse(joiningdate);
+                    String formattedDate = outputFormat.format(date);
+                    jsonBody.put("joiningdate", formattedDate);
+                } catch (ParseException e) {
+                    // if parsing fails, use original date format, presuming YYYY-MM-DD
+                    jsonBody.put("joiningdate", joiningdate);
+                }
+
+                Log.d(TAG, "Update request body: " + jsonBody.toString());
+
+                JsonObjectRequest request = new JsonObjectRequest(
+                        Request.Method.PUT,
+                        url,
+                        jsonBody,
+                        response -> {
+                            Log.d(TAG, "Employee update successful");
+                            workerThread.postToMainThread(() -> {
+                                listener.onSuccess("Employee updated successfully");
+                            });
+                        },
+                        error -> workerThread.postToMainThread(() -> {
+                            String errorMsg = error.networkResponse != null ?
+                                    String.format(Locale.UK, "Network Error (Code %d): %s",
+                                            error.networkResponse.statusCode,
+                                            new String(error.networkResponse.data)) :
+                                    "Error updating employee";
+                            Log.e(TAG, errorMsg);
+                            listener.onError(errorMsg);
+                        })
+                );
+
+                request.setShouldCache(false);
+                queue.add(request);
+
+            } catch (JSONException e) {
+                workerThread.postToMainThread(() -> {
+                    Log.e(TAG, "Error creating JSON body: " + e.getMessage());
+                    listener.onError("Error creating request: " + e.getMessage());
+                });
             }
-
-            JsonObjectRequest request = new JsonObjectRequest(
-                    Request.Method.PUT,
-                    url,
-                    jsonBody,
-                    response -> {
-                        Log.d(TAG, "Update successful: " + response.toString());
-                        listener.onSuccess("Employee updated successfully");
-                    },
-                    error -> {
-                        String errorMessage = "";
-                        if (error.networkResponse != null) {
-                            errorMessage = new String(error.networkResponse.data);
-                            Log.e(TAG, "Error updating employee: " + errorMessage);
-                        }
-                        listener.onError("Error: " + errorMessage);
-                    }
-            );
-
-            Log.d(TAG, "Sending update request with body: " + jsonBody.toString());
-            request.setShouldCache(false);
-            queue.add(request);
-
-        } catch (JSONException e) {
-            listener.onError("Error creating request: " + e.getMessage());
-        }
+        });
     }
 // ---------------------------------------------------------------------------------
-    /** [X] [ ]
+    /** [X] [X]
      * DELETE request to delete an employee by ID
      * Endpoint: /employees/delete/<int:id>
      */
     public void deleteEmployee(int employeeId, EmployeeDeleteListener listener) {
         String url = BASE_URL + "/employees/delete/" + employeeId;
+        Log.d(TAG, "Attempting to delete employee " + employeeId);
 
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.DELETE,
-                url,
-                null,
-                response -> {
-                    Log.d(TAG, "Employee deleted successfully");
-                    listener.onSuccess("Employee deleted successfully");
-                },
-                error -> {
-                    @SuppressLint("DefaultLocale") String errorMsg = error.networkResponse != null ?
-                            String.format("Network Error (Code %d)", error.networkResponse.statusCode) :
-                            "Error deleting employee";
-                    Log.e(TAG, errorMsg);
-                    listener.onError(errorMsg);
-                }
-        );
+        workerThread.queueTask(() -> {
+            Log.d(TAG, "deleteEmployee: Worker thread executing: " + Thread.currentThread().getName());
 
-        request.setShouldCache(false);
-        queue.add(request);
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.DELETE,
+                    url,
+                    null,
+                    response -> {
+                        Log.d(TAG, "Employee deletion successful");
+                        workerThread.postToMainThread(() -> {
+                            listener.onSuccess("Employee deleted successfully");
+                        });
+                    },
+                    error -> workerThread.postToMainThread(() -> {
+                        @SuppressLint("DefaultLocale") String errorMsg = error.networkResponse != null ?
+                                String.format(Locale.UK, "Network Error (Code %d)", error.networkResponse.statusCode) :
+                                "Error deleting employee";
+                        Log.e(TAG, errorMsg);
+                        listener.onError(errorMsg);
+                    })
+            );
+
+            request.setShouldCache(false);
+            queue.add(request);
+        });
     }
 // ---------------------------------------------------------------------------------
-    /** [X] [ ]
+    /** [X] [X]
      * - GET request to test the API is working
      * - Endpoint: /health
      */
     public void checkHealth(HealthCallback callback) {
         String url = BASE_URL + "/health";
         Log.d(TAG, "Testing API health");
-        JsonObjectRequest request = new JsonObjectRequest(
-                Request.Method.GET,
-                url,
-                null,
-                response -> callback.onResponse("API is working"), // success callback
-                error -> callback.onResponse(error.getMessage() != null ?
-                        error.getMessage() : "Cannot connect to COMP2000") // failure callback
-        );
-        request.setShouldCache(false);
-        queue.add(request);
+
+        workerThread.queueTask(() -> {
+            Log.d(TAG, "checkHealth: Worker thread executing: " + Thread.currentThread().getName());
+
+            JsonObjectRequest request = new JsonObjectRequest(
+                    Request.Method.GET,
+                    url,
+                    null,
+                    response -> {
+                        Log.d(TAG, "Health check successful");
+                        workerThread.postToMainThread(() -> {
+                            callback.onResponse("API is working");
+                        });
+                    },
+                    error -> workerThread.postToMainThread(() -> {
+                        String errorMsg = error.getMessage() != null ?
+                                error.getMessage() : "Cannot connect to COMP2000";
+                        Log.e(TAG, "Health check failed: " + errorMsg);
+                        callback.onResponse(errorMsg);
+                    })
+            );
+
+            request.setShouldCache(false);
+            queue.add(request);
+        });
     }
 // --------------------------------------------------------------------------------
     // HELPER FUNCTIONS
