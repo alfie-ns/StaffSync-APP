@@ -4,6 +4,7 @@ import static com.example.staffsyncapp.utils.SalaryIncrementManager.calculateDay
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
+import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
 
 import android.content.pm.PackageManager;
@@ -347,7 +348,7 @@ public class AdminDashboardFragment extends Fragment {
                             @Override
                             public void onSuccess(String message, int employeeId, String email) {
                                 LocalDataService dbHelper = new LocalDataService(requireContext());
-                                dbHelper.createUserAccount(employeeId, email);
+                                dbHelper.createEmployeeAccount(employeeId, email);
 
                                 dialog.dismiss();
                                 Toast.makeText(requireContext(),
@@ -587,6 +588,16 @@ public class AdminDashboardFragment extends Fragment {
     //----------------------------------------------------------------------------------------------
     // UI setup
     private void setupClickListeners() {
+        /**
+         * Set all click listeners for each admin functionality
+         **/
+
+        // go to holiday requests fragment
+        binding.manageLeaveBtn.setOnClickListener(v -> {
+            Navigation.findNavController(v)
+                    .navigate(R.id.action_AdminDashboardFragment_to_AdminHolidayRequestsFragment);
+        });
+
         // edit employee dialog via pencil icon
         binding.pencilIcon.setOnClickListener(v -> {
             showEditEmployeeDialog();
@@ -599,7 +610,7 @@ public class AdminDashboardFragment extends Fragment {
             fetchAndShowEmployees(); // effectively refreshes/synchronises the RecyclerView with the API data
         });
 
-        // fetch and display all employees
+        // etch and display all employees
         binding.totalEmployeesCard.setOnClickListener(v -> fetchAndShowEmployees());
 
         // add new employee dialog
@@ -787,7 +798,8 @@ public class AdminDashboardFragment extends Fragment {
                 listener.onError(error);
             }
         });
-    }    //----------------------------------------------------------------------------------------------
+    }
+    //----------------------------------------------------------------------------------------------
     // save toggled state
     @Override
     public void onSaveInstanceState(@NonNull Bundle outState) { // save collapsed state

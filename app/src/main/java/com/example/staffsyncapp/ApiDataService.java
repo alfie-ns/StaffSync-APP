@@ -56,6 +56,12 @@ import java.util.concurrent.TimeUnit;
  * - [X] updateEmployee
  * - [X] deleteEmployee
  * - [X] checkHealth
+ *
+ * I subsequently had to make getEmployeeById static because the method is
+ * called directly on the class name (ApiDataService.getEmployeeById) rather than 
+ * on an instance of the class (apiService.getEmployeeById) this is because in
+ * regards to Holiday requests, we need to access employee data without instantiating 
+ * the ApiDataService class each time we validate or process a request
  */
 
 public class ApiDataService {
@@ -121,7 +127,7 @@ public class ApiDataService {
     /** [X] [X]
      * GET request to fetch ALL employees
      * Endpoint: /employees
-     */
+     **/
     public static void getAllEmployees(EmployeeFetchListener listener) {
         String url = BASE_URL + "/employees";
         Log.d(TAG, "Attempting to fetch employees from: " + url);
@@ -180,8 +186,8 @@ public class ApiDataService {
     /** [X] [X]
      * GET request to fetch a particular employee by the respective ID
      * Endpoint: /employees/get/<int:id>
-     */
-    public void getEmployeeById(int id, EmployeeFetchListener listener) {
+     **/
+    public static void getEmployeeById(int id, EmployeeFetchListener listener) {
         String url = BASE_URL + "/employees/get/" + id;
         Log.d(TAG, "Attempting to fetch employee " + id);
 
@@ -231,10 +237,10 @@ public class ApiDataService {
     /** [X] [X]
      * POST request to add a new employee
      * Endpoint: /employees/add
-     */
-public void addEmployee(String firstname, String lastname, String email,
-                            String department, double salary, String joiningdate,
-                            final EmployeeAddListener listener) {
+     **/
+    public void addEmployee(String firstname, String lastname, String email,
+                                String department, double salary, String joiningdate,
+                                final EmployeeAddListener listener) {
         String url = BASE_URL + "/employees/add";
         Log.d(TAG, "Attempting to add new employee: " + firstname + " " + lastname);
 
@@ -305,7 +311,7 @@ public void addEmployee(String firstname, String lastname, String email,
     /** [X] [X]
      * PUT request to update an employee's details
      * Endpoint: /employees/edit/<int:id>
-     */
+     **/
     public void updateEmployee(int id, String firstname, String lastname, String email,
                                String department, double salary, String joiningdate,
                                EmployeeUpdateListener listener) {
@@ -373,7 +379,7 @@ public void addEmployee(String firstname, String lastname, String email,
     /** [X] [X]
      * DELETE request to delete an employee by ID
      * Endpoint: /employees/delete/<int:id>
-     */
+     **/
     public void deleteEmployee(int employeeId, EmployeeDeleteListener listener) {
         String url = BASE_URL + "/employees/delete/" + employeeId;
         Log.d(TAG, "Attempting to delete employee " + employeeId);
@@ -408,7 +414,7 @@ public void addEmployee(String firstname, String lastname, String email,
     /** [X] [X]
      * - GET request to test the API is working
      * - Endpoint: /health
-     */
+     **/
     public void checkHealth(HealthCallback callback) {
         String url = BASE_URL + "/health";
         Log.d(TAG, "Testing API health");
@@ -440,55 +446,10 @@ public void addEmployee(String firstname, String lastname, String email,
     }
 // --------------------------------------------------------------------------------
     // HELPER FUNCTIONS
-    public static void getIncrementStatus(IncrementStatusListener listener) {
-    String url = BASE_URL + "/employees";
-    JsonArrayRequest request = new JsonArrayRequest(
-            Request.Method.GET,
-            url,
-            null,
-            response -> {
-                try {
-                    List<IncrementStatus> statusList = new ArrayList<>();
-                    for (int i = 0; i < response.length(); i++) {
-                        JSONObject emp = response.getJSONObject(i);
-
-                        // get the basic info I need to check it's working
-                        String name = emp.optString("firstname", "") + " " + emp.optString("lastname", "");
-                        double salary = emp.optDouble("salary", 0.0);
-                        String joiningDate = emp.optString("joiningdate", "");
-
-                        // calculate days since joining
-                        long daysSince = calculateDaysSince(joiningDate);
-
-                        // new increment status object containing employee name, salary, and days since joining;
-                        // this info used to calculate who is due for their annual salary increase
-                        statusList.add(new IncrementStatus(name.trim(), salary, daysSince));
-                    }
-                    listener.onSuccess(statusList);
-                } catch (Exception e) {
-                    Log.e(TAG, "Error checking increments: " + e.getMessage());
-                    listener.onError("Failed to check increments");
-                }
-            },
-            error -> listener.onError("Network error")
-    );
-    request.setShouldCache(false);
-    queue.add(request);
-}
-    private static long calculateDaysSince(String date) {
-        try { // get days - joiningDate
-            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
-            Date joinDate = sdf.parse(date);
-            Date now = new Date();
-            return TimeUnit.DAYS.convert(now.getTime() - joinDate.getTime(), TimeUnit.MILLISECONDS);
-        } catch (Exception e) {
-            return 0;
-        }
-    }
-    public void cleanup() { // shut down all running workerThreads
+    public void cleanup() { // shut down all running workerThreads; clean running threads
         if (workerThread != null) {
             workerThread.shutdown();
-            workerThread = null;
+            workerThread = null; // dereference to free up resources
         }
     }
 }

@@ -25,8 +25,8 @@
             android:id="@+id/action_LoginFragment_to_AdminDashboardFragment"
             app:destination="@id/AdminDashboardFragment" />
         <action
-            android:id="@+id/action_LoginFragment_to_UserMainFragment"
-            app:destination="@id/user_navigation_home" />
+            android:id="@+id/action_LoginFragment_to_EmployeeMainFragment"
+            app:destination="@id/employee_navigation_home" />
     </fragment>
 
     <fragment
@@ -36,49 +36,72 @@
         <action
             android:id="@+id/action_AdminDashboardFragment_to_SecondFragment"
             app:destination="@id/SecondFragment"/>
+        <action
+            android:id="@+id/action_AdminDashboardFragment_to_AdminHolidayRequestsFragment"
+            app:destination="@id/admin_holiday_requests_fragment" />
     </fragment>
 
-    <!-- user fragments -->
+    <!-- employee fragments -->
     <fragment
-        android:id="@+id/user_navigation_home"
-        android:name="com.example.staffsyncapp.UserMainFragment"
-        tools:layout="@layout/user_main_body_fragment">
+        android:id="@+id/employee_navigation_home"
+        android:name="com.example.staffsyncapp.EmployeeMainBodyFragment"
+        tools:layout="@layout/employee_main_body_fragment">
         <action
-            android:id="@+id/action_UserMainFragment_to_UserProfileFragment"
-            app:destination="@id/user_navigation_profile" />
+            android:id="@+id/action_EmployeeMainFragment_to_EmployeeProfileFragment"
+            app:destination="@id/employee_navigation_profile" />
         <action
-            android:id="@+id/action_UserMainFragment_to_UserSettingsFragment"
-            app:destination="@id/user_navigation_settings" />
+            android:id="@+id/action_EmployeeMainFragment_to_EmployeeSettingsFragment"
+            app:destination="@id/employee_navigation_settings" />
         <action
-            android:id="@+id/action_UserMainFragment_to_SecondFragment"
+            android:id="@+id/action_EmployeeMainFragment_to_SecondFragment"
+            app:destination="@id/SecondFragment"
+            app:popUpTo="@id/SecondFragment"
+            app:popUpToInclusive="true" />
+        <action
+            android:id="@+id/action_EmployeeMainFragment_to_HolidayRequestFragment"
+            app:destination="@id/holiday_request_fragment" />
+    </fragment>
+
+
+    <fragment
+        android:id="@+id/employee_navigation_profile"
+        android:name="com.example.staffsyncapp.EmployeeProfileFragment"
+        tools:layout="@layout/employee_profile_fragment">
+        <action
+            android:id="@+id/action_EmployeeProfileFragment_to_EmployeeMainFragment"
+            app:destination="@id/employee_navigation_home" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/employee_navigation_settings"
+        android:name="com.example.staffsyncapp.EmployeeSettingsFragment"
+        tools:layout="@layout/employee_settings_fragment">
+        <action
+            android:id="@+id/action_EmployeeSettingsFragment_to_EmployeeMainFragment"
+            app:destination="@id/employee_navigation_home" />
+        <action
+            android:id="@+id/action_EmployeeSettingsFragment_to_SecondFragment"
             app:destination="@id/SecondFragment"
             app:popUpTo="@id/SecondFragment"
             app:popUpToInclusive="true" />
     </fragment>
 
-
     <fragment
-        android:id="@+id/user_navigation_profile"
-        android:name="com.example.staffsyncapp.UserProfileFragment"
-        tools:layout="@layout/user_profile_fragment">
+        android:id="@+id/holiday_request_fragment"
+        android:name="com.example.staffsyncapp.HolidayRequestFragment"
+        tools:layout="@layout/holiday_request_fragment">
         <action
-            android:id="@+id/action_UserProfileFragment_to_UserMainFragment"
-            app:destination="@id/user_navigation_home" />
+            android:id="@+id/action_HolidayRequestFragment_to_EmployeeMainFragment"
+            app:destination="@id/employee_navigation_home" />
     </fragment>
 
     <fragment
-        android:id="@+id/user_navigation_settings"
-        android:name="com.example.staffsyncapp.UserSettingsFragment"
-        tools:layout="@layout/user_settings_fragment">
+        android:id="@+id/admin_holiday_requests_fragment"
+        android:name="com.example.staffsyncapp.AdminHolidayRequestsFragment"
+        tools:layout="@layout/admin_holiday_requests_fragment">
         <action
-            android:id="@+id/action_UserSettingsFragment_to_UserMainFragment"
-            app:destination="@id/user_navigation_home" />
-        <action
-            android:id="@+id/action_UserSettingsFragment_to_SecondFragment"
-            app:destination="@id/SecondFragment"
-            app:popUpTo="@id/SecondFragment"
-            app:popUpToInclusive="true" />
-
+            android:id="@+id/action_AdminHolidayRequestsFragment_to_AdminDashboardFragment"
+            app:destination="@id/AdminDashboardFragment" />
     </fragment>
 
 </navigation>

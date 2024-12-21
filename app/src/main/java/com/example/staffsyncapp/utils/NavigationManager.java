@@ -9,7 +9,7 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 
 /**
  * NavigationManager class to handle bottom-navigation bar
- * thus seamless navigating between user fragments
+ * thus seamless navigating between employee fragments
  * 
  * @param fragment: the fragment to navigate from i.e. navigation host fragment
  * @param bottomNav: the bottom navigation view to handle navigation
@@ -31,18 +31,18 @@ public class NavigationManager {
         bottomNav.setOnItemSelectedListener(item -> {
             try {
                 if (item.getItemId() == R.id.navigation_home) {
-                    if (navController.getCurrentDestination().getId() != R.id.user_navigation_home) {
-                        navController.navigate(R.id.user_navigation_home);
+                    if (navController.getCurrentDestination().getId() != R.id.employee_navigation_home) {
+                        navController.navigate(R.id.employee_navigation_home);
                     }
                     return true;
                 } else if (item.getItemId() == R.id.navigation_profile) {
-                    if (navController.getCurrentDestination().getId() != R.id.user_navigation_profile) {
-                        navController.navigate(R.id.user_navigation_profile);
+                    if (navController.getCurrentDestination().getId() != R.id.employee_navigation_profile) {
+                        navController.navigate(R.id.employee_navigation_profile);
                     }
                     return true;
                 } else if (item.getItemId() == R.id.navigation_settings) {
-                    if (navController.getCurrentDestination().getId() != R.id.user_navigation_settings) {
-                        navController.navigate(R.id.user_navigation_settings);
+                    if (navController.getCurrentDestination().getId() != R.id.employee_navigation_settings) {
+                        navController.navigate(R.id.employee_navigation_settings);
                     }
                     return true;
                 }
@@ -63,7 +63,7 @@ public class NavigationManager {
 
     public void navigateToLogin() {
         try {
-            navController.navigate(R.id.action_UserSettingsFragment_to_SecondFragment);
+            navController.navigate(R.id.action_EmployeeSettingsFragment_to_SecondFragment);
         } catch (Exception e) {
             Log.e(TAG, "Failed to navigate to login: " + e.getMessage());
         }

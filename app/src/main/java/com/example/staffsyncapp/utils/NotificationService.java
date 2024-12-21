@@ -10,7 +10,7 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 
 /*
- * NotificationService class is responsible for sending notifications to the user;
+ * NotificationService class is responsible for sending notifications to the employee;
  * it creates notification channels for holiday requests and system updates.
  * 
  * - Holiday notifications are high priority and have a blue light color.

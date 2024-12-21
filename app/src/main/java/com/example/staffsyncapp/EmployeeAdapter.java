@@ -38,7 +38,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
     private OnEmployeeDeleteListener deleteListener;
     private OnEmployeeUpdateListener updateListener;
 
-    public EmployeeAdapter(List<Employee> employees) { // list constructor
+    public EmployeeAdapter(List<Employee> employees) { // Employee list constructor
         // create new lists to avoid reference issues
         this.employees = new ArrayList<>(employees);
         this.employeesFull = new ArrayList<>(employees);
@@ -124,6 +124,16 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
         notifyDataSetChanged(); // refresh the RecyclerView
     }
 
+
+    /**
+     * Filter the employee list based on the search text;
+     * - if search text is empty, show full list
+     * - case-insensitive search
+     * - search through the backup list
+     * - notify adapter that data has changed
+     * @param text
+     */
+     
     public void filter(String text) {
         try { // TODO SearchByID [X]
             // clear current list but preserve the fullList

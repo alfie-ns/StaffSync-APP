@@ -15,16 +15,10 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.NavOptions;
 import androidx.navigation.Navigation;
 
-import com.example.staffsyncapp.databinding.UserSettingsFragmentBinding;
+import com.example.staffsyncapp.databinding.EmployeeSettingsFragmentBinding;
 import com.example.staffsyncapp.models.Employee;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NavigationManager;
-import com.example.staffsyncapp.ApiDataService;
-import com.example.staffsyncapp.utils.NotificationService;
-import com.google.android.material.switchmaterial.SwitchMaterial;
-
-import java.util.List;
-import java.util.Locale;
 
 /**
 * TODO
@@ -37,19 +31,19 @@ import java.util.Locale;
 
 
 
-public class UserSettingsFragment extends Fragment {
-    private UserSettingsFragmentBinding binding;
+public class EmployeeSettingsFragment extends Fragment {
+    private EmployeeSettingsFragmentBinding binding;
     private LocalDataService dbHelper;
     private SharedPreferences sharedPreferences;
     private NavigationManager navigationManager;
     private ApiDataService apiService;
     private Employee currentEmployee;
-    private static final String PREFS_NAME = "UserSettings";
+    private static final String PREFS_NAME = "employeeSettings";
     private static final String DARK_MODE_KEY = "dark_mode";
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = UserSettingsFragmentBinding.inflate(inflater, container, false);
+        binding = EmployeeSettingsFragmentBinding.inflate(inflater, container, false);
         dbHelper = new LocalDataService(requireContext());
         sharedPreferences = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         return binding.getRoot();
@@ -67,11 +61,11 @@ public class UserSettingsFragment extends Fragment {
     }
 
     private void setupUI() {
-        SharedPreferences prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-        int userId = prefs.getInt("logged_in_employee_id", -1);
-        String userDarkModeKey = DARK_MODE_KEY + "_" + userId;
+        SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+        int employeeId = prefs.getInt("logged_in_employee_id", -1);
+        String employeeDarkModeKey = DARK_MODE_KEY + "_" + employeeId;
         // restore dark mode preference
-        binding.darkModeSwitch.setChecked(sharedPreferences.getBoolean(userDarkModeKey, false));
+        binding.darkModeSwitch.setChecked(sharedPreferences.getBoolean(employeeDarkModeKey, false));
     }
 
     private void setupClickListeners() {
@@ -83,11 +77,11 @@ public class UserSettingsFragment extends Fragment {
         });
 
         binding.darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            SharedPreferences prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-            int userId = prefs.getInt("logged_in_employee_id", -1);
-            String userDarkModeKey = DARK_MODE_KEY + "_" + userId;
+            SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+            int employeeId = prefs.getInt("logged_in_employee_id", -1);
+            String employeeDarkModeKey = DARK_MODE_KEY + "_" + employeeId;
 
-            sharedPreferences.edit().putBoolean(userDarkModeKey, isChecked).apply();
+            sharedPreferences.edit().putBoolean(employeeDarkModeKey, isChecked).apply();
             AppCompatDelegate.setDefaultNightMode(
                     isChecked ? AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO
             );
@@ -107,23 +101,23 @@ public class UserSettingsFragment extends Fragment {
 
     private void handleLogout() {
         try {
-            SharedPreferences prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
-            int userId = prefs.getInt("logged_in_employee_id", -1);
-            String userDarkModeKey = DARK_MODE_KEY + "_" + userId;
+            SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+            int employeeId = prefs.getInt("logged_in_employee_id", -1);
+            String employeeDarkModeKey = DARK_MODE_KEY + "_" + employeeId;
 
             // reset dark mode to system default and clear preference
-            sharedPreferences.edit().remove(userDarkModeKey).apply();
+            sharedPreferences.edit().remove(employeeDarkModeKey).apply();
             AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
             requireActivity().recreate();
 
-            dbHelper.logoutUser();
+            dbHelper.logoutEmployee();
 
             NavOptions navOptions = new NavOptions.Builder()
                     .setPopUpTo(R.id.SecondFragment, true)
                     .build();
 
             Navigation.findNavController(requireView())
-                    .navigate(R.id.action_UserSettingsFragment_to_SecondFragment, null, navOptions);
+                    .navigate(R.id.action_EmployeeSettingsFragment_to_SecondFragment, null, navOptions);
 
             Toast.makeText(requireContext(), "Logged out successfully", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {

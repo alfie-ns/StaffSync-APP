@@ -1,7 +1,9 @@
 package com.example.staffsyncapp;
 
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -11,13 +13,16 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
+import android.database.Cursor;
+
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
-import com.example.staffsyncapp.databinding.UserProfileFragmentBinding;
+import com.example.staffsyncapp.databinding.EmployeeProfileFragmentBinding;
 import com.example.staffsyncapp.models.Employee;
+import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NavigationManager;
 
 import java.util.List;
@@ -29,8 +34,8 @@ import java.util.Locale;
 * [ ] test that the details change by looking on adminDashboard fragment
 **/
 
-public class UserProfileFragment extends Fragment {
-    private UserProfileFragmentBinding binding;
+public class EmployeeProfileFragment extends Fragment {
+    private EmployeeProfileFragmentBinding binding;
     private ApiDataService apiService;
     private Employee currentEmployee;
     NavigationManager navigationManager;
@@ -40,7 +45,7 @@ public class UserProfileFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = UserProfileFragmentBinding.inflate(inflater, container, false);
+        binding = EmployeeProfileFragmentBinding.inflate(inflater, container, false);
         apiService = new ApiDataService(requireContext());
         employeeViewModel = new EmployeeAdapter.EmployeeViewModel();
         return binding.getRoot();
@@ -53,7 +58,7 @@ public class UserProfileFragment extends Fragment {
         navigationManager = new NavigationManager(this, binding.bottomNavigation);
         binding.bottomNavigation.setSelectedItemId(R.id.navigation_profile);
 
-        //setupValidation();
+        setupValidation();
         setupUI();
         loadEmployeeData();
         setupClickListeners();
@@ -127,27 +132,73 @@ public class UserProfileFragment extends Fragment {
     }
 
     private void loadEmployeeData() {
-        SharedPreferences prefs = requireContext().getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+        LocalDataService dbHelper = new LocalDataService(requireContext());
+        SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
         int employeeId = prefs.getInt("logged_in_employee_id", -1);
 
-        Log.d("UserProfileFragment", "Fetching employee details for ID: " + employeeId);
-
         if (employeeId != -1) {
+            // Try API first
             apiService.getEmployeeById(employeeId, new ApiDataService.EmployeeFetchListener() {
                 @Override
                 public void onEmployeesFetched(List<Employee> employees) {
-                    Log.d("UserProfileFragment", "Fetched employees: " + employees);
                     if (employees != null && !employees.isEmpty()) {
                         currentEmployee = employees.get(0);
                         updateUIWithEmployeeData(currentEmployee);
+
+                        // Store API data in local DB
+                        ContentValues values = new ContentValues();
+                        values.put("employee_id", employeeId);
+                        values.put("full_name", currentEmployee.getFirstname() + " " + currentEmployee.getLastname());
+                        values.put("department", currentEmployee.getDepartment());
+                        values.put("salary", currentEmployee.getSalary());
+
+                        SQLiteDatabase db = dbHelper.getWritableDatabase();
+                        db.insertWithOnConflict("employee_details", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                        db.close();
                     }
                 }
 
                 @Override
                 public void onError(String error) {
-                    if (getContext() != null) {
-                        Toast.makeText(requireContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
+                    // On API error, use local DB
+                    SQLiteDatabase db = dbHelper.getReadableDatabase();
+                    Cursor cursor = db.query(
+                            "employee_details",
+                            null,
+                            "employee_id = ?",
+                            new String[]{String.valueOf(employeeId)},
+                            null, null, null
+                    );
+
+                    if (cursor != null && cursor.moveToFirst()) {
+                        // if find data in local DB, use it
+                        String fullName = cursor.getString(cursor.getColumnIndex("full_name"));
+                        String[] names = fullName.split(" ");
+                        String firstName = names[0];
+                        String lastName = names.length > 1 ? names[1] : "";
+                        String department = cursor.getString(cursor.getColumnIndex("department"));
+                        double salary = cursor.getDouble(cursor.getColumnIndex("salary"));
+
+                        currentEmployee = new Employee(
+                                employeeId,
+                                firstName,
+                                lastName,
+                                firstName.toLowerCase() + "." + lastName.toLowerCase() + "@company.com",
+                                department,
+                                salary,
+                                "2023-01-01"
+                        );
+                        updateUIWithEmployeeData(currentEmployee);
+                        cursor.close();
+                    } else {
+                        // if no data in local DB either
+                        if (getContext() != null) {
+                            Toast.makeText(requireContext(),
+                                    "Could not load employee data from API or local storage",
+                                    Toast.LENGTH_SHORT).show();
+                        }
                     }
+                    db.close();
                 }
             });
         }
@@ -172,7 +223,7 @@ public class UserProfileFragment extends Fragment {
         });
     }
 
-    private boolean validateInput() { // validate user input
+    private boolean validateInput() { // validate employee input
         String newName = binding.editName.getText().toString().trim();
         if (newName.isEmpty()) {
             binding.nameFormatError.setVisibility(View.VISIBLE);
@@ -183,7 +234,7 @@ public class UserProfileFragment extends Fragment {
         return validateEmail() && validateEmailMatch();
     }
 
-    private void updateEmployeeDetails() { // update employee details with JSON
+    private void updateEmployeeDetails() { // update employee details with JSON employee fields
         String newName = binding.editName.getText().toString().trim();
         String newEmail = binding.editEmail.getText().toString().trim();
 

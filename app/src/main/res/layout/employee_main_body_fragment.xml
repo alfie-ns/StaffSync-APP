@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".UserMainFragment">
+    tools:context=".EmployeeMainBodyFragment">
 
     <!-- top primary deep teal header bar -->
     <View
@@ -14,9 +14,9 @@
         android:layout_height="56dp"
         android:background="?attr/colorPrimary"
         app:layout_constraintTop_toTopOf="parent" />
-    <!-- user icon on the left side of the header bar, sized 32dp -->
+    <!-- employee icon on the left side of the header bar, sized 32dp -->
     <ImageView
-        android:id="@+id/user"
+        android:id="@+id/employee"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginStart="4dp"
@@ -37,12 +37,12 @@
         android:textColor="?attr/colorOnPrimary"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="@id/header_bar"
-        app:layout_constraintStart_toEndOf="@id/user"
-        app:layout_constraintEnd_toStartOf="@id/user_settings_icon"
+        app:layout_constraintStart_toEndOf="@id/employee"
+        app:layout_constraintEnd_toStartOf="@id/employee_settings_icon"
         app:layout_constraintTop_toTopOf="@id/header_bar" />
-    <!-- settings icon on the right side of the header bar, sized 48dp; clickable to take user to settings -->
+    <!-- settings icon on the right side of the header bar, sized 48dp; clickable to take employee to settings -->
     <ImageView
-        android:id="@+id/user_settings_icon"
+        android:id="@+id/employee_settings_icon"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:layout_marginEnd="4dp"
@@ -97,7 +97,7 @@
                     android:text="Days Remaining: 24/30"
                     android:textColor="?attr/colorPrimary"
                     android:textSize="16sp" />
-                <!-- button to book leave: will take user to leave booking screen -->
+                <!-- button to book leave: will take employee to leave booking screen -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/book_leave_btn"
                     android:layout_width="wrap_content"
@@ -142,12 +142,12 @@
                     android:textColor="?attr/colorPrimary"
                     android:textSize="18sp"
                     android:textStyle="bold" />
-                <!-- edit icon: clickable to take user to edit profile fragment -->
+                <!-- edit icon: clickable to take employee to edit profile fragment -->
                 <ImageView
-                    android:id="@+id/user_edit_icon"
+                    android:id="@+id/employee_edit_icon"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
-                    android:src="@drawable/user_edit_icon"
+                    android:src="@drawable/employee_edit_icon"
                     android:clickable="true"
                     android:focusable="true"
                     android:background="?attr/selectableItemBackgroundBorderless" />

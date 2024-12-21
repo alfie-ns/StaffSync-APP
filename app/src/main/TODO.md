@@ -1,5 +1,6 @@
 # TODO
 
+- [ ] ensure current leave days balance is defined and always shown
 - [ ] talk about the singleton pattern learnt in week11
 - [ ] highly secure password to be fetched and pasted in one click
 - [ ] thread-safe initialisation happens if the synchronized keyword is used
@@ -8,14 +9,19 @@
 - [ ] implement the notification system i.e. holiday requests, employee detail changes, salary increments, new employees, employee departures, employee birthdays, employee anniversaries, employee promotions/demotions, anomaly detection alerts
 - [ ] complete notification preferences system
 - [ ] thread-safe operationgs for database operations
-- [ ] login user account that can interact with the API
+- [ ] login employee account that can interact with the API
 - [ ] clear search text in the rright side of recyclerview search bar
 - [ ] hav functionality that checks for the first time the newly created user log in, it should ask them to change their password, their should also be a way to change the password in profilefragment
 - [ ] link dark mode state to employee acounts
 - [ ] dark mode in admin fragment
 - [ ] get user fragments working with comp2000 API
-
 - [ ] ensure to make system to not allow same emails when creating user accountt
+
+* I subsequently had to make getEmployeeById static because the method is
+* called directly on the class name (ApiDataService.getEmployeeById) rather than
+* on an instance of the class (apiService.getEmployeeById) this is because in
+* regards to Holiday requests, we need to access employee data without instantiating
+* the ApiDataService class each time we validate or process a request
 
 - clarify fully qualified employeeViewModel?
 - 

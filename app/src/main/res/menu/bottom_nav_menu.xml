@@ -7,11 +7,11 @@
 
     <item
         android:id="@+id/navigation_profile"
-        android:icon="@drawable/user_icon"
+        android:icon="@drawable/employee_icon"
         android:title="@string/profile_navbar_menu"/>
 
     <item
         android:id="@+id/navigation_settings"
-        android:icon="@drawable/user_settings_icon"
+        android:icon="@drawable/employee_settings_icon"
         android:title="@string/settings_navbar_menu"/>
 </menu>

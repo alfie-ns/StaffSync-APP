@@ -181,7 +181,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/password_container" />
 
-    <!-- account locked error message; the admin will be able to lock user's accounts;
+    <!-- account locked error message; the admin will be able to lock employee's accounts;
          I will implement this feature later in the admin Java file TODO [ ] -->
     <TextView
         android:id="@+id/account_locked_alert"
@@ -198,7 +198,7 @@
 
     <!-- error message displayed if anomaly is detected;
          will be hidden by default and only appear if an anomaly is detected;
-         the java code will prevent the user from proceeding to the user's homepage
+         the java code will prevent the employee from proceeding to the employee's homepage
          until the anomaly is resolved -->
     <TextView
         android:id="@+id/anomaly_alert"
@@ -214,7 +214,7 @@
         app:layout_constraintTop_toBottomOf="@id/password_container" />
 
     <!-- button for further verification if an anomaly is detected;
-         this button will redirect the user to a verification page -->
+         this button will redirect the employee to a verification page -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/verify_identity_button"
         android:layout_width="wrap_content"

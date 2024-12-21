@@ -9,16 +9,21 @@
     import android.util.Base64;
     import android.util.Log;
 
+    import com.example.staffsyncapp.HolidayRequestAdapter;
+    import com.example.staffsyncapp.models.LeaveRequest;
+
     import java.text.SimpleDateFormat;
+    import java.util.ArrayList;
     import java.util.Date;
+    import java.util.List;
     import java.util.Locale;
 
     /**
      * Database service handling local data storage and authentication for StaffSync.
-     * Manages user accounts, employee records, leave requests and notifications using SQLite.
+     * Manages employee accounts, employee records, leave requests and notifications using SQLite.
      * 
      * features:
-     * - User authentication and session management
+     * - employee authentication and session management
      * - Employee details and salary tracking
      * - Leave request processing
      * - Notification handling
@@ -26,9 +31,9 @@
      *
      * todo:
      * - [ ] leave request processing
-     * - [ ] notification handling from user and admin
+     * - [ ] notification handling from employee and admin
      * - [ ] automated salary increment management
-     * - [ ] user account management
+     * - [ ] employee account management
      * 
     */
 
@@ -47,9 +52,17 @@
         private final Context context;
         private final SQLiteDatabase db;  // thread safety
 
-        private static final String KEY_USER_LOGGED_IN = "user_logged_in";
+        private static final String KEY_EMPLOYEE_LOGGED_IN = "employee_logged_in";
 
         private static final String TEMP_PASSWORD_PREFIX = "EMP";
+
+        public interface LeaveRequestCallback {
+            void onComplete(List<LeaveRequest> requests, String error);
+        }
+
+        public interface StatusUpdateCallback {
+            void onSuccess(boolean success);
+        }
 
 
         // 2. Constructor and Database Creation ------------------------------------
@@ -66,8 +79,8 @@
 
         @Override // SQL DATABASE CREATION
         public void onCreate(SQLiteDatabase db) {
-            // 1- Create Users table; core authentication; role management
-            db.execSQL("CREATE TABLE users (" +
+            // 1- Create employees table; core authentication; role management
+            db.execSQL("CREATE TABLE employees (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "email TEXT UNIQUE," +
                     "password TEXT," +
@@ -81,7 +94,7 @@
             // 2- Employee details; personal and employment information
             db.execSQL("CREATE TABLE employee_details (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    "user_id INTEGER UNIQUE," +
+                    "employee_id INTEGER UNIQUE," +
                     "full_name TEXT," +
                     "department TEXT," +
                     "salary DECIMAL(10,2)," +  // allows for large salaries with 2 decimal places
@@ -89,12 +102,13 @@
                     "last_increment_date DATE," + // track when 5% increases occurred
                     "annual_leave_allowance INTEGER DEFAULT 30," + // standard 30 days
                     "used_leave INTEGER DEFAULT 0," +             // track used days
-                    "FOREIGN KEY(user_id) REFERENCES users(id))");
+                    "FOREIGN KEY(employee_id) REFERENCES employees(id))");
 
             // 3- Leave requests; manage holiday bookings
             db.execSQL("CREATE TABLE leave_requests (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                     "employee_id INTEGER," +
+                    "employee_name TEXT," +
                     "start_date DATE," +
                     "end_date DATE," +
                     "days_requested INTEGER," +
@@ -103,27 +117,27 @@
                     "admin_response TEXT," +           // optional feedback from admin
                     "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
                     "updated_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
-                    "FOREIGN KEY(employee_id) REFERENCES users(id))");
+                    "FOREIGN KEY(employee_id) REFERENCES employees(id))");
 
-            // 4- Notification preferences; manage user notification settings
+            // 4- Notification preferences; manage employee notification settings
             db.execSQL("CREATE TABLE notification_preferences (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    "user_id INTEGER UNIQUE," +
+                    "employee_id INTEGER UNIQUE," +
                     "leave_notifications INTEGER DEFAULT 1," + // boolean-like integers
                     "salary_notifications INTEGER DEFAULT 1," +
                     "email_notifications INTEGER DEFAULT 1," +
-                    "FOREIGN KEY(user_id) REFERENCES users(id))");
+                    "FOREIGN KEY(employee_id) REFERENCES employees(id))");
 
-            // 5- Notification log; store all notifications sent to users
+            // 5- Notification log; store all notifications sent to employees
             db.execSQL("CREATE TABLE notification_log (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
-                    "user_id INTEGER," +
+                    "employee_id INTEGER," +
                     "title TEXT," +
                     "message TEXT," +
                     "type TEXT," +  // ie leave_request, salary_update, security_alert, etc.
                     "is_read INTEGER DEFAULT 0," +
                     "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
-                    "FOREIGN KEY(user_id) REFERENCES users(id))");
+                    "FOREIGN KEY(employee_id) REFERENCES employees(id))");
 
 
             Log.d("StaffDataService", "Database tables created successfully");
@@ -135,17 +149,17 @@
                 adminValues.put("email", "admin@staffsync.com");
                 adminValues.put("password", hashPassword("admin123"));
                 adminValues.put("is_admin", 1);
-                long adminInsertResult = db.insertOrThrow("users", null, adminValues);
+                long adminInsertResult = db.insertOrThrow("employees", null, adminValues);
                 Log.d("StaffDataService", "Default admin account created with ID: " + adminInsertResult);
             } catch (Exception e) {
                 Log.e("", "Error creating default admin: " + e.getMessage());
             }
-            long userInsertResult = -1; // set as invalid initially to ensure it's recognised as such if not activated
+            long employeeInsertResult = -1; // set as invalid initially to ensure it's recognised as such if not activated
             // Add test employees with salary info
             try {
                 ContentValues employeeDetails = new ContentValues();
-                employeeDetails.put("user_id", userInsertResult);
-                employeeDetails.put("full_name", "Test User");
+                employeeDetails.put("employee_id", employeeInsertResult);
+                employeeDetails.put("full_name", "Test Employee");
                 employeeDetails.put("department", "IT");
                 employeeDetails.put("salary", 45000.00);
                 employeeDetails.put("hire_date", "2023-06-15");
@@ -167,25 +181,56 @@
         }
 
         @Override
-        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) { // upgrade scheme by adding new column to satisfy SQLiteOpenHelper's abstract class requirements, otherwise it won't compile
             if (oldVersion < 2) {
-                db.execSQL("ALTER TABLE users ADD COLUMN first_login INTEGER DEFAULT 1");
+                db.execSQL("ALTER TABLE employees ADD COLUMN first_login INTEGER DEFAULT 1");
+            }
+        }
+
+        public void getPendingLeaveRequests(LeaveRequestCallback callback) {
+            List<LeaveRequest> requests = new ArrayList<>();
+            Cursor cursor = db.query(
+                    "leave_requests",
+                    null,
+                    "status = ?",
+                    new String[]{"pending"},
+                    null, null,
+                    "created_at DESC"
+            );
+
+            try {
+                while(cursor.moveToNext()) {
+                    requests.add(new LeaveRequest(
+                            cursor.getInt(cursor.getColumnIndex("id")),
+                            cursor.getInt(cursor.getColumnIndex("employee_id")),
+                            cursor.getString(cursor.getColumnIndex("employee_name")),
+                            cursor.getString(cursor.getColumnIndex("start_date")),
+                            cursor.getString(cursor.getColumnIndex("end_date")),
+                            cursor.getString(cursor.getColumnIndex("reason")),
+                            cursor.getInt(cursor.getColumnIndex("days_requested"))
+                    ));
+                }
+                callback.onComplete(requests, null);
+            } catch (Exception e) {
+                callback.onComplete(null, e.getMessage());
+            } finally {
+                cursor.close();
             }
         }
 
         private boolean adminExists() {
-            Cursor cursor = db.query("users", null,
+            Cursor cursor = db.query("Employees", null,
                     "is_admin = 1", null, null, null, null);
             boolean exists = cursor.getCount() > 0;
             cursor.close();
             return exists;
         }
 
-        public boolean verifyUserLogin(String email, String password) {
+        public boolean verifyEmployeeLogin(String email, String password) {
             Log.d(TAG, "Attempting login for email: " + email);
 
             Cursor cursor = db.query(
-                    "users",
+                    "Employees",
                     new String[]{"password", "is_admin", "employee_id", "first_login"},
                     "email = ?",
                     new String[]{email},
@@ -206,7 +251,7 @@
 
                     if (passwordMatch && isAdmin == 0) {
                         // store employee ID
-                        SharedPreferences prefs = context.getSharedPreferences("user_prefs", Context.MODE_PRIVATE);
+                        SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
                         prefs.edit().putInt("logged_in_employee_id", empId).apply();
 
                         Log.d(TAG, "Login success, employee ID: " + empId);
@@ -224,6 +269,7 @@
                 cursor.close();
             }
         }
+
         public String generateTempPassword(int employeeId) {
             return TEMP_PASSWORD_PREFIX + employeeId;
         }
@@ -241,10 +287,10 @@
             // clear admin session from shared preferences
             setAdminLoggedIn(false);
 
-            // clear any stored credentials (if you're storing any)
+            // clear any stored credentials
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                     .edit()
-                    .clear()  // removed all stored preferences
+                    .clear()
                     .apply();
 
             Log.d(TAG, "admin logged out and session cleared");
@@ -264,20 +310,28 @@
                 values.put("email", "admin@staffsync.com");
                 values.put("password", hashPassword("admin123"));
                 values.put("is_admin", 1);
-                db.insertOrThrow("users", null, values);
+                db.insertOrThrow("employees", null, values);
                 Log.d(TAG, "default admin added successfully");
             } catch (Exception e) {
                 Log.e(TAG, "failed to add default admin", e);
             }
         }
 
-        public Cursor getEmployeeSalaryInfo() {
-            return db.rawQuery(
-            "SELECT full_name, salary, " +
-                    "CAST(JULIANDAY('now') - JULIANDAY(COALESCE(last_increment_date, hire_date)) AS INTEGER) " +
-                    "AS days_since_last_increment " +
-                    "FROM employee_details " +
-                    "ORDER BY days_since_last_increment DESC", null);
+        public int getEmployeeUsedLeave(int employeeId) {
+            int usedLeave = 0;
+            Cursor cursor = db.query(
+                    "employee_details",
+                    new String[]{"used_leave"},
+                    "employee_id = ?",
+                    new String[]{String.valueOf(employeeId)},
+                    null, null, null
+            );
+
+            if (cursor.moveToFirst()) {
+                usedLeave = cursor.getInt(0);
+            }
+            cursor.close();
+            return usedLeave;
         }
 
         public void checkAndApplySalaryIncrements() {
@@ -320,10 +374,8 @@
         // 3. Leave Request Management Methods -------------------------------------------
 
         public long submitLeaveRequest(int employeeId, String startDate, String endDate, String reason) {
-            // First check if employee has enough leave balance
-            if (!hasEnoughLeaveBalance(employeeId, startDate, endDate)) {
-                return -1; // Insufficient leave balance
-            }
+
+            int daysRequested = calculateDaysRequested(startDate, endDate);
 
             ContentValues values = new ContentValues();
             values.put("employee_id", employeeId);
@@ -331,16 +383,27 @@
             values.put("end_date", endDate);
             values.put("reason", reason);
             values.put("status", "pending");
-            values.put("days_requested", calculateDaysRequested(startDate, endDate));
+            values.put("created_at", getCurrentDate());
+            values.put("days_requested", daysRequested);
 
-            return db.insert("leave_requests", null, values);
+            // get employee name
+            String employeeName = getEmployeeNameById(employeeId);
+            if (employeeName != null) {
+                values.put("employee_name", employeeName);
+            }
+
+            try {
+                return db.insert("leave_requests", null, values);
+            } catch (Exception e) {
+                Log.e(TAG, "Error submitting leave request: " + e.getMessage());
+                return -1;
+            }
         }
-
         private boolean hasEnoughLeaveBalance(int employeeId, String startDate, String endDate) {
             Cursor cursor = db.query(
                     "employee_details",
                     new String[]{"annual_leave_allowance", "used_leave"},
-                    "user_id = ?",
+                    "employee_id = ?",
                     new String[]{String.valueOf(employeeId)},
                     null, null, null
             );
@@ -356,6 +419,25 @@
             return false;
         }
 
+        private String getEmployeeNameById(int employeeId) {
+            Cursor cursor = db.query(
+                    "employee_details",
+                    new String[]{"full_name"},
+                    "employee_id = ?",
+                    new String[]{String.valueOf(employeeId)},
+                    null, null, null
+            );
+
+            try {
+                if (cursor.moveToFirst()) {
+                    return cursor.getString(0);
+                }
+                return null;
+            } finally {
+                cursor.close();
+            }
+        }
+
         private int calculateDaysRequested(String startDate, String endDate) {
             try {
                 SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
@@ -368,7 +450,7 @@
             }
         }
 
-        public Cursor getUserLeaveRequests(int employeeId) {
+        public Cursor getEmployeeLeaveRequests(int employeeId) {
             return db.query(
                     "leave_requests",
                     null,
@@ -376,17 +458,6 @@
                     new String[]{String.valueOf(employeeId)},
                     null, null,
                     "created_at DESC"
-            );
-        }
-
-        public Cursor getPendingLeaveRequests() {
-            return db.query(
-                    "leave_requests",
-                    null,
-                    "status = ?",
-                    new String[]{"pending"},
-                    null, null,
-                    "created_at ASC"
             );
         }
 
@@ -416,7 +487,7 @@
                     Cursor employee = db.query(
                             "employee_details",
                             new String[]{"used_leave"},
-                            "user_id = ?",
+                            "employee_id = ?",
                             new String[]{String.valueOf(employeeId)},
                             null, null, null
                     );
@@ -426,7 +497,7 @@
                         ContentValues employeeValues = new ContentValues();
                         employeeValues.put("used_leave", currentUsedLeave + daysRequested);
                         db.update("employee_details", employeeValues,
-                                "user_id = ?", new String[]{String.valueOf(employeeId)});
+                                "employee_id = ?", new String[]{String.valueOf(employeeId)});
                     }
                     employee.close();
                 }
@@ -448,38 +519,38 @@
             }
         }
 
-        public boolean isUserLoggedIn() {
+        public boolean isEmployeeLoggedIn() {
             return context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-                    .getBoolean(KEY_USER_LOGGED_IN, false);
+                    .getBoolean(KEY_EMPLOYEE_LOGGED_IN, false);
         }
 
-        public void setUserLoggedIn(boolean status) {
+        public void setEmployeeLoggedIn(boolean status) {
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                     .edit()
-                    .putBoolean(KEY_USER_LOGGED_IN, status)
+                    .putBoolean(KEY_EMPLOYEE_LOGGED_IN, status)
                     .apply();
-            Log.d(TAG, "User login status updated: " + status);
+            Log.d(TAG, "Employee login status updated: " + status);
         }
 
-        public void logoutUser() {
-            setUserLoggedIn(false);
+        public void logoutEmployee() {
+            setEmployeeLoggedIn(false);
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                     .edit()
-                    .remove(KEY_USER_LOGGED_IN)
+                    .remove(KEY_EMPLOYEE_LOGGED_IN)
                     .apply();
-            Log.d(TAG, "User logged out and session cleared");
+            Log.d(TAG, "Employee logged out and session cleared");
         }
 
-        public boolean unlockUserAccount(String email) { // account management methods
+        public boolean unlockEmployeeAccount(String email) { // account management methods
             ContentValues values = new ContentValues();
             values.put("is_locked", 0);
-            return db.update("users", values, "email = ?", new String[]{email}) > 0;
+            return db.update("employees", values, "email = ?", new String[]{email}) > 0;
         }
 
-        public boolean lockUserAccount(String email) { // method to lock user account
+        public boolean lockEmployeeAccount(String email) { // method to lock Employee account
             ContentValues values = new ContentValues();
             values.put("is_locked", 1); // set is_locked to 1(success)
-            return db.update("users", values, "email = ?", new String[]{email}) > 0;
+            return db.update("employees", values, "email = ?", new String[]{email}) > 0;
         }
         // TODO: EMPLOYEE-SIDE
 
@@ -488,7 +559,7 @@
             int employeeId = -1; //  value if no employee is logged in
 
             try {
-                String query = "SELECT employee_id FROM user_sessions WHERE is_active = 1";
+                String query = "SELECT employee_id FROM employee_sessions WHERE is_active = 1";
                 Cursor cursor = db.rawQuery(query, null);
 
                 if (cursor != null && cursor.moveToFirst()) {
@@ -505,7 +576,7 @@
             return employeeId;
         }
 
-        public void createUserAccount(int employeeId, String email) {
+        public void createEmployeeAccount(int employeeId, String email) {
             String tempPassword = generateTempPassword(employeeId);
             ContentValues values = new ContentValues();
             values.put("email", email);
@@ -515,16 +586,16 @@
             values.put("employee_id", employeeId); // store employee ID for linking
 
             try {
-                db.insertOrThrow("users", null, values);
-                Log.d(TAG, "Created user account for employee " + employeeId);
+                db.insertOrThrow("Employees", null, values);
+                Log.d(TAG, "Created Employee account for employee " + employeeId);
             } catch (Exception e) {
-                Log.e(TAG, "Failed to create user account: " + e.getMessage());
+                Log.e(TAG, "Failed to create employee account: " + e.getMessage());
             }
         }
 
         public boolean verifyAdminLogin(String email, String password) {
             Cursor cursor = db.query( // create admin login cursor
-                    "users", // table name
+                    "employees", // table name
                     new String[]{"password", "is_admin"}, // columns to get
                     "email = ?", // where clause TODO: make emails unique
                     new String[]{email},
@@ -547,6 +618,22 @@
                 return false;
             } finally {
                 cursor.close();
+            }
+        }
+
+
+        public void updateLeaveRequestStatus(int requestId, String status, String response, StatusUpdateCallback callback) {
+            ContentValues values = new ContentValues();
+            values.put("status", status);
+            values.put("admin_response", response);
+            values.put("updated_at", getCurrentDate());
+
+            try {
+                int updated = db.update("leave_requests", values,
+                        "id = ?", new String[]{String.valueOf(requestId)});
+                callback.onSuccess(updated > 0);
+            } catch (Exception e) {
+                callback.onSuccess(false);
             }
         }
     }

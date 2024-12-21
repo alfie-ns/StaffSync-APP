@@ -59,7 +59,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
         adminValues.put("is_admin", 1);
 
         try {
-            dbHelper.getWritableDatabase().insertOrThrow("users", null, adminValues);
+            dbHelper.getWritableDatabase().insertOrThrow("employees", null, adminValues);
             Log.d(TAG, "Created new admin account successfully");
         } catch (Exception e) {
             Log.d(TAG, "Admin creation failed");
@@ -221,12 +221,12 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
             }
         }
         // 2- not admin, try user login
-        else if (dbHelper.verifyUserLogin(email, password)) {
+        else if (dbHelper.verifyEmployeeLogin(email, password)) {
             Log.d(TAG, "User login successful");
             loadUserDarkModePreference(email);
             try {
                 NavHostFragment.findNavController(LoginFragment.this)
-                        .navigate(R.id.action_LoginFragment_to_UserMainFragment);
+                        .navigate(R.id.action_LoginFragment_to_EmployeeMainFragment);
             } catch (Exception e) {
                 Log.e(TAG, "Navigation to user dashboard failed", e);
             }
