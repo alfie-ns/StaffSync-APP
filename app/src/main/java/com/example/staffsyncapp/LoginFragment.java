@@ -11,18 +11,20 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.text.method.PasswordTransformationMethod;
 import android.content.ContentValues;
+import android.widget.EditText;
+import android.widget.TextView;
 
 // additional AndroidX imports for fragment navigation and annotations
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
-import androidx.appcompat.app.AppCompatDelegate;
-
 // data-binding and utility classes specific to the project
 import com.example.staffsyncapp.databinding.LoginFragmentBinding;
 import com.example.staffsyncapp.utils.LocalDataService;
+import com.google.android.material.button.MaterialButton;
 
 // project-specific utility class for location tracking [ ]
 
@@ -221,19 +223,106 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
             }
         }
         // 2- not admin, try user login
-        else if (dbHelper.verifyEmployeeLogin(email, password)) {
-            Log.d(TAG, "User login successful");
-            loadUserDarkModePreference(email);
-            try {
-                NavHostFragment.findNavController(LoginFragment.this)
-                        .navigate(R.id.action_LoginFragment_to_EmployeeMainFragment);
-            } catch (Exception e) {
-                Log.e(TAG, "Navigation to user dashboard failed", e);
+        else {
+            int loginStatus = dbHelper.verifyEmployeeLogin(email, password);
+            if (loginStatus == 2) { // normal login
+                Log.d(TAG, "User login successful");
+                loadUserDarkModePreference(email);
+                try {
+                    NavHostFragment.findNavController(LoginFragment.this)
+                            .navigate(R.id.action_LoginFragment_to_EmployeeMainFragment);
+                } catch (Exception e) {
+                    Log.e(TAG, "Navigation to user dashboard failed", e);
+                }
+            }
+            else if (loginStatus == 1) { // first-time login
+                Log.d(TAG, "First time login - showing password change dialog");
+                showPasswordChangeDialog(email);
+            }
+            else {
+                Log.d(TAG, "Login failed");
+                binding.incorrectLoginAlert.setVisibility(View.VISIBLE);
             }
         }
-        else {
-            Log.d(TAG, "Login failed");
-            binding.incorrectLoginAlert.setVisibility(View.VISIBLE);
+    }
+    /**
+     * Displays a password change dialog for first-time login users;
+     * this dialog prompts the user to enter and confirm new password.
+     *
+     * @param email The email address of the user, used to update the password.
+     */
+    private void showPasswordChangeDialog(String email) { // function to show password change dialog
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        View dialogView = getLayoutInflater().inflate(R.layout.employee_change_password_dialog, null);
+        builder.setView(dialogView);
+        AlertDialog dialog = builder.create();
+        dialog.setCancelable(false);
+
+        EditText newPassword = dialogView.findViewById(R.id.new_password);
+        EditText confirmPassword = dialogView.findViewById(R.id.confirm_password);
+        TextView errorText = dialogView.findViewById(R.id.password_error);
+
+        MaterialButton saveButton = dialogView.findViewById(R.id.save_password_btn);
+        saveButton.setOnClickListener(v -> { // save button click listener, if pass validation, update password and proceed with login
+            if (validateNewPassword(newPassword, confirmPassword, errorText)) {
+                updatePassword(email, newPassword.getText().toString().trim());
+                dialog.dismiss();
+                proceedWithLogin();
+            }
+        });
+
+        dialog.show();
+    }
+
+    private boolean validateNewPassword(EditText newPassword, EditText confirmPassword, TextView errorText) { // function to validate new password
+        String password = newPassword.getText().toString().trim();
+        String confirm = confirmPassword.getText().toString().trim();
+
+        if (password.isEmpty() || confirm.isEmpty()) {
+            errorText.setText("Please fill in both fields");
+            errorText.setVisibility(View.VISIBLE);
+            return false;
+        }
+
+        if (password.length() < 6) {
+            errorText.setText("Password must be at least 6 characters");
+            errorText.setVisibility(View.VISIBLE);
+            return false;
+        }
+
+        if (!password.equals(confirm)) {
+            errorText.setText("Passwords do not match");
+            errorText.setVisibility(View.VISIBLE);
+            return false;
+        }
+
+        return true;
+    }
+
+    private void updatePassword(String email, String newPassword) { // function to update password
+        LocalDataService dbHelper = new LocalDataService(requireContext());
+        String hashedPassword = dbHelper.hashPassword(newPassword);
+
+        ContentValues values = new ContentValues();
+        values.put("password", hashedPassword);
+        values.put("first_login", 0);
+
+        dbHelper.getWritableDatabase().update(
+                "employees",
+                values,
+                "email = ?",
+                new String[]{email}
+        );
+    }
+
+    private void proceedWithLogin() { // function to proceed with login after password update
+        Log.d(TAG, "Password updated, proceeding with login");
+        loadUserDarkModePreference(binding.emailInput.getText().toString().trim());
+        try {
+            NavHostFragment.findNavController(LoginFragment.this)
+                    .navigate(R.id.action_LoginFragment_to_EmployeeMainFragment);
+        } catch (Exception e) {
+            Log.e(TAG, "Navigation to user dashboard failed", e);
         }
     }
 

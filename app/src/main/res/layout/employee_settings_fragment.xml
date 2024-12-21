@@ -215,8 +215,6 @@
                             android:textColor="?attr/colorPrimary"
                             android:textSize="16sp" />
                     </LinearLayout>
-
-
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

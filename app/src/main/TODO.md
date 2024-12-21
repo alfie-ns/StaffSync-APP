@@ -1,9 +1,28 @@
 # TODO
 
+- [ ] CHANGE PASSWORD OPTION IN USER SETTINGS
+
+
+
+- [ ] check is apiWorkerThread is null before queting getEmployeeById task
+
+
+
 - [ ] ensure current leave days balance is defined and always shown
+
+
+
 - [ ] talk about the singleton pattern learnt in week11
+
+
+
 - [ ] highly secure password to be fetched and pasted in one click
+
+
+
 - [ ] thread-safe initialisation happens if the synchronized keyword is used
+
+
 - [X] get delete employee button working; pass the id to delete any employee regardless of where it is in the list
 - [X] reinstate bare notification system
 - [ ] implement the notification system i.e. holiday requests, employee detail changes, salary increments, new employees, employee departures, employee birthdays, employee anniversaries, employee promotions/demotions, anomaly detection alerts
@@ -11,11 +30,11 @@
 - [ ] thread-safe operationgs for database operations
 - [ ] login employee account that can interact with the API
 - [ ] clear search text in the rright side of recyclerview search bar
-- [ ] hav functionality that checks for the first time the newly created user log in, it should ask them to change their password, their should also be a way to change the password in profilefragment
+- [ ] hav functionality that checks for the first time the newly created employee log in, it should ask them to change their password, their should also be a way to change the password in profilefragment
 - [ ] link dark mode state to employee acounts
 - [ ] dark mode in admin fragment
-- [ ] get user fragments working with comp2000 API
-- [ ] ensure to make system to not allow same emails when creating user accountt
+- [ ] get employee fragments working with comp2000 API
+- [ ] ensure to make system to not allow same emails when creating employee accountt
 
 * I subsequently had to make getEmployeeById static because the method is
 * called directly on the class name (ApiDataService.getEmployeeById) rather than

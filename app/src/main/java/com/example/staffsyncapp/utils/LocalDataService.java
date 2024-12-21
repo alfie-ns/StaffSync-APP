@@ -226,11 +226,11 @@
             return exists;
         }
 
-        public boolean verifyEmployeeLogin(String email, String password) {
-            Log.d(TAG, "Attempting login for email: " + email);
+        public int verifyEmployeeLogin(String email, String password) {
+            Log.d(TAG, "Attempting employee login for: " + email);
 
             Cursor cursor = db.query(
-                    "Employees",
+                    "employees",
                     new String[]{"password", "is_admin", "employee_id", "first_login"},
                     "email = ?",
                     new String[]{email},
@@ -245,8 +245,6 @@
                     int firstLogin = cursor.getInt(3);
 
                     String hashedAttempt = hashPassword(password);
-                    Log.d(TAG, "Stored hash: " + storedPass + ", Input hash: " + hashedAttempt);
-
                     boolean passwordMatch = hashedAttempt.equals(storedPass);
 
                     if (passwordMatch && isAdmin == 0) {
@@ -254,22 +252,17 @@
                         SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
                         prefs.edit().putInt("logged_in_employee_id", empId).apply();
 
-                        Log.d(TAG, "Login success, employee ID: " + empId);
-
                         if (firstLogin == 1) {
-                            Log.d(TAG, "First login, prompt to change password");
-                            // TODO [ ]: password change functionality
+                            return 1; // first login
                         }
-
-                        return true;
+                        return 2; // normal successful login
                     }
                 }
-                return false;
+                return 0; // failure
             } finally {
                 cursor.close();
             }
         }
-
         public String generateTempPassword(int employeeId) {
             return TEMP_PASSWORD_PREFIX + employeeId;
         }
