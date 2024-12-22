@@ -1,4 +1,4 @@
-package com.example.staffsyncapp;
+package com.example.staffsyncapp.employee;
 
 // Android libraries for logging and context usage testing
 import android.view.LayoutInflater;
@@ -17,6 +17,7 @@ import androidx.lifecycle.ViewModel;
 import androidx.recyclerview.widget.RecyclerView;
 
 // Employee model class
+import com.example.staffsyncapp.R;
 import com.example.staffsyncapp.models.Employee;
 
 // NumberFormat and Locale libraries for currency formatting

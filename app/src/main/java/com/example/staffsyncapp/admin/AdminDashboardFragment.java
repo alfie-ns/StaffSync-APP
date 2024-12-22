@@ -1,4 +1,4 @@
-package com.example.staffsyncapp;
+package com.example.staffsyncapp.admin;
 
 import static com.example.staffsyncapp.utils.SalaryIncrementManager.calculateDaysSince;
 
@@ -11,6 +11,9 @@ import android.content.pm.PackageManager;
 import android.view.LayoutInflater;
 import android.widget.TextView;
 
+import com.example.staffsyncapp.api.ApiDataService;
+import com.example.staffsyncapp.R;
+import com.example.staffsyncapp.employee.EmployeeAdapter;
 import com.example.staffsyncapp.utils.NotificationService;
 import com.example.staffsyncapp.utils.SalaryIncrementManager;
 import com.google.android.material.button.MaterialButton;
@@ -28,7 +31,6 @@ import android.widget.ImageButton;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.example.staffsyncapp.utils.SalaryIncrementManager;
 import java.util.ArrayList;
 
 // additional AndroidX imports for fragment and annotations
@@ -91,10 +93,10 @@ public class AdminDashboardFragment extends Fragment {
     private ApiDataService employeeDataService;
     private ProgressBar progressBar;
     private int totalEmployeeCount = 0; // pre-initialise to ensure safe state before first API response
+    private Employee currentEmployee;
 
     // Employee search functionality variables
     private EditText searchEmployeeInput;
-
     private EmployeeAdapter adminEmployeeAdapter;
 
     // Employee list collapse functionality variables
@@ -647,8 +649,9 @@ public class AdminDashboardFragment extends Fragment {
 
                 if (isChecked) {
                     notificationService.sendHolidayNotification(
-                            "holiday notifications enabled",
-                            "you will now receive holiday request notifications"
+                            1,
+                            "Holiday Request Update",
+                            "Request status updated"
                     );
                 }
                 Log.d(TAG, "holiday notifications " + (isChecked ? "enabled" : "disabled"));

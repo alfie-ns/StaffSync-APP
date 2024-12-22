@@ -1,4 +1,4 @@
-package com.example.staffsyncapp;
+package com.example.staffsyncapp.holiday;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -7,12 +7,12 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.staffsyncapp.R;
 import com.example.staffsyncapp.models.LeaveRequest;
 import com.google.android.material.button.MaterialButton;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 /**
  * Adapter class for managing leave/holiday requests in the admin dashboard's RecyclerView.
@@ -21,6 +21,11 @@ import java.util.Locale;
  * - displays employee leave requests with details like name, dates, reason
  * - provides approve/deny actions that trigger callbacks to AdminHolidayRequestFragment
  * - manages list of pending requests via updateRequests() method
+
+ * Main responsibilities:
+ *  * - Binds leave request data to the list item views
+ *  * - Handles approve/deny button clicks and triggers callbacks
+ *  * - Updates list when new data is provided
 
  * Implementation:
  * - uses ViewHolder pattern for efficient view recycling 
@@ -32,9 +37,13 @@ import java.util.Locale;
  * - updated when new requests are fetched from SQLite
  * - triggers onApprove/onDeny callbacks when admin takes action
 
- * @see AdminHolidayRequestFragment For the fragment using this adapter
- * @see LeaveRequest For the data model class
- * @see LocalDataService For the SQlite database operations
+ * @see AdminHolidayRequestFragment for the fragment using this adapter
+ * @see LeaveRequest for the data model class
+ * @see LocalDataService for the SQlite database operations
+ **/
+
+/**
+ * ---------------------------------------------------------------------------------------------------------
  **/
 
 public class HolidayRequestAdapter extends RecyclerView.Adapter<HolidayRequestAdapter.ViewHolder> {

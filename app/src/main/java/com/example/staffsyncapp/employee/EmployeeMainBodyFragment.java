@@ -1,4 +1,4 @@
-package com.example.staffsyncapp;
+package com.example.staffsyncapp.employee;
 
 
 import android.content.Context;
@@ -16,14 +16,14 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.example.staffsyncapp.api.ApiDataService;
+import com.example.staffsyncapp.R;
 import com.example.staffsyncapp.databinding.EmployeeMainBodyFragmentBinding;
 import com.example.staffsyncapp.models.Employee;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NavigationManager;
 import android.widget.Toast;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 
 import android.content.ContentValues;
@@ -230,7 +230,7 @@ public class EmployeeMainBodyFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // stop sync when view is destroyed
+        // stop sync when view is£ destroyed
         if (syncHandler != null && syncRunnable != null) {
             syncHandler.removeCallbacks(syncRunnable);
         }

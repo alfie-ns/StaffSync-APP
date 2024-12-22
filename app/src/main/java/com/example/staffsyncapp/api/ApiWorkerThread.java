@@ -1,8 +1,9 @@
-package com.example.staffsyncapp;
+package com.example.staffsyncapp.api;
 
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
+
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
@@ -25,7 +26,7 @@ public class ApiWorkerThread extends Thread {
      * @method run: Executes queued tasks in background
      * @method shutdown: Safely terminates thread
      *
-     * @see ApiDataService: Uses this class for API operations
+     * @see ApiDataService : Uses this class for API operations
      **/
 
     public ApiWorkerThread() {

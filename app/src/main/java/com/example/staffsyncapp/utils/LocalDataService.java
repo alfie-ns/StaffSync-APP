@@ -9,7 +9,6 @@
     import android.util.Base64;
     import android.util.Log;
 
-    import com.example.staffsyncapp.HolidayRequestAdapter;
     import com.example.staffsyncapp.models.LeaveRequest;
 
     import java.text.SimpleDateFormat;

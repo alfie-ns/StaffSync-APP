@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".EmployeeProfileFragment">
+    tools:context=".employee.EmployeeProfileFragment">
 
     <!-- teal deep header bar; contains back arrow and title -->
     <View
@@ -203,7 +203,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@android:drawable/ic_lock_lock"
+                            android:src="@drawable/padlock_icon"
                             app:tint="?attr/colorPrimary" />
 
                         <TextView

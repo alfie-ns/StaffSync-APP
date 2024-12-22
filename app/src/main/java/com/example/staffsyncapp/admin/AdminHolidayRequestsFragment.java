@@ -1,4 +1,4 @@
-package com.example.staffsyncapp;
+package com.example.staffsyncapp.admin;
 
 import android.os.Bundle;
 import android.util.Log;
@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
+
+import com.example.staffsyncapp.holiday.HolidayRequestAdapter;
 import com.example.staffsyncapp.databinding.AdminHolidayRequestsFragmentBinding;
 import com.example.staffsyncapp.models.LeaveRequest;
 import com.example.staffsyncapp.utils.LocalDataService;
@@ -76,7 +78,7 @@ public class AdminHolidayRequestsFragment extends Fragment implements HolidayReq
             }
         });
     }
-    // TODO: combine functions into one
+    // TODO: combine functions into one?
     @Override
     public void onApprove(LeaveRequest request) { // approve leave request
         dbHelper.updateLeaveRequestStatus(
@@ -105,13 +107,13 @@ public class AdminHolidayRequestsFragment extends Fragment implements HolidayReq
                 }
         );
     }
-    private void notifyEmployee(int employeeId, boolean isApproved) { // send notification to employee with NoficationService
-        String title = "Holiday Request " + (isApproved ? "Approved" : "Denied");
-        String message = "Your holiday request has been " +
-                (isApproved ? "approved" : "denied") +
-                " by the administrator";
 
-        notificationService.sendHolidayNotification(title, message);
+    private void notifyEmployee(int employeeId, boolean isApproved) {
+        Log.d(TAG, "Sending response notification to employee: " + employeeId + " (Approved: " + isApproved + ")");
+        String message = isApproved ?
+                "Your leave request has been approved." :
+                "Your leave request has been denied.";
+        notificationService.sendRequestUpdateToEmployee(employeeId, isApproved, message);
     }
 
     @Override

@@ -1,4 +1,4 @@
-package com.example.staffsyncapp; // Main package for the fragment
+package com.example.staffsyncapp.entry; // Main package for the fragment
 
 // Android libraries for UI, logging, and data handling
 import android.content.Context;
@@ -22,6 +22,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 // data-binding and utility classes specific to the project
+import com.example.staffsyncapp.R;
 import com.example.staffsyncapp.databinding.LoginFragmentBinding;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.google.android.material.button.MaterialButton;
@@ -73,7 +74,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
         userValues.put("password", dbHelper.hashPassword("user123"));
         userValues.put("is_admin", 0); // not admin
 
-        long userId = -1;
+        long userId = -1; // if failure, maintain, thus ...
         try {
             userId = dbHelper.getWritableDatabase().insertOrThrow("users", null, userValues);
             Log.d(TAG, "Created new user account successfully");
@@ -251,7 +252,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
      *
      * @param email The email address of the user, used to update the password.
      */
-    private void showPasswordChangeDialog(String email) { // function to show password change dialog
+    private void showPasswordChangeDialog(String email) {
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
         View dialogView = getLayoutInflater().inflate(R.layout.employee_change_password_dialog, null);
         builder.setView(dialogView);
@@ -259,15 +260,16 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
         dialog.setCancelable(false);
 
         EditText newPassword = dialogView.findViewById(R.id.new_password);
-        EditText confirmPassword = dialogView.findViewById(R.id.confirm_password);
-        TextView errorText = dialogView.findViewById(R.id.password_error);
-
         MaterialButton saveButton = dialogView.findViewById(R.id.save_password_btn);
-        saveButton.setOnClickListener(v -> { // save button click listener, if pass validation, update password and proceed with login
-            if (validateNewPassword(newPassword, confirmPassword, errorText)) {
-                updatePassword(email, newPassword.getText().toString().trim());
+
+        saveButton.setOnClickListener(v -> {
+            String password = newPassword.getText().toString().trim();
+            if (password.length() >= 6) {
+                updatePassword(email, password);
                 dialog.dismiss();
                 proceedWithLogin();
+            } else {
+                newPassword.setError("Password must be at least 6 characters");
             }
         });
 

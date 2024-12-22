@@ -1,4 +1,4 @@
-package com.example.staffsyncapp;
+package com.example.staffsyncapp.entry;
 
 // Android libraries for fragment lifecycle and UI setup
 import android.annotation.SuppressLint;
@@ -14,6 +14,8 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.fragment.NavHostFragment;
 
 // define databinding for start-up fragment
+import com.example.staffsyncapp.R;
+import com.example.staffsyncapp.api.ApiDataService;
 import com.example.staffsyncapp.databinding.StartUpFragmentBinding;
 
 public class StartUpFragment extends Fragment {

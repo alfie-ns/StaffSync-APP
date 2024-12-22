@@ -2,19 +2,29 @@ package com.example.staffsyncapp.utils;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.util.Log;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
+import androidx.navigation.NavDeepLinkBuilder;
 
-/*
- * NotificationService class is responsible for sending notifications to the employee;
- * it creates notification channels for holiday requests and system updates.
+import com.example.staffsyncapp.MainActivity;
+import com.example.staffsyncapp.R;
+
+/**
+ * Handles push notification logic for the StaffSync employee management app.
  * 
- * - Holiday notifications are high priority and have a blue light color.
- * - System notifications are default priority, non-urgent notifications.
+ * Manages three notification channels:
+ * - Admin channel: High priority, red LED for leave requests
+ * - Holiday channel: High priority, blue LED for request updates
+ * - System channel: Default priority for general updates
+ * 
+ * @since 1.0
+ * @see android.app.NotificationManager
+ * @see androidx.core.app.NotificationCompat
  */
 
 public class NotificationService {
@@ -24,44 +34,90 @@ public class NotificationService {
     
     private static final String HOLIDAY_CHANNEL = "holiday_channel";
     private static final String SYSTEM_CHANNEL = "system_channel";
-    private static final int NOTIFICATION_ID = 1;
+    private static final int ADMIN_NOTIFICATION_ID = 1000;
+    private static final String ADMIN_CHANNEL = "admin_channel";
+    private static final int HOLIDAY_NOTIFICATION_ID = 2000;
+    private static final int NOTIFICATION_ID = 1000;
+    private static final int BASE_NOTIFICATION_ID = 1000;
 
+    /**
+     * Creates notification service and initialises channels
+     * 
+     * @param context Application context for notification manager
+     */
     public NotificationService(Context context) {
         this.context = context;
         this.notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
         createNotificationChannels();
     }
-    // Create notification channels
+
+    // Create notification channels; Admin, Holiday, System
     private void createNotificationChannels() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            NotificationChannel holidayChannel = new NotificationChannel(
-                    HOLIDAY_CHANNEL,
-                    "Holiday Requests",
+            // Admin channel for receiving leave requests
+            NotificationChannel adminChannel = new NotificationChannel(
+                    ADMIN_CHANNEL,
+                    "Leave Requests",
                     NotificationManager.IMPORTANCE_HIGH
             );
-            holidayChannel.setDescription("Holiday request notifications");
+            adminChannel.setDescription("Notifications for new leave requests");
+            adminChannel.enableVibration(true);
+            adminChannel.setLightColor(Color.RED);
+
+            // Employee channel for request updates
+            NotificationChannel holidayChannel = new NotificationChannel(
+                    HOLIDAY_CHANNEL,
+                    "Leave Request Updates",
+                    NotificationManager.IMPORTANCE_HIGH
+            );
+            holidayChannel.setDescription("Updates on your leave requests");
             holidayChannel.enableVibration(true);
             holidayChannel.setLightColor(Color.BLUE);
 
-            NotificationChannel systemChannel = new NotificationChannel(
-                    SYSTEM_CHANNEL,
-                    "System Updates",
-                    NotificationManager.IMPORTANCE_DEFAULT
-            );
-            systemChannel.setDescription("System notifications");
-
+            notificationManager.createNotificationChannel(adminChannel);
             notificationManager.createNotificationChannel(holidayChannel);
-            notificationManager.createNotificationChannel(systemChannel);
         }
     }
+    /**
+     * Sends leave request notification to admin
+     * 
+     * @param employeeName Name of requesting employee
+     * @param startDate Start date of leave
+     * @param endDate End date of leave  
+     * @param reason Leave request reason
+     */
+    public void sendLeaveRequestToAdmin(String employeeName, String startDate, String endDate, String reason) {
+        PendingIntent pendingIntent = new NavDeepLinkBuilder(context)
+                .setComponentName(MainActivity.class)
+                .setGraph(R.navigation.nav_graph)
+                .createPendingIntent();
+
+        String title = "New Leave Request";
+        String message = String.format("%s requests leave from %s to %s\nReason: %s",
+                employeeName, startDate, endDate, reason);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ADMIN_CHANNEL)
+                .setSmallIcon(R.drawable.bell_icon)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+
+        sendNotification(ADMIN_NOTIFICATION_ID, builder.build());
+    }
+
     // Send holiday notification
-    public void sendHolidayNotification(String title, String message) {
+    public void sendHolidayNotification(int employeeId, String title, String message) {
+        // offset notification ID with employeeId to handle multiple active notifications
+        int notificationId = HOLIDAY_NOTIFICATION_ID + employeeId;
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL)
-                .setSmallIcon(android.R.drawable.ic_dialog_alert)
+                .setSmallIcon(R.drawable.bell_icon)
                 .setContentTitle(title)
                 .setContentText(message)
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setDefaults(NotificationCompat.DEFAULT_ALL)
                 .setAutoCancel(true);
 
         try {
@@ -73,6 +129,7 @@ public class NotificationService {
             Log.e(TAG, "Failed to send holiday notification", e);
         }
     }
+    
     // Send system notification i.e. for emails, non-urgent messages
     public void sendSystemNotification(String title, String message) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, SYSTEM_CHANNEL)
@@ -82,7 +139,7 @@ public class NotificationService {
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
                 .setAutoCancel(true);
 
-        try {
+        try { // check if phone has permission to send notifications
             if (ActivityCompat.checkSelfPermission(context,
                     android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
                 notificationManager.notify(NOTIFICATION_ID + 1, builder.build());
@@ -91,6 +148,41 @@ public class NotificationService {
             Log.e(TAG, "Failed to send system notification", e);
         }
     }
-}
 
-// TODO: yet to also implement user-NotificationService thus BaseNotificationService [ ]
+    public void sendRequestUpdateToEmployee(int employeeId, boolean isApproved, String adminMessage) { // send notification back to employee; approved or denied
+        PendingIntent pendingIntent = new NavDeepLinkBuilder(context)
+                .setComponentName(MainActivity.class)
+                .setGraph(R.navigation.nav_graph)
+                .createPendingIntent();
+
+        String title = "Leave Request " + (isApproved ? "Approved" : "Denied");
+        String message = String.format("Your leave request has been %s. %s",
+                isApproved ? "approved" : "denied",
+                adminMessage != null ? "\nMessage: " + adminMessage : "");
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL) // use holiday channel thus high priority
+                .setSmallIcon(R.drawable.bell_icon)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+
+        // user employeeId to create unique notification ID
+        int notificationId = 2000 + employeeId;
+        sendNotification(notificationId, builder.build());
+    }
+
+    private void sendNotification(int notificationId, android.app.Notification notification) {
+        try {
+            if (ActivityCompat.checkSelfPermission(context,
+                    android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                notificationManager.notify(notificationId, notification);
+                Log.d(TAG, "Sent notification: " + notificationId);
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to send notification", e);
+        }
+    }
+}

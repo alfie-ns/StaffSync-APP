@@ -7,7 +7,7 @@
 
     <fragment
         android:id="@+id/FirstFragment"
-        android:name="com.example.staffsyncapp.StartUpFragment"
+        android:name="com.example.staffsyncapp.entry.StartUpFragment"
         tools:layout="@layout/start_up_fragment">
         <action
             android:id="@+id/action_FirstFragment_to_SecondFragment"
@@ -16,7 +16,7 @@
 
     <fragment
         android:id="@+id/SecondFragment"
-        android:name="com.example.staffsyncapp.LoginFragment"
+        android:name="com.example.staffsyncapp.entry.LoginFragment"
         tools:layout="@layout/login_fragment">
         <action
             android:id="@+id/action_SecondFragment_to_FirstFragment"
@@ -31,7 +31,7 @@
 
     <fragment
         android:id="@+id/AdminDashboardFragment"
-        android:name="com.example.staffsyncapp.AdminDashboardFragment"
+        android:name="com.example.staffsyncapp.admin.AdminDashboardFragment"
         tools:layout="@layout/admin_dashboard_fragment">
         <action
             android:id="@+id/action_AdminDashboardFragment_to_SecondFragment"
@@ -44,7 +44,7 @@
     <!-- employee fragments -->
     <fragment
         android:id="@+id/employee_navigation_home"
-        android:name="com.example.staffsyncapp.EmployeeMainBodyFragment"
+        android:name="com.example.staffsyncapp.employee.EmployeeMainBodyFragment"
         tools:layout="@layout/employee_main_body_fragment">
         <action
             android:id="@+id/action_EmployeeMainFragment_to_EmployeeProfileFragment"
@@ -65,7 +65,7 @@
 
     <fragment
         android:id="@+id/employee_navigation_profile"
-        android:name="com.example.staffsyncapp.EmployeeProfileFragment"
+        android:name="com.example.staffsyncapp.employee.EmployeeProfileFragment"
         tools:layout="@layout/employee_profile_fragment">
         <action
             android:id="@+id/action_EmployeeProfileFragment_to_EmployeeMainFragment"
@@ -74,7 +74,7 @@
 
     <fragment
         android:id="@+id/employee_navigation_settings"
-        android:name="com.example.staffsyncapp.EmployeeSettingsFragment"
+        android:name="com.example.staffsyncapp.employee.EmployeeSettingsFragment"
         tools:layout="@layout/employee_settings_fragment">
         <action
             android:id="@+id/action_EmployeeSettingsFragment_to_EmployeeMainFragment"
@@ -88,7 +88,7 @@
 
     <fragment
         android:id="@+id/holiday_request_fragment"
-        android:name="com.example.staffsyncapp.HolidayRequestFragment"
+        android:name="com.example.staffsyncapp.holiday.HolidayRequestFragment"
         tools:layout="@layout/holiday_request_fragment">
         <action
             android:id="@+id/action_HolidayRequestFragment_to_EmployeeMainFragment"
@@ -97,7 +97,7 @@
 
     <fragment
         android:id="@+id/admin_holiday_requests_fragment"
-        android:name="com.example.staffsyncapp.AdminHolidayRequestsFragment"
+        android:name="com.example.staffsyncapp.admin.AdminHolidayRequestsFragment"
         tools:layout="@layout/admin_holiday_requests_fragment">
         <action
             android:id="@+id/action_AdminHolidayRequestsFragment_to_AdminDashboardFragment"

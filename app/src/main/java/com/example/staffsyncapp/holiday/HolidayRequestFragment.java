@@ -1,4 +1,4 @@
-package com.example.staffsyncapp;
+package com.example.staffsyncapp.holiday;
 
 // Android core
 import android.app.DatePickerDialog;
@@ -17,6 +17,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
 // Project-specific
+import com.example.staffsyncapp.api.ApiDataService;
 import com.example.staffsyncapp.databinding.HolidayRequestFragmentBinding;
 import com.example.staffsyncapp.models.Employee;
 import com.example.staffsyncapp.utils.LocalDataService;
@@ -28,6 +29,16 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+
+/**
+ * Fragment for employees to submit holiday/leave requests.
+ * Key functionalities:
+ * - displays employee's remaining leave balance
+ * - allows selecting start and end dates with validation
+ *   - min 7 days in advance, max 14 consecutive days
+ * - Submits request to local DB and notifies admin
+ * - Navigates back to main screen on successful submission
+ */
 
 public class HolidayRequestFragment extends Fragment {
     private static final String TAG = "HolidayRequestFragment";
@@ -141,21 +152,20 @@ public class HolidayRequestFragment extends Fragment {
     }
 
     /**
-     * Validates the request before submitting
-     * 1- Start and end dates selected
-     * 2- Reason provided
-     * 3- Submitted at least 1 week in advance
-     * 4- Requested days do not exceed 14
-     * 5- Employee has sufficient leave balance
-     * 
-     *
-     */
+     * Validates the leave request before submission:
+     * 1- start and end dates must be selected
+     * 2- reason must be provided
+     * 3- request must be at least 7 days in advance
+     * 4- maximum of 14 consecutive days allowed
+     * 5- employee must have sufficient leave balance
+     * @return true if all validations pass, false otherwise
+     **/
     private boolean validateRequest() {
         String startDateStr = binding.startDateInput.getText().toString();
         String endDateStr = binding.endDateInput.getText().toString();
         String reason = binding.reasonInput.getText().toString().trim();
 
-        if (startDateStr.isEmpty() || endDateStr.isEmpty()) {
+        if (startDateStr.isEmpty() || endDateStr.isEmpty()) { // catch error if ANY is empty
             showError("Please select both start and end dates");
             return false;
         }
@@ -201,13 +211,12 @@ public class HolidayRequestFragment extends Fragment {
     }
 
     /**
-     * Validates the request and submits it if all conditions are met
-     * 1- select start and end dates
-     * 2- provide a reason; if minimal
-     * 3- submit at least 1 week in advance
-     */
+     * If request is valid, submits it to local DB and notifies admin;
+     * on success, navigates back to main employee screen;
+     * displays error message if submission fails.
+     **/
     public void validateAndSubmitRequest() {
-        if (!validateRequest()) { // en
+        if (!validateRequest()) {
             return;
         }
 
@@ -243,19 +252,20 @@ public class HolidayRequestFragment extends Fragment {
         }
     }
 
-    private void notifyAdmin(int employeeId) { // fetch employee details and send notification to admin
+    private void notifyAdmin(int employeeId) {
+        Log.d(TAG, "Sending leave request notification to admin for employee: " + employeeId);
         ApiDataService.getEmployeeById(employeeId, new ApiDataService.EmployeeFetchListener() {
             @Override
             public void onEmployeesFetched(List<Employee> employees) {
-                if (employees != null && !employees.isEmpty()) { // fetch all emplo
+                if (employees != null && !employees.isEmpty()) {
                     Employee employee = employees.get(0);
-                    String title = "New Holiday Request";
-                    String message = String.format(Locale.UK,
-                            "New request from %s %s",
-                            employee.getFirstname(),
-                            employee.getLastname());
-
-                    notificationService.sendHolidayNotification(title, message);
+                    Log.d(TAG, "Sending notification for " + employee.getName());
+                    notificationService.sendLeaveRequestToAdmin(
+                            employee.getFirstname() + " " + employee.getLastname(),
+                            binding.startDateInput.getText().toString(),
+                            binding.endDateInput.getText().toString(),
+                            binding.reasonInput.getText().toString()
+                    );
                 }
             }
 

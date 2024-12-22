@@ -1,4 +1,4 @@
-package com.example.staffsyncapp;
+package com.example.staffsyncapp.api;
 
 // Android libraries for logging and context usage testing
 import android.annotation.SuppressLint;
@@ -7,7 +7,6 @@ import android.icu.text.SimpleDateFormat;
 import android.util.Log;
 
 // Volley libraries for making API requests
-import androidx.annotation.WorkerThread;
 
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -17,7 +16,6 @@ import com.android.volley.toolbox.Volley;
 import com.example.staffsyncapp.models.Employee;
 
 // JSON handling libraries for parsing and creating JSON objects
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,7 +24,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.TimeUnit;
 
 /** Employee management API service handling 'comp2000' server requests
  * 
@@ -127,6 +124,7 @@ public class ApiDataService {
     /** [X] [X]
      * GET request to fetch ALL employees
      * Endpoint: /employees
+     * Fetch the employee data from the API and parse it into a list of Employee objects
      **/
     public static void getAllEmployees(EmployeeFetchListener listener) {
         String url = BASE_URL + "/employees";
@@ -186,10 +184,16 @@ public class ApiDataService {
     /** [X] [X]
      * GET request to fetch a particular employee by the respective ID
      * Endpoint: /employees/get/<int:id>
+     * Fetch a particular employee by their ID and parse the data into an Employee object
      **/
     public static void getEmployeeById(int id, EmployeeFetchListener listener) {
         String url = BASE_URL + "/employees/get/" + id;
         Log.d(TAG, "Attempting to fetch employee " + id);
+
+        if (workerThread == null || !workerThread.isAlive()) { // if worker thread is null or dead, create a new one
+            workerThread = new ApiWorkerThread();
+            workerThread.start();
+        }
 
         workerThread.queueTask(() -> {
             Log.d(TAG, "getEmployeeById: Worker thread executing: " + Thread.currentThread().getName());
@@ -258,8 +262,8 @@ public class ApiDataService {
 
                 Log.d(TAG, "Request body: " + jsonBody.toString());
 
-                JsonObjectRequest request = new JsonObjectRequest(
-                        Request.Method.POST,
+                JsonObjectRequest request = new JsonObjectRequest( // POST request with JSON body passing raw json for new employee
+                        Request.Method.POST, 
                         url,
                         jsonBody,
                         response -> {
