@@ -19,6 +19,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.example.staffsyncapp.adapter.EmployeeAdapter;
 import com.example.staffsyncapp.api.ApiDataService;
 import com.example.staffsyncapp.R;
 import com.example.staffsyncapp.databinding.EmployeeProfileFragmentBinding;

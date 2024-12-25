@@ -29,7 +29,7 @@
      * - Automated salary increment management
      *
      * todo:
-     * - [ ] leave request processing
+     * - [X] leave request processing
      * - [ ] notification handling from employee and admin
      * - [ ] automated salary increment management
      * - [ ] employee account management
@@ -186,6 +186,41 @@
             }
         }
 
+        public int getRemainingLeaveDays(int employeeId) {
+            SQLiteDatabase db = this.getReadableDatabase();
+
+            // get used and pending days
+            Cursor cursor = db.rawQuery(
+                    "SELECT COALESCE(SUM(days_requested), 0) as pending_days " +
+                            "FROM leave_requests " +
+                            "WHERE employee_id = ? AND status = 'pending'",
+                    new String[]{String.valueOf(employeeId)}
+            );
+
+            int pendingDays = 0;
+            if (cursor != null && cursor.moveToFirst()) {
+                pendingDays = cursor.getInt(0);
+                cursor.close();
+            }
+
+            // get approved days
+            cursor = db.query(
+                    "employee_details",
+                    new String[]{"annual_leave_allowance", "used_leave"},
+                    "employee_id = ?",
+                    new String[]{String.valueOf(employeeId)},
+                    null, null, null
+            );
+
+            if (cursor != null && cursor.moveToFirst()) {
+                int allowance = cursor.getInt(cursor.getColumnIndex("annual_leave_allowance"));
+                int usedDays = cursor.getInt(cursor.getColumnIndex("used_leave"));
+                cursor.close();
+                return allowance - usedDays - pendingDays;
+            }
+            return 0;
+        }
+
         public void getPendingLeaveRequests(LeaveRequestCallback callback) {
             List<LeaveRequest> requests = new ArrayList<>();
             Cursor cursor = db.query(
@@ -198,7 +233,7 @@
             );
 
             try {
-                while(cursor.moveToNext()) {
+                while (cursor.moveToNext()) {
                     requests.add(new LeaveRequest(
                             cursor.getInt(cursor.getColumnIndex("id")),
                             cursor.getInt(cursor.getColumnIndex("employee_id")),
@@ -262,6 +297,7 @@
                 cursor.close();
             }
         }
+
         public String generateTempPassword(int employeeId) {
             return TEMP_PASSWORD_PREFIX + employeeId;
         }
@@ -366,8 +402,12 @@
         // 3. Leave Request Management Methods -------------------------------------------
 
         public long submitLeaveRequest(int employeeId, String startDate, String endDate, String reason) {
-
             int daysRequested = calculateDaysRequested(startDate, endDate);
+            int remainingDays = getRemainingLeaveDays(employeeId);
+
+            if (daysRequested > remainingDays) {
+                return -2; // code for insufficient days
+            }
 
             ContentValues values = new ContentValues();
             values.put("employee_id", employeeId);
@@ -391,6 +431,7 @@
                 return -1;
             }
         }
+
         private boolean hasEnoughLeaveBalance(int employeeId, String startDate, String endDate) {
             Cursor cursor = db.query(
                     "employee_details",
@@ -456,7 +497,6 @@
         public boolean updateLeaveRequestStatus(int requestId, String status, String adminResponse) {
             db.beginTransaction();
             try {
-                // Get request details first
                 Cursor request = db.query(
                         "leave_requests",
                         new String[]{"employee_id", "days_requested", "status"},
@@ -470,12 +510,13 @@
                     return false;
                 }
 
-                // Only update used_leave if request is being approved
-                if (status.equals("approved") && !request.getString(2).equals("approved")) {
-                    int employeeId = request.getInt(0);
-                    int daysRequested = request.getInt(1);
+                int employeeId = request.getInt(0);
+                int daysRequested = request.getInt(1);
+                String currentStatus = request.getString(2);
+                request.close();
 
-                    // Update employee's used leave
+                // Only update used_leave if request is being approved
+                if (status.equals("approved") && !currentStatus.equals("approved")) {
                     Cursor employee = db.query(
                             "employee_details",
                             new String[]{"used_leave"},
@@ -494,7 +535,6 @@
                     employee.close();
                 }
 
-                // Update request status
                 ContentValues values = new ContentValues();
                 values.put("status", status);
                 values.put("admin_response", adminResponse);
@@ -503,7 +543,6 @@
                 db.update("leave_requests", values,
                         "id = ?", new String[]{String.valueOf(requestId)});
 
-                request.close();
                 db.setTransactionSuccessful();
                 return true;
             } finally {
@@ -613,6 +652,12 @@
             }
         }
 
+        public Cursor CursorLeaveRequests (int employeeId) {
+            SQLiteDatabase db = this.getReadableDatabase();
+            String query = "SELECT * FROM leave_requests WHERE employee_id = ?";
+            String[] selectionArgs = {String.valueOf(employeeId)};
+            return db.rawQuery(query, selectionArgs);
+        }
 
         public void updateLeaveRequestStatus(int requestId, String status, String response, StatusUpdateCallback callback) {
             ContentValues values = new ContentValues();

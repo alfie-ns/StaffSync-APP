@@ -88,8 +88,8 @@
 
     <fragment
         android:id="@+id/holiday_request_fragment"
-        android:name="com.example.staffsyncapp.holiday.HolidayRequestFragment"
-        tools:layout="@layout/holiday_request_fragment">
+        android:name="com.example.staffsyncapp.leave.LeaveRequestFragment"
+        tools:layout="@layout/leave_request_fragment">
         <action
             android:id="@+id/action_HolidayRequestFragment_to_EmployeeMainFragment"
             app:destination="@id/employee_navigation_home" />
@@ -97,7 +97,7 @@
 
     <fragment
         android:id="@+id/admin_holiday_requests_fragment"
-        android:name="com.example.staffsyncapp.admin.AdminHolidayRequestsFragment"
+        android:name="com.example.staffsyncapp.admin.AdminLeaveRequestsFragment"
         tools:layout="@layout/admin_holiday_requests_fragment">
         <action
             android:id="@+id/action_AdminHolidayRequestsFragment_to_AdminDashboardFragment"

@@ -1,4 +1,4 @@
-package com.example.staffsyncapp.holiday;
+package com.example.staffsyncapp.leave;
 
 // Android core
 import android.app.DatePickerDialog;
@@ -18,7 +18,7 @@ import androidx.navigation.Navigation;
 
 // Project-specific
 import com.example.staffsyncapp.api.ApiDataService;
-import com.example.staffsyncapp.databinding.HolidayRequestFragmentBinding;
+import com.example.staffsyncapp.databinding.LeaveRequestFragmentBinding;
 import com.example.staffsyncapp.models.Employee;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NotificationService;
@@ -40,9 +40,9 @@ import java.util.concurrent.TimeUnit;
  * - Navigates back to main screen on successful submission
  */
 
-public class HolidayRequestFragment extends Fragment {
+public class LeaveRequestFragment extends Fragment {
     private static final String TAG = "HolidayRequestFragment";
-    private HolidayRequestFragmentBinding binding;
+    private LeaveRequestFragmentBinding binding;
     private LocalDataService dbHelper;
     private NotificationService notificationService;
 
@@ -56,7 +56,7 @@ public class HolidayRequestFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = HolidayRequestFragmentBinding.inflate(inflater, container, false);
+        binding = LeaveRequestFragmentBinding.inflate(inflater, container, false);
         dbHelper = new LocalDataService(requireContext());
         notificationService = new NotificationService(requireContext());
         return binding.getRoot();
@@ -84,14 +84,13 @@ public class HolidayRequestFragment extends Fragment {
         int employeeId = prefs.getInt("logged_in_employee_id", -1);
 
         if (employeeId != -1) {
-            int usedDays = dbHelper.getEmployeeUsedLeave(employeeId);
-            int remainingDays = TOTAL_ANNUAL_LEAVE - usedDays;
+            int remainingDays = dbHelper.getRemainingLeaveDays(employeeId);
             binding.remainingDays.setText(String.format(Locale.UK,
                     "Holiday Allowance: %d/%d days remaining", remainingDays, TOTAL_ANNUAL_LEAVE));
         }
     }
 
-    private void showStartDatePicker() { // show date picker; set min date; dialog
+    private void showStartDatePicker() { // show date picker; set min date; show dialog
         Calendar minDate = Calendar.getInstance();
         minDate.add(Calendar.DAY_OF_MONTH, MIN_ADVANCE_DAYS);
 
@@ -138,16 +137,30 @@ public class HolidayRequestFragment extends Fragment {
         datePickerDialog.show();
     }
 
-    private void updateDaysRequested() { // Calculate the difference between start and end dates in milliseconds, 
-                                         // convert it to days, and update the "days requested" text.
+    private void updateDaysRequested() {
         if (!binding.startDateInput.getText().toString().isEmpty() &&
                 !binding.endDateInput.getText().toString().isEmpty()) {
 
             long diffInMillies = endDate.getTimeInMillis() - startDate.getTimeInMillis();
-            long days = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS) + 1;
+            long daysRequested = TimeUnit.DAYS.convert(diffInMillies, TimeUnit.MILLISECONDS) + 1;
 
             binding.daysRequested.setText(String.format(Locale.UK,
-                    "Days Requested: %d", days));
+                    "Days Requested: %d", daysRequested));
+
+            SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+            int employeeId = prefs.getInt("logged_in_employee_id", -1);
+
+            if (employeeId != -1) {
+                int remainingDays = dbHelper.getRemainingLeaveDays(employeeId);
+                // if requested days are less than or equal to remaining days proceed with submission
+                if (daysRequested <= remainingDays) {
+                    binding.submitRequestBtn.setEnabled(true);
+                    binding.errorMessage.setVisibility(View.GONE);
+                } else { // if exceed remaining days, disable submission and show errorMessage
+                    binding.submitRequestBtn.setEnabled(false);
+                    binding.errorMessage.setVisibility(View.VISIBLE);
+                }
+            }
         }
     }
 
@@ -225,7 +238,7 @@ public class HolidayRequestFragment extends Fragment {
         SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
         int employeeId = prefs.getInt("logged_in_employee_id", -1);
 
-        if (employeeId == -1) {
+        if (employeeId == -1) { // if error maintain status quo
             showError("Unable to identify employee");
             return;
         }
@@ -236,19 +249,25 @@ public class HolidayRequestFragment extends Fragment {
             return;
         }
 
-        long requestId = dbHelper.submitLeaveRequest(
+        long requestResult = dbHelper.submitLeaveRequest(
                 employeeId,
                 binding.startDateInput.getText().toString(),
                 binding.endDateInput.getText().toString(),
                 reason
         );
 
-        if (requestId != -1) {
+        Log.d(TAG, "Submit leave request result: " + requestResult);
+
+        if (requestResult == -2) { // implies ok-error; validly rejected
+            // -0 success; -1 failure; -2 ok-error
+            showError("Insufficient leave days remaining");
+        } else if (requestResult != -1) {
             notifyAdmin(employeeId);
             Toast.makeText(requireContext(), "Holiday request submitted successfully", Toast.LENGTH_SHORT).show();
             Navigation.findNavController(requireView()).navigateUp();
         } else {
             showError("Failed to submit request. Please try again.");
+            Log.e(TAG, "Failed to submit leave request");
         }
     }
 

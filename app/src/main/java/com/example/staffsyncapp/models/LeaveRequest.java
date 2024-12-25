@@ -9,6 +9,10 @@ public class LeaveRequest {
     private final String reason;
     private final int daysRequested;
 
+    private String status = "pending";
+    private String adminResponse;
+    private String createdAt;
+
     /**
      * Constructor for the LeaveRequest class.
      * Creates a LeaveRequest object with the specified parameters.
@@ -42,4 +46,12 @@ public class LeaveRequest {
     public String getEndDate() { return endDate; }
     public String getReason() { return reason; }
     public int getDaysRequested() { return daysRequested; }
+
+    public String getStatus() { return status; }
+    public String getAdminResponse() { return adminResponse; }
+    public String getCreatedAt() { return createdAt; }
+
+    public void setStatus(String status) { this.status = status; }
+    public void setAdminResponse(String adminResponse) { this.adminResponse = adminResponse; }
+    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
 }

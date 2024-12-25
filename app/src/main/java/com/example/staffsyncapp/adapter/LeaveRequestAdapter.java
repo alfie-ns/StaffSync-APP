@@ -1,4 +1,4 @@
-package com.example.staffsyncapp.holiday;
+package com.example.staffsyncapp.adapter;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -46,7 +46,7 @@ import java.util.List;
  * ---------------------------------------------------------------------------------------------------------
  **/
 
-public class HolidayRequestAdapter extends RecyclerView.Adapter<HolidayRequestAdapter.ViewHolder> {
+public class LeaveRequestAdapter extends RecyclerView.Adapter<LeaveRequestAdapter.ViewHolder> {
     private final List<LeaveRequest> requests = new ArrayList<>();
     private final OnRequestActionListener listener;
 
@@ -55,7 +55,7 @@ public class HolidayRequestAdapter extends RecyclerView.Adapter<HolidayRequestAd
         void onDeny(LeaveRequest request);
     }
 
-    public HolidayRequestAdapter(OnRequestActionListener listener) {
+    public LeaveRequestAdapter(OnRequestActionListener listener) {
         this.listener = listener;
     }
 

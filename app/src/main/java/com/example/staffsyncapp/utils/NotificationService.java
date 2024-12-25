@@ -72,7 +72,7 @@ public class NotificationService {
             );
             holidayChannel.setDescription("Updates on your leave requests");
             holidayChannel.enableVibration(true);
-            holidayChannel.setLightColor(Color.BLUE);
+            holidayChannel.setLightColor(Color.CYAN);
 
             notificationManager.createNotificationChannel(adminChannel);
             notificationManager.createNotificationChannel(holidayChannel);

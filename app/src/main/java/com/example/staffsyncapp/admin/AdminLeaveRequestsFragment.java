@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.staffsyncapp.holiday.HolidayRequestAdapter;
+import com.example.staffsyncapp.adapter.LeaveRequestAdapter;
 import com.example.staffsyncapp.databinding.AdminHolidayRequestsFragmentBinding;
 import com.example.staffsyncapp.models.LeaveRequest;
 import com.example.staffsyncapp.utils.LocalDataService;
@@ -19,12 +19,12 @@ import com.example.staffsyncapp.utils.NotificationService;
 //import java.util.ArrayList;
 //import java.util.List;
 
-public class AdminHolidayRequestsFragment extends Fragment implements HolidayRequestAdapter.OnRequestActionListener {
+public class AdminLeaveRequestsFragment extends Fragment implements LeaveRequestAdapter.OnRequestActionListener {
     private static final String TAG = "AdminHolidayRequests";
     private AdminHolidayRequestsFragmentBinding binding;
     private LocalDataService dbHelper;
     private NotificationService notificationService;
-    private HolidayRequestAdapter adapter;
+    private LeaveRequestAdapter adapter;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -42,7 +42,7 @@ public class AdminHolidayRequestsFragment extends Fragment implements HolidayReq
     }
 
     private void setupUI() {// setup RecyclerView and click listeners
-        adapter = new HolidayRequestAdapter(this);
+        adapter = new LeaveRequestAdapter(this);
 
         binding.backArrow.setOnClickListener(v ->
                 Navigation.findNavController(v).navigateUp());
@@ -81,28 +81,38 @@ public class AdminHolidayRequestsFragment extends Fragment implements HolidayReq
     // TODO: combine functions into one?
     @Override
     public void onApprove(LeaveRequest request) { // approve leave request
+        Log.d(TAG, "Approving leave request: " + request.getId());
         dbHelper.updateLeaveRequestStatus(
                 request.getId(),
                 "approved",
                 "Request approved by admin",
                 success -> {
                     if (success) {
+                        Log.d(TAG, "Leave request approved successfully");
                         notifyEmployee(request.getEmployeeId(), true);
                         loadRequests();
+                    }
+                    else {
+                        Log.e(TAG, "Failed to approve leave request");
                     }
                 }
         );
     }
     @Override
     public void onDeny(LeaveRequest request) { // deny leave request
+        Log.d(TAG, "Denying leave request: " + request.getId());
         dbHelper.updateLeaveRequestStatus(
                 request.getId(),
                 "denied",
                 "Request denied by admin",
                 success -> {
                     if (success) {
+                        Log.d(TAG, "Leave request denied successfully");
                         notifyEmployee(request.getEmployeeId(), false);
                         loadRequests();
+                    }
+                    else {
+                        Log.e(TAG, "Failed to deny leave request");
                     }
                 }
         );

@@ -1,4 +1,4 @@
-package com.example.staffsyncapp.employee;
+package com.example.staffsyncapp.adapter;
 
 // Android libraries for logging and context usage testing
 import android.view.LayoutInflater;
@@ -26,7 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
-//import javax.swing.text.html.ImageView;
+
 
 public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHolder> {
     // EmployeeAdapter class for displaying employee data in a RecyclerView, dynamically; going to be used elsewhere in the future

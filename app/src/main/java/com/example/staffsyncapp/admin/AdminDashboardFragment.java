@@ -13,7 +13,7 @@ import android.widget.TextView;
 
 import com.example.staffsyncapp.api.ApiDataService;
 import com.example.staffsyncapp.R;
-import com.example.staffsyncapp.employee.EmployeeAdapter;
+import com.example.staffsyncapp.adapter.EmployeeAdapter;
 import com.example.staffsyncapp.utils.NotificationService;
 import com.example.staffsyncapp.utils.SalaryIncrementManager;
 import com.google.android.material.button.MaterialButton;

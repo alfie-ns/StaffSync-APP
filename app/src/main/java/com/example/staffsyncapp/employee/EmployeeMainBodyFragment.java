@@ -16,6 +16,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 
+import com.example.staffsyncapp.adapter.EmployeeAdapter;
 import com.example.staffsyncapp.api.ApiDataService;
 import com.example.staffsyncapp.R;
 import com.example.staffsyncapp.databinding.EmployeeMainBodyFragmentBinding;
@@ -45,6 +46,7 @@ public class EmployeeMainBodyFragment extends Fragment {
     private static final long SYNC_INTERVAL = 60 * 1000; // refresh every 1 minute; in milliseconds
     private Runnable syncRunnable;
 
+    private LocalDataService dbHelper;
     private EmployeeAdapter.EmployeeViewModel employeeViewModel;
 
     // TODO [X]: get employee ID from local database
@@ -55,6 +57,7 @@ public class EmployeeMainBodyFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = EmployeeMainBodyFragmentBinding.inflate(inflater, container, false);
         apiService = new ApiDataService(requireContext());
+        dbHelper = new LocalDataService(requireContext());
         return binding.getRoot();
     }
 
@@ -77,6 +80,7 @@ public class EmployeeMainBodyFragment extends Fragment {
     @Override
     public void onResume() { // resume the employee respective-data-field get
         super.onResume();
+        setupUI(); // refresh UI to show updated leave balance
         Employee employee = employeeViewModel.getEmployeeLiveData().getValue();
         if (employee != null) {
             updateUIWithEmployeeData(employee);
@@ -86,8 +90,15 @@ public class EmployeeMainBodyFragment extends Fragment {
     }
 
     private void setupUI() {
-        // set initial UI state
-        binding.daysRemaining.setText("Days Remaining: 24/30");
+        SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+        int employeeId = prefs.getInt("logged_in_employee_id", -1);
+
+        if (employeeId != -1) {
+            int remainingDays = dbHelper.getRemainingLeaveDays(employeeId);
+            binding.daysRemaining.setText(String.format("Days Remaining: %d/30", remainingDays));
+        } else {
+            binding.daysRemaining.setText("Days Remaining: --/30");
+        }
         binding.employeeId.setText("Loading...");
         binding.department.setText("Loading...");
         binding.yearsOfService.setText("Loading...");
@@ -215,8 +226,8 @@ public class EmployeeMainBodyFragment extends Fragment {
 
         // View history
         binding.viewHistoryBtn.setOnClickListener(v -> {
-            // TODO: implement history view
-            Toast.makeText(requireContext(), "Leave history coming soon", Toast.LENGTH_SHORT).show();
+            LeaveHistoryDialog dialog = new LeaveHistoryDialog();
+            dialog.show(getParentFragmentManager(), "leave_history");
         });
 
         // Pending requests
