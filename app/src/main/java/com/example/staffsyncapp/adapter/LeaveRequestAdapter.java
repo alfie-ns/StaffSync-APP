@@ -40,11 +40,9 @@ import java.util.List;
  * @see AdminHolidayRequestFragment for the fragment using this adapter
  * @see LeaveRequest for the data model class
  * @see LocalDataService for the SQlite database operations
- **/
 
-/**
  * ---------------------------------------------------------------------------------------------------------
- **/
+ */
 
 public class LeaveRequestAdapter extends RecyclerView.Adapter<LeaveRequestAdapter.ViewHolder> {
     private final List<LeaveRequest> requests = new ArrayList<>();

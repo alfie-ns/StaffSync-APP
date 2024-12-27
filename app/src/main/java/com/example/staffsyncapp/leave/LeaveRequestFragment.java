@@ -172,7 +172,7 @@ public class LeaveRequestFragment extends Fragment {
      * 4- maximum of 14 consecutive days allowed
      * 5- employee must have sufficient leave balance
      * @return true if all validations pass, false otherwise
-     **/
+     */
     private boolean validateRequest() {
         String startDateStr = binding.startDateInput.getText().toString();
         String endDateStr = binding.endDateInput.getText().toString();
@@ -227,7 +227,7 @@ public class LeaveRequestFragment extends Fragment {
      * If request is valid, submits it to local DB and notifies admin;
      * on success, navigates back to main employee screen;
      * displays error message if submission fails.
-     **/
+     */
     public void validateAndSubmitRequest() {
         if (!validateRequest()) {
             return;

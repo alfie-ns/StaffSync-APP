@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Locale;
 
 /** Employee management API service handling 'comp2000' server requests
- * 
+
  * API requests for employee management using Volley; this file essentially
  * makes the API requests to different comp2000-server endpoints; GET, POST, PUT, DELETE.
  * using hr lines to separate out the different requests into their own sections
@@ -45,7 +45,7 @@ import java.util.Locale;
  * These functions use dedicated local worker threads to handle network requests in background;
  * returns data via EmployeeFetchListener callbacks on main thread; they also use
  * Volley's RequestQueue to handle network requests and responses.
- * 
+
  * Worker Threads:
  * - [X] getAllEmployees
  * - [X] getEmployeeById
@@ -53,7 +53,7 @@ import java.util.Locale;
  * - [X] updateEmployee
  * - [X] deleteEmployee
  * - [X] checkHealth
- *
+
  * I subsequently had to make getEmployeeById static because the method is
  * called directly on the class name (ApiDataService.getEmployeeById) rather than 
  * on an instance of the class (apiService.getEmployeeById) this is because in
@@ -88,11 +88,6 @@ public class ApiDataService {
         void onResponse(String response);
     }
 
-    public interface IncrementStatusListener { 
-        void onSuccess(List<IncrementStatus> statusList);
-        void onError(String error);
-    }
-
     public interface EmployeeAddListener {
         void onSuccess(String message, int employeeId, String email);
         void onError(String error);
@@ -107,6 +102,7 @@ public class ApiDataService {
         void onSuccess(String message);
         void onError(String error);
     }
+
 // --------------------------------------------------------------------------------
     // IncrementStatus class to store employee data for salary increment
     public static class IncrementStatus {
@@ -125,7 +121,7 @@ public class ApiDataService {
      * GET request to fetch ALL employees
      * Endpoint: /employees
      * Fetch the employee data from the API and parse it into a list of Employee objects
-     **/
+     */
     public static void getAllEmployees(EmployeeFetchListener listener) {
         String url = BASE_URL + "/employees";
         Log.d(TAG, "Attempting to fetch employees from: " + url);
@@ -185,7 +181,7 @@ public class ApiDataService {
      * GET request to fetch a particular employee by the respective ID
      * Endpoint: /employees/get/<int:id>
      * Fetch a particular employee by their ID and parse the data into an Employee object
-     **/
+     */
     public static void getEmployeeById(int id, EmployeeFetchListener listener) {
         String url = BASE_URL + "/employees/get/" + id;
         Log.d(TAG, "Attempting to fetch employee " + id);
@@ -241,7 +237,7 @@ public class ApiDataService {
     /** [X] [X]
      * POST request to add a new employee
      * Endpoint: /employees/add
-     **/
+     */
     public void addEmployee(String firstname, String lastname, String email,
                                 String department, double salary, String joiningdate,
                                 final EmployeeAddListener listener) {
@@ -315,7 +311,7 @@ public class ApiDataService {
     /** [X] [X]
      * PUT request to update an employee's details
      * Endpoint: /employees/edit/<int:id>
-     **/
+     */
     public void updateEmployee(int id, String firstname, String lastname, String email,
                                String department, double salary, String joiningdate,
                                EmployeeUpdateListener listener) {
@@ -383,7 +379,7 @@ public class ApiDataService {
     /** [X] [X]
      * DELETE request to delete an employee by ID
      * Endpoint: /employees/delete/<int:id>
-     **/
+     */
     public void deleteEmployee(int employeeId, EmployeeDeleteListener listener) {
         String url = BASE_URL + "/employees/delete/" + employeeId;
         Log.d(TAG, "Attempting to delete employee " + employeeId);
@@ -418,7 +414,7 @@ public class ApiDataService {
     /** [X] [X]
      * - GET request to test the API is working
      * - Endpoint: /health
-     **/
+     */
     public void checkHealth(HealthCallback callback) {
         String url = BASE_URL + "/health";
         Log.d(TAG, "Testing API health");
@@ -438,7 +434,7 @@ public class ApiDataService {
                     },
                     error -> workerThread.postToMainThread(() -> {
                         String errorMsg = error.getMessage() != null ?
-                                error.getMessage() : "Cannot connect to COMP2000";
+                                error.getMessage() : "Cannot connect to comp2000";
                         Log.e(TAG, "Health check failed: " + errorMsg);
                         callback.onResponse(errorMsg);
                     })

@@ -34,7 +34,7 @@ import java.util.Locale;
 /** TODO
 * [ ] implement functionality to edit own details
 * [ ] test that the details change by looking on adminDashboard fragment
-**/
+*/
 
 public class EmployeeProfileFragment extends Fragment {
     private EmployeeProfileFragmentBinding binding;

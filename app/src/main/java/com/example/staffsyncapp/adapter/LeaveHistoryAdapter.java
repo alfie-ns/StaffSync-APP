@@ -25,8 +25,8 @@ import java.util.Locale;
 /**
 * Leave History Adapter
 * Adapter for displaying leave history in a RecyclerView.
-*
-**/
+*/
+
 
 public class LeaveHistoryAdapter extends RecyclerView.Adapter<LeaveHistoryAdapter.ViewHolder> {
     private List<LeaveRequest> leaveRequests;

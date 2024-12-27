@@ -29,7 +29,7 @@ import com.example.staffsyncapp.utils.NavigationManager;
 *  [X] dark mode
 *  [ ] terms and conditions
 *  [ ] privacy
-**/
+*/
 
 
 
@@ -103,6 +103,7 @@ public class EmployeeSettingsFragment extends Fragment {
 
     private void handleLogout() {
         try {
+            binding.darkModeSwitch.setChecked(false); // reset switch state before logout to ensure it matches system default i.e. off, when logged back in
             SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
             int employeeId = prefs.getInt("logged_in_employee_id", -1);
             String employeeDarkModeKey = DARK_MODE_KEY + "_" + employeeId;

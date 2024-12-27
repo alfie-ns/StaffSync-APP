@@ -592,8 +592,8 @@ public class AdminDashboardFragment extends Fragment {
     private void setupClickListeners() {
         /**
          * Set all click listeners for each admin functionality
-         **/
 
+        */
         // go to holiday requests fragment
         binding.manageLeaveBtn.setOnClickListener(v -> {
             Navigation.findNavController(v)
@@ -628,9 +628,23 @@ public class AdminDashboardFragment extends Fragment {
         });
 
         // check salary increments
+
+        // TESTING CLICK LISTENER
+//        binding.checkIncrementsBtn.setOnClickListener(v -> {
+//            Log.d(TAG, "checking salary increments...");
+//            LocalDataService dbHelper = new LocalDataService(requireContext());
+//
+//            // 1- set test date for testing an employee
+//            dbHelper.setEmployeeHireDate(1681, "2022-12-26");
+//
+//            // -2 show increment status dialog
+//            SalaryIncrementManager.showSalaryIncrementStatus(requireContext());
+//        });
+
+        // PRODUCTION-READY CLICK LISTENER
         binding.checkIncrementsBtn.setOnClickListener(v -> {
             Log.d(TAG, "checking salary increments...");
-            SalaryIncrementManager.showSalaryIncrementStatus();
+            SalaryIncrementManager.showSalaryIncrementStatus(requireContext());
         });
 
         // notification controls setup

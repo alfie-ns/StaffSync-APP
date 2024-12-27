@@ -16,12 +16,12 @@ import com.example.staffsyncapp.R;
 
 /**
  * Handles push notification logic for the StaffSync employee management app.
- * 
+
  * Manages three notification channels:
  * - Admin channel: High priority, red LED for leave requests
  * - Holiday channel: High priority, blue LED for request updates
  * - System channel: Default priority for general updates
- * 
+
  * @since 1.0
  * @see android.app.NotificationManager
  * @see androidx.core.app.NotificationCompat
@@ -51,8 +51,15 @@ public class NotificationService {
         createNotificationChannels();
     }
 
-    // Create notification channels; Admin, Holiday, System
+    /**
+     * Creates notification channels for admin and employee notifications
+     *
+     * @throws IllegalStateException: if SDK version is below Android O (API 26)
+     */
     private void createNotificationChannels() {
+        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
+            throw new IllegalStateException("Notification channels require API level 26 or higher");
+        }
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             // Admin channel for receiving leave requests
             NotificationChannel adminChannel = new NotificationChannel(
@@ -149,6 +156,7 @@ public class NotificationService {
         }
     }
 
+    // Send admin decision back to employee
     public void sendRequestUpdateToEmployee(int employeeId, boolean isApproved, String adminMessage) { // send notification back to employee; approved or denied
         PendingIntent pendingIntent = new NavDeepLinkBuilder(context)
                 .setComponentName(MainActivity.class)

@@ -22,7 +22,7 @@
      * Manages employee accounts, employee records, leave requests and notifications using SQLite.
      * 
      * features:
-     * - employee authentication and session management
+     * - Employee authentication and session management
      * - Employee details and salary tracking
      * - Leave request processing
      * - Notification handling
@@ -221,6 +221,16 @@
             return 0;
         }
 
+        public void setEmployeeHireDate(int employeeId, String testDate) {
+            ContentValues values = new ContentValues();
+            values.put("hire_date", testDate);
+            values.put("last_increment_date", testDate);
+
+            db.update("employee_details", values,
+                    "employee_id = ?",
+                    new String[]{String.valueOf(employeeId)});
+        }
+
         public void getPendingLeaveRequests(LeaveRequestCallback callback) {
             List<LeaveRequest> requests = new ArrayList<>();
             Cursor cursor = db.query(
@@ -363,13 +373,13 @@
         }
 
         public void checkAndApplySalaryIncrements() {
-            //  start transaction for batch processing
             db.beginTransaction();
             try {
-                // Get eligible employees
+                // only get employees who haven't had an increment in the last year
                 Cursor cursor = db.rawQuery(
                         "SELECT id, salary, full_name FROM employee_details " +
-                                "WHERE CAST(JULIANDAY('now') - JULIANDAY(COALESCE(last_increment_date, hire_date)) AS INTEGER) >= 365",
+                                "WHERE CAST(JULIANDAY('now') - JULIANDAY(COALESCE(last_increment_date, hire_date)) AS INTEGER) >= 365 " +
+                                "AND (last_increment_date IS NULL OR JULIANDAY(last_increment_date) < JULIANDAY('now') - 365)",
                         null
                 );
 
@@ -672,5 +682,43 @@
             } catch (Exception e) {
                 callback.onSuccess(false);
             }
+        }
+
+        // 4. Test functions
+
+        public void testSalaryIncrement(int employeeId) {
+            // Get current salary
+            Cursor beforeCursor = db.query(
+                    "employee_details",
+                    new String[]{"salary", "hire_date", "last_increment_date"},
+                    "employee_id = ?",
+                    new String[]{String.valueOf(employeeId)},
+                    null, null, null
+            );
+
+            if (beforeCursor.moveToFirst()) {
+                double oldSalary = beforeCursor.getDouble(0);
+                Log.d("SalaryTest", "Before increment: £" + oldSalary);
+
+                // Run increment
+                checkAndApplySalaryIncrements();
+
+                // Check new salary
+                Cursor afterCursor = db.query(
+                        "employee_details",
+                        new String[]{"salary", "last_increment_date"},
+                        "employee_id = ?",
+                        new String[]{String.valueOf(employeeId)},
+                        null, null, null
+                );
+
+                if (afterCursor.moveToFirst()) {
+                    double newSalary = afterCursor.getDouble(0);
+                    Log.d("SalaryTest", "After increment: £" + newSalary);
+                    Log.d("SalaryTest", "Increase: £" + (newSalary - oldSalary));
+                }
+                afterCursor.close();
+            }
+            beforeCursor.close();
         }
     }

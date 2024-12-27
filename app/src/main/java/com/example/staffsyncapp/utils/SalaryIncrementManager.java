@@ -1,7 +1,10 @@
 package com.example.staffsyncapp.utils;
 
+import android.database.Cursor;
 import android.icu.text.SimpleDateFormat;
 import android.util.Log;
+
+import androidx.appcompat.app.AlertDialog;
 
 import com.example.staffsyncapp.api.ApiDataService;
 
@@ -10,13 +13,56 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.TimeUnit;
+import android.content.Context;
 
 import com.example.staffsyncapp.models.Employee;
 
 public class SalaryIncrementManager {
     private static final String TAG = "SalaryIncrementManager";
 
-    public static void showSalaryIncrementStatus() {
+    public static void showSalaryIncrementStatus(Context context) {
+        LocalDataService dbHelper = new LocalDataService(context);
+
+        // get all employees who were due an increment
+        Cursor cursor = dbHelper.getReadableDatabase().rawQuery(
+                "SELECT full_name, salary FROM employee_details " +
+                        "WHERE CAST(JULIANDAY('now') - JULIANDAY(COALESCE(last_increment_date, hire_date)) AS INTEGER) >= 365",
+                null
+        );
+
+        StringBuilder message = new StringBuilder();
+        int eligibleCount = 0;
+
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                String name = cursor.getString(0);
+                double oldSalary = cursor.getDouble(1);
+                double newSalary = oldSalary * 1.05;
+
+                message.append(name)
+                        .append(": £").append(String.format("%.2f", oldSalary))
+                        .append(" → £").append(String.format("%.2f", newSalary))
+                        .append("\n");
+                eligibleCount++;
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
+
+        // apply increments
+        dbHelper.checkAndApplySalaryIncrements();
+
+        // show dialog with results
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Salary Increment Status");
+
+        if (eligibleCount > 0) {
+            builder.setMessage("The following employees received a 5% increase:\n\n" + message.toString());
+        } else { // else-if no employees eligible
+            builder.setMessage("No employees are eligible for salary increments at this time.");
+        }
+
+        builder.setPositiveButton("OK", null)
+                .show();
     }
 
     public static class IncrementStatus {
@@ -36,15 +82,6 @@ public class SalaryIncrementManager {
         void onError(String error);
     }
 
-    public static void processIncrements(List<IncrementStatus> statusList, IncrementStatusListener listener) {
-        try {
-            // handle increment logic
-            listener.onSuccess(statusList);
-        } catch (Exception e) {
-            Log.e(TAG, "Error processing increments: " + e.getMessage());
-            listener.onError("Failed to process increments");
-        }
-    }
 
     public static void getIncrementStatus(IncrementStatusListener listener) {
         ApiDataService.getAllEmployees(new ApiDataService.EmployeeFetchListener() {

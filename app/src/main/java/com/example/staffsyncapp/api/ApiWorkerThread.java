@@ -27,7 +27,7 @@ public class ApiWorkerThread extends Thread {
      * @method shutdown: Safely terminates thread
      *
      * @see ApiDataService : Uses this class for API operations
-     **/
+     */
 
     public ApiWorkerThread() {
         mainHandler = new Handler(Looper.getMainLooper());
@@ -61,7 +61,7 @@ public class ApiWorkerThread extends Thread {
         taskQueue.clear();
     }
 
-    public boolean queueTask(Runnable task) { // add a task to the queue if the worker thread is already running
+    public boolean queueTask(Runnable task) { // add a task to the queue if the worker thread is definitely running
         if (task == null || !isRunning) {
             return false;
         }

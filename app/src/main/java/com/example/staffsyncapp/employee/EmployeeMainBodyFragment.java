@@ -35,7 +35,7 @@ import android.content.ContentValues;
  *  [ ] book leave
  *  [ ] pending requests
  *  [ ] view leave history
- **/
+ */
 public class EmployeeMainBodyFragment extends Fragment {
     private EmployeeMainBodyFragmentBinding binding;
     private ApiDataService apiService;
@@ -155,7 +155,7 @@ public class EmployeeMainBodyFragment extends Fragment {
         syncRunnable = new Runnable() {
             @Override
             public void run() {
-                // Sync with API
+                // sync with API; call get Employee By ID API method
                 apiService.getEmployeeById(employeeId, new ApiDataService.EmployeeFetchListener() {
                     @Override
                     public void onEmployeesFetched(List<Employee> employees) {
