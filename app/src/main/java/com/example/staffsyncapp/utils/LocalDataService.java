@@ -133,10 +133,18 @@
                     "employee_id INTEGER," +
                     "title TEXT," +
                     "message TEXT," +
-                    "type TEXT," +  // ie leave_request, salary_update, security_alert, etc.
+                    "type TEXT," +  // i.e. leave_request, salary_update, security_alert, etc.
                     "is_read INTEGER DEFAULT 0," +
                     "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
                     "FOREIGN KEY(employee_id) REFERENCES employees(id))");
+
+            // 6- Pending notifications; store notifications to be sent on next login
+            db.execSQL("CREATE TABLE pending_notifications (" +
+                    "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "title TEXT," +
+                    "message TEXT," +
+                    "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                    "is_read INTEGER DEFAULT 0)");
 
 
             Log.d("StaffDataService", "Database tables created successfully");
@@ -154,7 +162,7 @@
                 Log.e("", "Error creating default admin: " + e.getMessage());
             }
             long employeeInsertResult = -1; // set as invalid initially to ensure it's recognised as such if not activated
-            // Add test employees with salary info
+            // add test employees with salary info
             try {
                 ContentValues employeeDetails = new ContentValues();
                 employeeDetails.put("employee_id", employeeInsertResult);
@@ -185,6 +193,42 @@
                 db.execSQL("ALTER TABLE employees ADD COLUMN first_login INTEGER DEFAULT 1");
             }
         }
+
+        public void storeBroadcastNotification(String title, String message) { // store broadcast notifications in database
+            ContentValues values = new ContentValues();
+            values.put("title", title);
+            values.put("message", message);
+            db.insert("pending_notifications", null, values);
+        }
+
+        public void checkPendingNotifications(Context context) { // check for pending notifications; show if any; mark as read; db query
+            NotificationService notificationService = new NotificationService(context);
+
+            Cursor cursor = db.query("pending_notifications",
+                    null,
+                    "is_read = 0",
+                    null, null, null, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do { // do-while loop to ensure at least one notification is processed
+                    String title = cursor.getString(cursor.getColumnIndex("title"));
+                    String message = cursor.getString(cursor.getColumnIndex("message"));
+                    int id = cursor.getInt(cursor.getColumnIndex("id"));
+
+                    notificationService.showBroadcastNotification(title, message);
+
+                    // mark read
+                    ContentValues values = new ContentValues();
+                    values.put("is_read", 1);
+                    db.update("pending_notifications", values,
+                            "id = ?", new String[]{String.valueOf(id)});
+
+                } while (cursor.moveToNext());
+                cursor.close();
+            }
+        }
+
+
 
         public int getRemainingLeaveDays(int employeeId) {
             SQLiteDatabase db = this.getReadableDatabase();
@@ -409,7 +453,7 @@
             return new SimpleDateFormat("yyyy-MM-dd", Locale.UK).format(new Date());
         }
 
-        // 3. Leave Request Management Methods -------------------------------------------
+        // 3- Leave Request Management Methods -------------------------------------------
 
         public long submitLeaveRequest(int employeeId, String startDate, String endDate, String reason) {
             int daysRequested = calculateDaysRequested(startDate, endDate);
@@ -442,25 +486,8 @@
             }
         }
 
-        private boolean hasEnoughLeaveBalance(int employeeId, String startDate, String endDate) {
-            Cursor cursor = db.query(
-                    "employee_details",
-                    new String[]{"annual_leave_allowance", "used_leave"},
-                    "employee_id = ?",
-                    new String[]{String.valueOf(employeeId)},
-                    null, null, null
-            );
 
-            if (cursor.moveToFirst()) {
-                int allowance = cursor.getInt(0);
-                int used = cursor.getInt(1);
-                int requested = calculateDaysRequested(startDate, endDate);
-                cursor.close();
-                return (allowance - used) >= requested;
-            }
-            cursor.close();
-            return false;
-        }
+
 
         private String getEmployeeNameById(int employeeId) {
             Cursor cursor = db.query(
@@ -593,29 +620,7 @@
             values.put("is_locked", 1); // set is_locked to 1(success)
             return db.update("employees", values, "email = ?", new String[]{email}) > 0;
         }
-        // TODO: EMPLOYEE-SIDE
-
-        public int getLoggedInEmployeeId() {
-            SQLiteDatabase db = this.getReadableDatabase();
-            int employeeId = -1; //  value if no employee is logged in
-
-            try {
-                String query = "SELECT employee_id FROM employee_sessions WHERE is_active = 1";
-                Cursor cursor = db.rawQuery(query, null);
-
-                if (cursor != null && cursor.moveToFirst()) {
-                    employeeId = cursor.getInt(cursor.getColumnIndex("employee_id"));
-                }
-
-                if (cursor != null) {
-                    cursor.close();
-                }
-            } catch (Exception e) {
-                Log.e("LocalDataService", "Error getting logged in employee ID: " + e.getMessage());
-            }
-
-            return employeeId;
-        }
+        // TODO [X] [ ]: EMPLOYEE-SIDE
 
         public void createEmployeeAccount(int employeeId, String email) {
             String tempPassword = generateTempPassword(employeeId);
@@ -684,7 +689,7 @@
             }
         }
 
-        // 4. Test functions
+        // 4- Test functions: Testing: OFF
 
         public void testSalaryIncrement(int employeeId) {
             // Get current salary

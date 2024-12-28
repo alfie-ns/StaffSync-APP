@@ -215,7 +215,8 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
         // 1- check if it's an admin login
         if (dbHelper.verifyAdminLogin(email, password)) {
             Log.d(TAG, "Admin login successful");
-            loadUserDarkModePreference(email);
+            dbHelper.checkPendingNotifications(requireContext());
+            //loadUserDarkModePreference(email);
             try {
                 NavHostFragment.findNavController(LoginFragment.this)
                         .navigate(R.id.action_LoginFragment_to_AdminDashboardFragment);
@@ -229,6 +230,8 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
             if (loginStatus == 2) { // normal login
                 Log.d(TAG, "User login successful");
                 loadUserDarkModePreference(email);
+                dbHelper.checkPendingNotifications(requireContext()); // check for general broadcast
+                // TODO: check for notifications regarding the leave request
                 try {
                     NavHostFragment.findNavController(LoginFragment.this)
                             .navigate(R.id.action_LoginFragment_to_EmployeeMainFragment);
@@ -236,7 +239,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
                     Log.e(TAG, "Navigation to user dashboard failed", e);
                 }
             }
-            else if (loginStatus == 1) { // first-time login
+            else if (loginStatus == 1) { // first-time login; reset password
                 Log.d(TAG, "First time login - showing password change dialog");
                 showPasswordChangeDialog(email);
             }

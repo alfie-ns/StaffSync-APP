@@ -193,4 +193,27 @@ public class NotificationService {
             Log.e(TAG, "Failed to send notification", e);
         }
     }
+
+    // Broadcast ---
+
+    public void sendAdminBroadcastMessage(String title, String message) {
+        // Store notification in database
+        LocalDataService dbHelper = new LocalDataService(context);
+        dbHelper.storeBroadcastNotification(title, message);
+
+        // show notification immediately
+        showBroadcastNotification(title, message);
+    }
+
+    public void showBroadcastNotification(String title, String message) { // Create and display a broadcast notification
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ADMIN_CHANNEL)
+                .setSmallIcon(R.drawable.bell_icon) // fetch bell_icon from drawable resources
+                .setContentTitle("Admin Broadcast: " + title)
+                .setContentText(message)
+                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true);
+
+        sendNotification(BASE_NOTIFICATION_ID + 3000, builder.build());
+    }
 }
