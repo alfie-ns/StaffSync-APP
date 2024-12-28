@@ -7,7 +7,6 @@ import android.icu.text.SimpleDateFormat;
 import android.util.Log;
 
 // Volley libraries for making API requests
-
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
@@ -446,7 +445,7 @@ public class ApiDataService {
     }
 // --------------------------------------------------------------------------------
     // HELPER FUNCTIONS
-    public void cleanup() { // shut down all running workerThreads; clean running threads
+    public void cleanUp() { // shut down all running workerThreads; clean running threads
         if (workerThread != null) {
             workerThread.shutdown();
             workerThread = null; // dereference to free up resources

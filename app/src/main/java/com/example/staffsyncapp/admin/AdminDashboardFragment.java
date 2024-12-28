@@ -138,6 +138,8 @@ public class AdminDashboardFragment extends Fragment {
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        notificationService = new NotificationService(requireContext());
+
         sharedPreferences = requireContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE); // initialise shared preferences
 
         fetchAndShowEmployees(); // initial load
@@ -156,8 +158,6 @@ public class AdminDashboardFragment extends Fragment {
 
         setupClickListeners(); // check each click listener
         setupSearchFunctionality(); // setup employee list search functionality
-
-        notificationService = new NotificationService(requireContext()); // setup notification service
 
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) { // check for notification permissions
             if (ActivityCompat.checkSelfPermission(requireContext(), android.Manifest.permission.POST_NOTIFICATIONS)
@@ -693,6 +693,30 @@ public class AdminDashboardFragment extends Fragment {
             }
         });
 
+        // Admin General Broadcast
+        binding.broadcastMessageBtn.setOnClickListener(v -> {
+            // Create and show a dialog to input broadcast message
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            View dialogView = getLayoutInflater().inflate(R.layout.admin_broadcast_dialog, null);
+            EditText titleInput = dialogView.findViewById(R.id.broadcast_title_input);
+            EditText messageInput = dialogView.findViewById(R.id.broadcast_message_input);
+
+            builder.setView(dialogView)
+                    .setTitle("Send Broadcast Message")
+                    .setPositiveButton("Send", (dialog, which) -> {
+                        String title = titleInput.getText().toString();
+                        String message = messageInput.getText().toString();
+
+                        if (!title.isEmpty() && !message.isEmpty()) { // if not empty; title and message
+                            notificationService.sendAdminBroadcastMessage(title, message);
+                            Toast.makeText(requireContext(), "Broadcast message sent", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("Cancel", null);
+
+            builder.create().show();
+        });
+
         // logout functionality
         binding.logoutBtn.setOnClickListener(v -> {
             Log.d(TAG, "processing admin logout...");
@@ -828,7 +852,7 @@ public class AdminDashboardFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         if (employeeDataService != null) {
-            employeeDataService.cleanup();  // ensure all worker threads are terminated to prevent memory leak
+            employeeDataService.cleanUp();  // ensure all worker threads are terminated to prevent memory leak
             Log.d(TAG, "Worker thread cleaned up");
         }
         binding = null;

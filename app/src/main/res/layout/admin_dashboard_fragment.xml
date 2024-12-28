@@ -305,6 +305,18 @@
                         app:iconGravity="textStart"
                         app:cornerRadius="8dp"
                         android:backgroundTint="@color/admin_deep"/>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/broadcastMessageBtn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Send Broadcast Message"
+                        android:textAllCaps="false"
+                        app:iconGravity="textStart"
+                        app:icon="@drawable/bell_icon"
+                    app:cornerRadius="8dp"
+                    android:backgroundTint="@color/admin_deep"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -445,7 +457,6 @@
                             android:orientation="vertical"
                             android:padding="12dp">
 
-
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -469,7 +480,6 @@
                                 android:textAllCaps="false"
                                 app:cornerRadius="8dp"
                                 android:backgroundTint="@color/admin_deep"/>
-
                             <TextView
                                 android:id="@+id/auto_increment_status"
                                 android:layout_width="wrap_content"
