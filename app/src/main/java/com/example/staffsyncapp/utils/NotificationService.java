@@ -94,6 +94,8 @@ public class NotificationService {
      * @param reason Leave request reason
      */
     public void sendLeaveRequestToAdmin(String employeeName, String startDate, String endDate, String reason) {
+        Log.d(TAG, "Attempting to send leave request notification for: " + employeeName + "...");
+
         PendingIntent pendingIntent = new NavDeepLinkBuilder(context)
                 .setComponentName(MainActivity.class)
                 .setGraph(R.navigation.nav_graph)
@@ -131,9 +133,12 @@ public class NotificationService {
             if (ActivityCompat.checkSelfPermission(context,
                     android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
                 notificationManager.notify(NOTIFICATION_ID, builder.build());
+                Log.d(TAG, "Granting leave request notifications...");
+            } else {
+                Log.e(TAG, "Notification permission not granted.");
             }
         } catch (Exception e) {
-            Log.e(TAG, "Failed to send holiday notification", e);
+            Log.e(TAG, "Failed to send holiday notification.", e);
         }
     }
     

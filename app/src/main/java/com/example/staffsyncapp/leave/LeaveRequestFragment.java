@@ -272,7 +272,7 @@ public class LeaveRequestFragment extends Fragment {
     }
 
     private void notifyAdmin(int employeeId) {
-        Log.d(TAG, "Sending leave request notification to admin for employee: " + employeeId);
+        Log.d(TAG, "Sending leave request notification to admin for employee: " + employeeId + "...");
         ApiDataService.getEmployeeById(employeeId, new ApiDataService.EmployeeFetchListener() {
             @Override
             public void onEmployeesFetched(List<Employee> employees) {

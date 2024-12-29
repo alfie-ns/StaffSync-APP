@@ -203,7 +203,7 @@
 
         public void checkPendingNotifications(Context context) { // check for pending notifications; show if any; mark as read; db query
             NotificationService notificationService = new NotificationService(context);
-
+            Log.d(TAG, "Check pending notification is called...");
             Cursor cursor = db.query("pending_notifications",
                     null,
                     "is_read = 0",
