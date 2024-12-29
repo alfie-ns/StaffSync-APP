@@ -78,11 +78,14 @@ public class EmployeeProfileFragment extends Fragment {
     }
 
     private void setupUI() {
-        // set initial UI state
-        binding.employeeId.setText("Loading...");
-        binding.currentName.setText("Loading...");
-        binding.currentEmail.setText("Loading...");
-        binding.currentSalary.setText("Loading...");
+        // set initial UI state; show current values as hints
+        // null check to prevent NPE
+        if (currentEmployee != null) {
+            binding.currentEmail.setText(currentEmployee.getEmail());
+            binding.editEmail.setHint(currentEmployee.getEmail());
+            binding.currentName.setText(currentEmployee.getFirstname() + " " + currentEmployee.getLastname());
+            binding.editName.setHint(currentEmployee.getFirstname() + " " + currentEmployee.getLastname());
+        }
     }
 
     private void setupValidation() {
@@ -207,6 +210,8 @@ public class EmployeeProfileFragment extends Fragment {
     }
 
     private void updateUIWithEmployeeData(Employee employee) {
+        if (binding == null || employee == null) return;
+        // ^ null check to prevent crash
         binding.employeeId.setText(String.valueOf(employee.getId()));
         binding.currentName.setText(employee.getFirstname() + " " + employee.getLastname());
         binding.currentEmail.setText(employee.getEmail());
@@ -236,37 +241,62 @@ public class EmployeeProfileFragment extends Fragment {
         return validateEmail() && validateEmailMatch();
     }
 
-    private void updateEmployeeDetails() { // update employee details with JSON employee fields
+    private void updateEmployeeDetails() {
         String newName = binding.editName.getText().toString().trim();
         String newEmail = binding.editEmail.getText().toString().trim();
-
+    
+        if (!validateInput()) {
+            return;
+        }
+    
         String[] names = newName.split(" ", 2);
         String firstName = names[0];
         String lastName = names.length > 1 ? names[1] : "";
-
+    
         apiService.updateEmployee(
-                currentEmployee.getId(),
-                firstName,
-                lastName,
-                newEmail,
-                currentEmployee.getDepartment(),
-                currentEmployee.getSalary(),
-                currentEmployee.getJoiningdate(),
-                new ApiDataService.EmployeeUpdateListener() {
-                    @Override
-                    public void onSuccess(String message) {
-                        Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
-                        Navigation.findNavController(requireView()).navigateUp();
-                    }
-
-                    @Override
-                    public void onError(String error) {
-                        Toast.makeText(requireContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
-                    }
+            currentEmployee.getId(),
+            firstName,
+            lastName, 
+            newEmail,
+            currentEmployee.getDepartment(), // Keep existing
+            currentEmployee.getSalary(), // Keep existing
+            currentEmployee.getJoiningdate(), // Keep existing
+            new ApiDataService.EmployeeUpdateListener() {
+                @Override
+                public void onSuccess(String message) {
+                    LocalDataService dbHelper = new LocalDataService(requireContext());
+    
+                    // uodate API data in local DB
+                    ContentValues values = new ContentValues();
+                    values.put("full_name", newName);
+                    
+                    dbHelper.getWritableDatabase().update("employee_details",
+                        values,
+                        "employee_id = ?",
+                        new String[]{String.valueOf(currentEmployee.getId())});
+    
+                    // update login credentials
+                    ContentValues emailValues = new ContentValues();
+                    emailValues.put("email", newEmail);
+                    
+                    dbHelper.getWritableDatabase().update("employees",
+                        emailValues,
+                        "employee_id = ?",
+                        new String[]{String.valueOf(currentEmployee.getId())});
+    
+                    Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
+                    loadEmployeeData(); // Refresh display
+                    Navigation.findNavController(requireView()).navigateUp();
                 }
+    
+                @Override
+                public void onError(String error) {
+                    Toast.makeText(requireContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
+                }
+            }
         );
     }
-
+        
     @Override
     public void onDestroyView() {
         super.onDestroyView();
