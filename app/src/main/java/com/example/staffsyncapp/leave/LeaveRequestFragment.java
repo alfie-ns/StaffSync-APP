@@ -272,22 +272,38 @@ public class LeaveRequestFragment extends Fragment {
     }
 
     private void notifyAdmin(int employeeId) {
-        Log.d(TAG, "Sending leave request notification to admin for employee: " + employeeId + "...");
+        if (notificationService == null) {
+            notificationService = new NotificationService(requireContext());
+        }
+
+        // store values before async call
+        final String startDate = binding.startDateInput.getText().toString();
+        final String endDate = binding.endDateInput.getText().toString();
+        final String reason = binding.reasonInput.getText().toString();
+
+        // send notification immediately with available info
+        notificationService.sendLeaveRequestToAdmin(
+                "Employee #" + employeeId,  // Use ID if name fetch fails
+                startDate,
+                endDate,
+                reason
+        );
+
+        // try to get employee name asynchronously
         ApiDataService.getEmployeeById(employeeId, new ApiDataService.EmployeeFetchListener() {
             @Override
             public void onEmployeesFetched(List<Employee> employees) {
                 if (employees != null && !employees.isEmpty()) {
                     Employee employee = employees.get(0);
-                    Log.d(TAG, "Sending notification for " + employee.getName());
+                    // send another notification with full name if fetch succeeds
                     notificationService.sendLeaveRequestToAdmin(
                             employee.getFirstname() + " " + employee.getLastname(),
-                            binding.startDateInput.getText().toString(),
-                            binding.endDateInput.getText().toString(),
-                            binding.reasonInput.getText().toString()
+                            startDate,
+                            endDate,
+                            reason
                     );
                 }
             }
-
             @Override
             public void onError(String error) {
                 Log.e(TAG, "Error fetching employee details: " + error);

@@ -4,12 +4,14 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.util.Log;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.NotificationCompat;
 import androidx.navigation.NavDeepLinkBuilder;
+import android.content.Intent;
 
 import com.example.staffsyncapp.MainActivity;
 import com.example.staffsyncapp.R;
@@ -37,8 +39,8 @@ public class NotificationService {
     private static final int ADMIN_NOTIFICATION_ID = 1000;
     private static final String ADMIN_CHANNEL = "admin_channel";
     private static final int HOLIDAY_NOTIFICATION_ID = 2000;
-    private static final int NOTIFICATION_ID = 1000;
-    private static final int BASE_NOTIFICATION_ID = 1000;
+    private static final int NOTIFICATION_ID = 3000;
+    private static final int BASE_NOTIFICATION_ID = 4000;
 
     /**
      * Creates notification service and initialises channels
@@ -57,9 +59,6 @@ public class NotificationService {
      * @throws IllegalStateException: if SDK version is below Android O (API 26)
      */
     private void createNotificationChannels() {
-        if (android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.O) {
-            throw new IllegalStateException("Notification channels require API level 26 or higher");
-        }
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             // Admin channel for receiving leave requests
             NotificationChannel adminChannel = new NotificationChannel(
@@ -81,43 +80,62 @@ public class NotificationService {
             holidayChannel.enableVibration(true);
             holidayChannel.setLightColor(Color.CYAN);
 
+            // create channels
             notificationManager.createNotificationChannel(adminChannel);
             notificationManager.createNotificationChannel(holidayChannel);
         }
-    }
-    /**
-     * Sends leave request notification to admin
-     * 
-     * @param employeeName Name of requesting employee
-     * @param startDate Start date of leave
-     * @param endDate End date of leave  
-     * @param reason Leave request reason
-     */
+    }/**
+     
+    * Sends leave request notification to admin
+    * 
+    * @param employeeName Name of requesting employee
+    * @param startDate Start date of leave
+    * @param endDate End date of leave  
+    * @param reason Leave request reason
+    *
+    * Store notification in database; fetch and show if admin logs in
+    */
     public void sendLeaveRequestToAdmin(String employeeName, String startDate, String endDate, String reason) {
-        Log.d(TAG, "Attempting to send leave request notification for: " + employeeName + "...");
+        // store notification in DB first
+        LocalDataService dbHelper = new LocalDataService(context);
+        dbHelper.storeAdminNotification(employeeName, startDate, endDate, reason);
 
-        PendingIntent pendingIntent = new NavDeepLinkBuilder(context)
-                .setComponentName(MainActivity.class)
-                .setGraph(R.navigation.nav_graph)
-                .createPendingIntent();
+        // only show if admin is logged in
+        if (dbHelper.isAdminLoggedIn()) {
+            showAdminNotification(employeeName, startDate, endDate, reason);
+        }
+    }
+
+    /**
+     * Show admin notification for leave request
+     * @param employeeName
+     * @param startDate
+     * @param endDate
+     * @param reason
+     */
+    private void showAdminNotification(String employeeName, String startDate, String endDate, String reason) { 
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, // create pending intent to open app on notification click
+                0, 
+                new Intent(context, MainActivity.class),
+                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT // immutable flag for security
+        );
 
         String title = "New Leave Request";
         String message = String.format("%s requests leave from %s to %s\nReason: %s",
                 employeeName, startDate, endDate, reason);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ADMIN_CHANNEL)
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ADMIN_CHANNEL) // use admin channel thus high priority; red LED, bell_icon
                 .setSmallIcon(R.drawable.bell_icon)
                 .setContentTitle(title)
                 .setContentText(message)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent);
 
-        sendNotification(ADMIN_NOTIFICATION_ID, builder.build());
+        notificationManager.notify(ADMIN_NOTIFICATION_ID, builder.build()); // notify admin
     }
-
-    // Send holiday notification
+    
+    // Send holiday notification; i.e. for leave request updates ---
     public void sendHolidayNotification(int employeeId, String title, String message) {
         // offset notification ID with employeeId to handle multiple active notifications
         int notificationId = HOLIDAY_NOTIFICATION_ID + employeeId;
@@ -142,7 +160,7 @@ public class NotificationService {
         }
     }
     
-    // Send system notification i.e. for emails, non-urgent messages
+    // Send system notification i.e. for emails, non-urgent messages ---
     public void sendSystemNotification(String title, String message) {
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, SYSTEM_CHANNEL)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
@@ -161,32 +179,44 @@ public class NotificationService {
         }
     }
 
-    // Send admin decision back to employee
-    public void sendRequestUpdateToEmployee(int employeeId, boolean isApproved, String adminMessage) { // send notification back to employee; approved or denied
-        PendingIntent pendingIntent = new NavDeepLinkBuilder(context)
-                .setComponentName(MainActivity.class)
-                .setGraph(R.navigation.nav_graph)
-                .createPendingIntent();
+    // Admin decision -> Employee ---
+    public void sendRequestUpdateToEmployee(int employeeId, boolean isApproved, String adminMessage) {
+        // store notification first
+        LocalDataService dbHelper = new LocalDataService(context);
+        dbHelper.storeEmployeeNotification(employeeId, isApproved, adminMessage);
 
-        String title = "Leave Request " + (isApproved ? "Approved" : "Denied");
-        String message = String.format("Your leave request has been %s. %s",
-                isApproved ? "approved" : "denied",
-                adminMessage != null ? "\nMessage: " + adminMessage : "");
+        // only show if this employee is logged in
+        SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+        int loggedInEmployeeId = prefs.getInt("logged_in_employee_id", -1);
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL) // use holiday channel thus high priority
-                .setSmallIcon(R.drawable.bell_icon)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true)
-                .setContentIntent(pendingIntent);
+        boolean isAdmin = dbHelper.isAdminLoggedIn();
 
-        // user employeeId to create unique notification ID
-        int notificationId = 2000 + employeeId;
-        sendNotification(notificationId, builder.build());
+        if (employeeId == loggedInEmployeeId && !isAdmin) {
+            PendingIntent pendingIntent = PendingIntent.getActivity(context,
+                    employeeId,
+                    new Intent(context, MainActivity.class),
+                    PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+            );
+
+            String title = "Leave Request " + (isApproved ? "Approved" : "Denied");
+            String message = String.format("Your leave request has been %s. %s",
+                    isApproved ? "approved" : "denied",
+                    adminMessage != null ? "\nMessage: " + adminMessage : "");
+
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL)
+                    .setSmallIcon(R.drawable.bell_icon)
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setAutoCancel(true)
+                    .setContentIntent(pendingIntent);
+
+            notificationManager.notify(HOLIDAY_NOTIFICATION_ID + employeeId, builder.build());
+        }
     }
 
+    // Send notification; utilised in showBroadcastNotification()
     private void sendNotification(int notificationId, android.app.Notification notification) {
         try {
             if (ActivityCompat.checkSelfPermission(context,
@@ -199,7 +229,7 @@ public class NotificationService {
         }
     }
 
-    // Broadcast ---
+    // Admin General Broadcast ---
 
     public void sendAdminBroadcastMessage(String title, String message) {
         // Store notification in database

@@ -201,16 +201,17 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
     }
 
     private void attemptLogin() {
+        String email = binding.emailInput.getText().toString();
+        String password = binding.passwordInput.getText().toString();
+
+        LocalDataService dbHelper = new LocalDataService(requireContext());
+        int result = dbHelper.verifyEmployeeLogin(email, password);
+
         hideAllErrorMessages();
 
         if (!validateEmail() || !validatePassword()) {
             return;
         }
-
-        String email = binding.emailInput.getText().toString().trim();
-        String password = binding.passwordInput.getText().toString().trim();
-
-        LocalDataService dbHelper = new LocalDataService(requireContext());
 
         // 1- check if it's an admin login
         if (dbHelper.verifyAdminLogin(email, password)) {
@@ -249,6 +250,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
             }
         }
     }
+    
     /**
      * Displays a password change dialog for first-time login users;
      * this dialog prompts the user to enter and confirm new password.

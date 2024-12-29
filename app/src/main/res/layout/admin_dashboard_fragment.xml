@@ -311,7 +311,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="6dp"
-                        android:text="Send Broadcast Message"
+                        android:text="Send General Broadcast"
                         android:textAllCaps="false"
                         app:iconGravity="textStart"
                         app:icon="@drawable/bell_icon"

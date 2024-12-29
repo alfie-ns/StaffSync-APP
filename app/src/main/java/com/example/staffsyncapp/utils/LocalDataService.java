@@ -63,6 +63,65 @@
             void onSuccess(boolean success);
         }
 
+        public void storeAdminNotification(String employeeName, String startDate, String endDate, String reason) { // store admin notifications in database with respective employee details and leave request details
+            ContentValues values = new ContentValues();
+            String title = "New Leave Request";
+            String message = String.format("%s requests leave from %s to %s\nReason: %s",
+                    employeeName, startDate, endDate, reason);
+
+            values.put("title", title);
+            values.put("message", message);
+            values.put("is_read", 0);
+            values.put("created_at", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.UK).format(new Date()));
+
+            db.insert("pending_notifications", null, values);
+        }
+        public void storeEmployeeNotification(int employeeId, boolean isApproved, String adminMessage) {
+            ContentValues values = new ContentValues();
+            String title = "Leave Request " + (isApproved ? "Approved" : "Denied");
+            String message = String.format("Your leave request has been %s. %s",
+                    isApproved ? "approved" : "denied",
+                    adminMessage != null ? "\nMessage: " + adminMessage : "");
+
+            values.put("title", title);
+            values.put("message", message);
+            values.put("is_read", 0);
+            values.put("created_at", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.UK).format(new Date()));
+
+            db.insert("pending_notifications", null, values);
+        }
+
+        public void checkEmployeeNotifications(Context context, int employeeId) {
+            NotificationService notificationService = new NotificationService(context);
+            Cursor cursor = db.query("pending_notifications",
+                    null,
+                    "employee_id = ? AND is_read = 0",
+                    new String[]{String.valueOf(employeeId)},
+                    null, null, null);
+
+            if (cursor != null && cursor.moveToFirst()) {
+                do {
+                    String title = cursor.getString(cursor.getColumnIndex("title"));
+                    String message = cursor.getString(cursor.getColumnIndex("message"));
+                    int id = cursor.getInt(cursor.getColumnIndex("id"));
+
+                    notificationService.sendRequestUpdateToEmployee(employeeId,
+                            title.contains("Approved"),
+                            message);
+
+                    // Mark as read
+                    ContentValues values = new ContentValues();
+                    values.put("is_read", 1);
+                    db.update("pending_notifications", values,
+                            "id = ?", new String[]{String.valueOf(id)});
+
+                } while (cursor.moveToNext());
+                cursor.close();
+            }
+        }
+
+
+
 
         // 2. Constructor and Database Creation ------------------------------------
         public LocalDataService(Context context) {
@@ -76,7 +135,7 @@
             }
         }
 
-        @Override // SQL DATABASE CREATION
+        @Override // SQLite DATABASE CREATION
         public void onCreate(SQLiteDatabase db) {
             // 1- Create employees table; core authentication; role management
             db.execSQL("CREATE TABLE employees (" +
@@ -141,6 +200,7 @@
             // 6- Pending notifications; store notifications to be sent on next login
             db.execSQL("CREATE TABLE pending_notifications (" +
                     "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                    "employee_id INTEGER," +
                     "title TEXT," +
                     "message TEXT," +
                     "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
@@ -314,6 +374,7 @@
             return exists;
         }
 
+
         public int verifyEmployeeLogin(String email, String password) {
             Log.d(TAG, "Attempting employee login for: " + email);
 
@@ -340,6 +401,9 @@
                         SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
                         prefs.edit().putInt("logged_in_employee_id", empId).apply();
 
+                        // check notifications when login successful
+                        checkEmployeeNotifications(context, empId);
+
                         if (firstLogin == 1) {
                             return 1; // first login
                         }
@@ -351,7 +415,6 @@
                 cursor.close();
             }
         }
-
         public String generateTempPassword(int employeeId) {
             return TEMP_PASSWORD_PREFIX + employeeId;
         }
