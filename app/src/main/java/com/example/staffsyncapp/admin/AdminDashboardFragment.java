@@ -111,7 +111,9 @@ public class AdminDashboardFragment extends Fragment {
 
     // shared preferences' used to store the toggle state
     private SharedPreferences sharedPreferences;
-    
+
+    private TextView pendingRequestsCount;
+
     //----------------------------------------------------------------------------------------------
     // Classes
     private class SearchTextWatcher implements TextWatcher { // search text change class; watches for changes in search input and triggers the filtering
@@ -137,6 +139,8 @@ public class AdminDashboardFragment extends Fragment {
     @Override // override to initialise UI components and set up listeners
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        updatePendingRequestsCount(); // update pending requests count count
 
         notificationService = new NotificationService(requireContext());
 
@@ -176,6 +180,16 @@ public class AdminDashboardFragment extends Fragment {
         isEmployeeListExpanded = sharedPreferences.getBoolean(EMPLOYEE_LIST_EXPANDED_KEY, true);
         updateEmployeeListVisibility();
 
+    }
+
+    private void updatePendingRequestsCount() {
+        dbHelper.getPendingLeaveRequests((requests, error) -> {
+            if (getContext() == null) return;
+            if (error == null && requests != null) {
+                pendingRequestsCount = binding.pendingRequestsCount;
+                pendingRequestsCount.setText(String.valueOf(requests.size()));
+            }
+        });
     }
     //----------------------------------------------------------------------------------------------
     // Search functionality
