@@ -693,29 +693,29 @@ public class AdminDashboardFragment extends Fragment {
             }
         });
 
-        // Admin General Broadcast
-        binding.broadcastMessageBtn.setOnClickListener(v -> {
-            // Create and show a dialog to input broadcast message
-            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-            View dialogView = getLayoutInflater().inflate(R.layout.admin_broadcast_dialog, null);
-            EditText titleInput = dialogView.findViewById(R.id.broadcast_title_input);
-            EditText messageInput = dialogView.findViewById(R.id.broadcast_message_input);
-
-            builder.setView(dialogView)
-                    .setTitle("Send Broadcast Message")
-                    .setPositiveButton("Send", (dialog, which) -> {
-                        String title = titleInput.getText().toString();
-                        String message = messageInput.getText().toString();
-
-                        if (!title.isEmpty() && !message.isEmpty()) { // if not empty; title and message
-                            notificationService.sendAdminBroadcastMessage(title, message);
-                            Toast.makeText(requireContext(), "Broadcast message sent", Toast.LENGTH_SHORT).show();
-                        }
-                    })
-                    .setNegativeButton("Cancel", null);
-
-            builder.create().show();
-        });
+        // Admin General Broadcast TODO: get working; i need to handle leave request notifications unaffected from this
+//        binding.broadcastMessageBtn.setOnClickListener(v -> {
+//            // Create and show a dialog to input broadcast message
+//            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+//            View dialogView = getLayoutInflater().inflate(R.layout.admin_broadcast_dialog, null);
+//            EditText titleInput = dialogView.findViewById(R.id.broadcast_title_input);
+//            EditText messageInput = dialogView.findViewById(R.id.broadcast_message_input);
+//
+//            builder.setView(dialogView)
+//                    .setTitle("Send Broadcast Message")
+//                    .setPositiveButton("Send", (dialog, which) -> {
+//                        String title = titleInput.getText().toString();
+//                        String message = messageInput.getText().toString();
+//
+//                        if (!title.isEmpty() && !message.isEmpty()) { // if not empty; title and message
+//                            notificationService.sendAdminBroadcastMessage(title, message);
+//                            Toast.makeText(requireContext(), "Broadcast message sent", Toast.LENGTH_SHORT).show();
+//                        }
+//                    })
+//                    .setNegativeButton("Cancel", null);
+//
+//            builder.create().show();
+//        });
 
         // logout functionality
         binding.logoutBtn.setOnClickListener(v -> {

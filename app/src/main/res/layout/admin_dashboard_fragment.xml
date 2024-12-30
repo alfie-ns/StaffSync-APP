@@ -306,17 +306,17 @@
                         app:cornerRadius="8dp"
                         android:backgroundTint="@color/admin_deep"/>
 
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/broadcastMessageBtn"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:text="Send General Broadcast"
-                        android:textAllCaps="false"
-                        app:iconGravity="textStart"
-                        app:icon="@drawable/bell_icon"
-                    app:cornerRadius="8dp"
-                    android:backgroundTint="@color/admin_deep"/>
+<!--                    <com.google.android.material.button.MaterialButton-->
+<!--                        android:id="@+id/broadcastMessageBtn"-->
+<!--                        android:layout_width="match_parent"-->
+<!--                        android:layout_height="wrap_content"-->
+<!--                        android:layout_marginTop="6dp"-->
+<!--                        android:text="Send General Broadcast"-->
+<!--                        android:textAllCaps="false"-->
+<!--                        app:iconGravity="textStart"-->
+<!--                        app:icon="@drawable/bell_icon"-->
+<!--                    app:cornerRadius="8dp"-->
+<!--                    android:backgroundTint="@color/admin_deep"/>-->
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

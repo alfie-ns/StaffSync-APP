@@ -211,7 +211,7 @@ public class EmployeeProfileFragment extends Fragment {
 
     private void updateUIWithEmployeeData(Employee employee) {
         if (binding == null || employee == null) return;
-        // ^ null check to prevent crash
+        // ^ ensure both aren't null to prevent crash
         binding.employeeId.setText(String.valueOf(employee.getId()));
         binding.currentName.setText(employee.getFirstname() + " " + employee.getLastname());
         binding.currentEmail.setText(employee.getEmail());
@@ -266,7 +266,7 @@ public class EmployeeProfileFragment extends Fragment {
                 public void onSuccess(String message) {
                     LocalDataService dbHelper = new LocalDataService(requireContext());
     
-                    // uodate API data in local DB
+                    // update API data in local DB
                     ContentValues values = new ContentValues();
                     values.put("full_name", newName);
                     
@@ -281,7 +281,7 @@ public class EmployeeProfileFragment extends Fragment {
                     
                     dbHelper.getWritableDatabase().update("employees",
                         emailValues,
-                        "employee_id = ?",
+                        "id = ?",
                         new String[]{String.valueOf(currentEmployee.getId())});
     
                     Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
