@@ -1,4 +1,4 @@
-package com.example.staffsyncapp.adapter;
+package com.example.staffsyncapp.leave;
 
 import static android.content.ContentValues.TAG;
 
@@ -32,6 +32,13 @@ public class LeaveHistoryAdapter extends RecyclerView.Adapter<LeaveHistoryAdapte
     private List<LeaveRequest> leaveRequests;
     private final Context context;
 
+    public interface OnItemDeleteListener { // permanently remove completed leave requests
+        void onDelete(LeaveRequest request);
+    }
+
+    private OnItemDeleteListener deleteListener;
+
+
     /**
      * Constructor for LeaveHistoryAdapter; initialises context and leaveRequests
      * @param context: the context in which the adapter is being used.
@@ -63,7 +70,8 @@ public class LeaveHistoryAdapter extends RecyclerView.Adapter<LeaveHistoryAdapte
      */
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        if (leaveRequests == null || position >= leaveRequests.size()) return;
+        if (leaveRequests == null || position >= leaveRequests.size()) return; // null checks
+
 
         LeaveRequest request = leaveRequests.get(position);
 
@@ -99,9 +107,9 @@ public class LeaveHistoryAdapter extends RecyclerView.Adapter<LeaveHistoryAdapte
         }
 
         holder.removeIcon.setOnClickListener(v -> {
-            leaveRequests.remove(position);
-            notifyItemRemoved(position);
-            notifyItemRangeChanged(position, leaveRequests.size());
+            if (deleteListener != null) {
+                deleteListener.onDelete(request);
+            }
         });
     }
 
@@ -164,6 +172,7 @@ public class LeaveHistoryAdapter extends RecyclerView.Adapter<LeaveHistoryAdapte
         final TextView decisionDate;
         final TextView adminResponse;
         final ImageView removeIcon;
+        ImageView closeIcon;
 
         ViewHolder(View view) {
             super(view);
@@ -172,7 +181,15 @@ public class LeaveHistoryAdapter extends RecyclerView.Adapter<LeaveHistoryAdapte
             leaveStatus = view.findViewById(R.id.leave_status);
             decisionDate = view.findViewById(R.id.decision_date);
             adminResponse = view.findViewById(R.id.admin_response);
-            removeIcon = view.findViewById(R.id.close_icon);
+            removeIcon = view.findViewById(R.id.close_icon); //
+            closeIcon = view.findViewById(R.id.close_icon);
         }
+    }
+
+    // HELPER
+
+    // Listener for removing completed Leave Requests
+    public void setOnItemDeleteListener(OnItemDeleteListener listener) {
+        this.deleteListener = listener;
     }
 }

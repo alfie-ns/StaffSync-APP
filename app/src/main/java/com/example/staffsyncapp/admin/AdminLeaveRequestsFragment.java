@@ -12,12 +12,11 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.staffsyncapp.adapter.LeaveRequestAdapter;
+import com.example.staffsyncapp.leave.LeaveHistoryAdapter;
 import com.example.staffsyncapp.databinding.AdminHolidayRequestsFragmentBinding;
 import com.example.staffsyncapp.models.LeaveRequest;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NotificationService;
-//import java.util.ArrayList;
-//import java.util.List;
 
 public class AdminLeaveRequestsFragment extends Fragment implements LeaveRequestAdapter.OnRequestActionListener {
     private static final String TAG = "AdminHolidayRequests";
@@ -54,8 +53,6 @@ public class AdminLeaveRequestsFragment extends Fragment implements LeaveRequest
         binding.requestsRecyclerView.setAdapter(adapter);
     }
 
-
-
     private void loadRequests() { // fetch pending leave requests from SQLite
         binding.progressBar.setVisibility(View.VISIBLE);
         binding.emptyState.setVisibility(View.GONE);
@@ -78,7 +75,19 @@ public class AdminLeaveRequestsFragment extends Fragment implements LeaveRequest
             }
         });
     }
-    // TODO: combine functions into one?
+    /*
+     * Both functions use dbHelper to send a approved or denial
+     *
+     * @param request LeaveRequest object
+     * @return void
+     * 
+     * 1- output respective message in updateLeaveRequestStatus; thus employee is notified
+     * 2- notify employee of the decision
+     * 3- fetch pending leave requests from SQLite
+     *
+     */
+    // Approve leave request
+    // @param request LeaveRequest object
     @Override
     public void onApprove(LeaveRequest request) { // approve leave request
         Log.d(TAG, "Approving leave request: " + request.getId());
@@ -98,6 +107,11 @@ public class AdminLeaveRequestsFragment extends Fragment implements LeaveRequest
                 }
         );
     }
+    /*
+     * Deny leave request
+     * @param request LeaveRequest object
+     * 
+     */
     @Override
     public void onDeny(LeaveRequest request) { // deny leave request
         Log.d(TAG, "Denying leave request: " + request.getId());

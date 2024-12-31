@@ -55,6 +55,11 @@ public class LocalDataService extends SQLiteOpenHelper {
 
     private static final String TEMP_PASSWORD_PREFIX = "EMP";
 
+    public void deleteLeaveRequest(int id) {
+        SQLiteDatabase db = getWritableDatabase();
+        db.delete("leave_requests", "id = ?", new String[]{String.valueOf(id)});
+    }
+
     public interface LeaveRequestCallback {
         void onComplete(List<LeaveRequest> requests, String error);
     }

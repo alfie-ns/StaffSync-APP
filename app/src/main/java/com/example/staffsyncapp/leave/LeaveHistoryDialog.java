@@ -21,7 +21,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.staffsyncapp.models.LeaveRequest;
 
-import com.example.staffsyncapp.adapter.LeaveHistoryAdapter;
 import com.example.staffsyncapp.utils.LocalDataService;
 
 import java.util.ArrayList;
@@ -86,6 +85,10 @@ public class LeaveHistoryDialog extends DialogFragment {
         recyclerView.setLayoutParams(params);
         recyclerView.setVisibility(View.VISIBLE);
 
+        adapter.setOnItemDeleteListener(request -> {
+            dbHelper.deleteLeaveRequest(request.getId());
+            loadLeaveHistory(); // refresh list
+        });
     }
 
     private void setupClickListeners() {

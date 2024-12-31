@@ -20,6 +20,7 @@ import com.example.staffsyncapp.adapter.EmployeeAdapter;
 import com.example.staffsyncapp.api.ApiDataService;
 import com.example.staffsyncapp.R;
 import com.example.staffsyncapp.databinding.EmployeeMainBodyFragmentBinding;
+import com.example.staffsyncapp.leave.LeaveHistoryDialog;
 import com.example.staffsyncapp.models.Employee;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NavigationManager;
@@ -220,7 +221,7 @@ public class EmployeeMainBodyFragment extends Fragment {
         });
 
         // Edit profile
-        binding.employeeEditIcon.setOnClickListener(v -> {
+        binding.employeeEditIcon.setOnClickListener(v -> { // navigate to EmployeeProfileFragment
             Navigation.findNavController(v).navigate(R.id.action_EmployeeMainFragment_to_EmployeeProfileFragment);
         });
 

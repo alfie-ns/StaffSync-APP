@@ -28,7 +28,7 @@ import java.util.List;
  *  * - Updates list when new data is provided
 
  * Implementation:
- * - uses ViewHolder pattern for efficient view recycling 
+ * - uses ViewHolder pattern for efficient view recycling
  * - binds LeaveRequest data to admin_holiday_request_item.xml layout
  * - communicates request actions via OnRequestActionListener interface
 
@@ -58,7 +58,7 @@ public class LeaveRequestAdapter extends RecyclerView.Adapter<LeaveRequestAdapte
     }
 
     @NonNull
-    @Override 
+    @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.admin_holiday_request_item, parent, false);
