@@ -230,12 +230,6 @@ public class EmployeeMainBodyFragment extends Fragment {
             LeaveHistoryDialog dialog = new LeaveHistoryDialog();
             dialog.show(getParentFragmentManager(), "leave_history");
         });
-
-        // Pending requests
-        binding.pendingRequestsBtn.setOnClickListener(v -> {
-            // TODO: implement pending requests view
-            Toast.makeText(requireContext(), "Pending requests coming soon", Toast.LENGTH_SHORT).show();
-        });
     }
 
 

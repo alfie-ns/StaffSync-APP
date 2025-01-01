@@ -194,17 +194,6 @@
             app:cornerRadius="8dp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
         <!-- button to view pending leave requests -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/pending_requests_btn"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
-            android:text="Pending Requests (1)"
-            android:textAllCaps="false"
-            app:cornerRadius="8dp"
-            android:backgroundTint="@color/teal_deep"
-            app:rippleColor="@color/teal_deep" />
     </LinearLayout>
 
     <!-- employment summary - moved margin bottom to handle nav spacing -->

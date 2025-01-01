@@ -96,6 +96,7 @@ public class NotificationService {
     * Store notification in database; fetch and show if admin logs in
     */
     public void sendLeaveRequestToAdmin(String employeeName, String startDate, String endDate, String reason) {
+        if (!areNotificationsEnabled()) return;
         // store notification in DB first
         LocalDataService dbHelper = new LocalDataService(context);
         dbHelper.storeAdminNotification(employeeName, startDate, endDate, reason);
@@ -114,6 +115,7 @@ public class NotificationService {
      * @param reason
      */
     private void showAdminNotification(String employeeName, String startDate, String endDate, String reason) { 
+        if (!areNotificationsEnabled()) return;
         PendingIntent pendingIntent = PendingIntent.getActivity(context, // create pending intent to open app on notification click
                 0, 
                 new Intent(context, MainActivity.class),
@@ -134,9 +136,15 @@ public class NotificationService {
 
         notificationManager.notify(ADMIN_NOTIFICATION_ID, builder.build()); // notify admin
     }
+
+    private boolean areNotificationsEnabled() { // function to check if notifications are enabled
+        SharedPreferences prefs = context.getSharedPreferences("employeeSettings", Context.MODE_PRIVATE);
+        return prefs.getBoolean("notifications_enabled", true);
+    }
     
     // Send holiday notification; i.e. for leave request updates ---
     public void sendHolidayNotification(int employeeId, String title, String message) {
+        if (!areNotificationsEnabled()) return;
         // offset notification ID with employeeId to handle multiple active notifications
         int notificationId = HOLIDAY_NOTIFICATION_ID + employeeId;
 
@@ -162,6 +170,7 @@ public class NotificationService {
     
     // Send system notification i.e. for emails, non-urgent messages ---
     public void sendSystemNotification(String title, String message) {
+        if (!areNotificationsEnabled()) return;
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, SYSTEM_CHANNEL)
                 .setSmallIcon(android.R.drawable.ic_dialog_info)
                 .setContentTitle(title)
@@ -181,6 +190,7 @@ public class NotificationService {
 
     // Admin decision -> Employee ---
     public void sendRequestUpdateToEmployee(int employeeId, boolean isApproved, String adminMessage) {
+        if (!areNotificationsEnabled()) return;
         // store notification first
         LocalDataService dbHelper = new LocalDataService(context);
         dbHelper.storeEmployeeNotification(employeeId, isApproved, adminMessage);
@@ -217,6 +227,11 @@ public class NotificationService {
     }
 
     // Send notification; utilised in showBroadcastNotification()
+    /**
+     * @param notificationId ID of notification
+     * @param notification Notification to send
+     * @throws Exception if notification permission is not granted
+     */
     private void sendNotification(int notificationId, android.app.Notification notification) {
         try {
             if (ActivityCompat.checkSelfPermission(context,
@@ -229,10 +244,14 @@ public class NotificationService {
         }
     }
 
-    // Admin General Broadcast ---
 
+
+
+
+    // Admin General Broadcast --- OFF; may get working if enough time
     public void sendAdminBroadcastMessage(String title, String message) {
-        // Store notification in database
+        if (!areNotificationsEnabled()) return; // kill function to disabled notifications notifications disabled don't
+        // store notification in DB first
         LocalDataService dbHelper = new LocalDataService(context);
         dbHelper.storeBroadcastNotification(title, message);
 
@@ -241,6 +260,7 @@ public class NotificationService {
     }
 
     public void showBroadcastNotification(String title, String message) { // Create and display a broadcast notification
+        if (!areNotificationsEnabled()) return;
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ADMIN_CHANNEL)
                 .setSmallIcon(R.drawable.bell_icon) // fetch bell_icon from drawable resources
                 .setContentTitle("Admin Broadcast: " + title)

@@ -51,6 +51,7 @@ public class LeaveRequest {
     public String getAdminResponse() { return adminResponse; }
     public String getCreatedAt() { return createdAt; }
 
+    // Setters
     public void setStatus(String status) { this.status = status; }
     public void setAdminResponse(String adminResponse) { this.adminResponse = adminResponse; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }

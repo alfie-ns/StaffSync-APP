@@ -1,5 +1,7 @@
 package com.example.staffsyncapp.employee;
 
+import static android.content.ContentValues.TAG;
+
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -7,6 +9,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.util.Patterns;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +29,7 @@ import com.example.staffsyncapp.databinding.EmployeeProfileFragmentBinding;
 import com.example.staffsyncapp.models.Employee;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NavigationManager;
+import com.example.staffsyncapp.api.ApiWorkerThread;
 
 import java.util.List;
 import java.util.Locale;
@@ -42,6 +46,8 @@ public class EmployeeProfileFragment extends Fragment {
     private Employee currentEmployee;
     NavigationManager navigationManager;
 
+    private ApiWorkerThread workerThread;
+
     private EmployeeAdapter.EmployeeViewModel employeeViewModel;
 
 
@@ -50,6 +56,9 @@ public class EmployeeProfileFragment extends Fragment {
         binding = EmployeeProfileFragmentBinding.inflate(inflater, container, false);
         apiService = new ApiDataService(requireContext());
         employeeViewModel = new EmployeeAdapter.EmployeeViewModel();
+
+        this.workerThread = new ApiWorkerThread();
+        workerThread.start();
         return binding.getRoot();
     }
 
@@ -138,6 +147,7 @@ public class EmployeeProfileFragment extends Fragment {
 
     private void loadEmployeeData() {
         LocalDataService dbHelper = new LocalDataService(requireContext());
+
         SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
         int employeeId = prefs.getInt("logged_in_employee_id", -1);
 
@@ -244,62 +254,74 @@ public class EmployeeProfileFragment extends Fragment {
     private void updateEmployeeDetails() {
         String newName = binding.editName.getText().toString().trim();
         String newEmail = binding.editEmail.getText().toString().trim();
-    
+
         if (!validateInput()) {
             return;
         }
-    
+
         String[] names = newName.split(" ", 2);
         String firstName = names[0];
         String lastName = names.length > 1 ? names[1] : "";
-    
-        apiService.updateEmployee(
-            currentEmployee.getId(),
-            firstName,
-            lastName, 
-            newEmail,
-            currentEmployee.getDepartment(), // Keep existing
-            currentEmployee.getSalary(), // Keep existing
-            currentEmployee.getJoiningdate(), // Keep existing
-            new ApiDataService.EmployeeUpdateListener() {
-                @Override
-                public void onSuccess(String message) {
-                    LocalDataService dbHelper = new LocalDataService(requireContext());
-    
-                    // update API data in local DB
-                    ContentValues values = new ContentValues();
-                    values.put("full_name", newName);
-                    
-                    dbHelper.getWritableDatabase().update("employee_details",
-                        values,
-                        "employee_id = ?",
-                        new String[]{String.valueOf(currentEmployee.getId())});
-    
-                    // update login credentials
-                    ContentValues emailValues = new ContentValues();
-                    emailValues.put("email", newEmail);
-                    
-                    dbHelper.getWritableDatabase().update("employees",
-                        emailValues,
-                        "id = ?",
-                        new String[]{String.valueOf(currentEmployee.getId())});
-    
-                    Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
-                    loadEmployeeData(); // Refresh display
-                    Navigation.findNavController(requireView()).navigateUp();
-                }
-    
-                @Override
-                public void onError(String error) {
-                    Toast.makeText(requireContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
-                }
-            }
-        );
+
+        workerThread.queueTask (() -> { // workerThread profile customisation
+            apiService.updateEmployee(
+                    currentEmployee.getId(),
+                    firstName,
+                    lastName,
+                    newEmail,
+                    currentEmployee.getDepartment(), // get existing
+                    currentEmployee.getSalary(), // get existing
+                    currentEmployee.getJoiningdate(), // get existing
+                    // build off existing data
+                    new ApiDataService.EmployeeUpdateListener() {
+                        @Override
+                        public void onSuccess(String message) {
+                            workerThread.postToMainThread(() -> {
+                                Log.d(TAG, "Worker thread successfully used in profile customisation");
+                                LocalDataService dbHelper = new LocalDataService(requireContext());
+
+                                // update API data in local DB
+                                ContentValues values = new ContentValues();
+                                values.put("full_name", newName);
+
+                                dbHelper.getWritableDatabase().update("employee_details",
+                                        values,
+                                        "employee_id = ?",
+                                        new String[]{String.valueOf(currentEmployee.getId())});
+
+                                // update login credentials
+                                ContentValues emailValues = new ContentValues();
+                                emailValues.put("email", newEmail);
+
+                                dbHelper.getWritableDatabase().update("employees",
+                                        emailValues,
+                                        "id = ?",
+                                        new String[]{String.valueOf(currentEmployee.getId())});
+
+                                Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
+                                loadEmployeeData(); // Refresh display
+                                Navigation.findNavController(requireView()).navigateUp();
+                            });
+                        }
+
+                        @Override
+                        public void onError(String error) {
+                            workerThread.postToMainThread(() -> {
+                                Toast.makeText(requireContext(), "Error: " + error, Toast.LENGTH_SHORT).show();
+                            });
+                        }
+                    }
+            );
+        });
     }
-        
+
+
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        if (workerThread != null) { // workerThread shutdown, clear binding
+            workerThread.shutdown();
+        }
         binding = null;
     }
 }

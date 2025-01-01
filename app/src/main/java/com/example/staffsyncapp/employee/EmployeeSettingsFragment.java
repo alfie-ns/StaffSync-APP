@@ -43,6 +43,10 @@ public class EmployeeSettingsFragment extends Fragment {
     private static final String PREFS_NAME = "employeeSettings";
     private static final String DARK_MODE_KEY = "dark_mode";
 
+    private static final String NOTIFICATIONS_KEY = "notifications_enabled";
+    private static final String TERMS_KEY = "terms_accepted";
+    private static final String PRIVACY_KEY = "privacy_accepted";
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         binding = EmployeeSettingsFragmentBinding.inflate(inflater, container, false);
@@ -68,14 +72,15 @@ public class EmployeeSettingsFragment extends Fragment {
         String employeeDarkModeKey = DARK_MODE_KEY + "_" + employeeId;
         // restore dark mode preference
         binding.darkModeSwitch.setChecked(sharedPreferences.getBoolean(employeeDarkModeKey, false));
+        // restore notification preference
+        binding.notificationsSwitch.setChecked(sharedPreferences.getBoolean(NOTIFICATIONS_KEY, true));
     }
 
     private void setupClickListeners() {
         binding.logoutBtn.setOnClickListener(v -> handleLogout());
 
-        binding.notificationSettings.setOnClickListener(v -> {
-            // TODO: Implement notification settings
-            Toast.makeText(requireContext(), "Notification settings coming soon", Toast.LENGTH_SHORT).show();
+        binding.notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            sharedPreferences.edit().putBoolean(NOTIFICATIONS_KEY, isChecked).apply();
         });
 
         binding.darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
