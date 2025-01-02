@@ -3,9 +3,11 @@ package com.example.staffsyncapp.utils;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Color;
 import android.util.Log;
 import androidx.core.app.ActivityCompat;
@@ -33,11 +35,13 @@ public class NotificationService {
     private static final String TAG = "NotificationService";
     private final Context context;
     private final NotificationManager notificationManager;
+    private LocalDataService dbHelper;
     
     private static final String HOLIDAY_CHANNEL = "holiday_channel";
     private static final String SYSTEM_CHANNEL = "system_channel";
-    private static final int ADMIN_NOTIFICATION_ID = 1000;
     private static final String ADMIN_CHANNEL = "admin_channel";
+
+    private static final int ADMIN_NOTIFICATION_ID = 1000;
     private static final int HOLIDAY_NOTIFICATION_ID = 2000;
     private static final int NOTIFICATION_ID = 3000;
     private static final int BASE_NOTIFICATION_ID = 4000;
@@ -50,6 +54,7 @@ public class NotificationService {
     public NotificationService(Context context) {
         this.context = context;
         this.notificationManager = (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+        this.dbHelper = new LocalDataService(context);
         createNotificationChannels();
     }
 
@@ -190,85 +195,69 @@ public class NotificationService {
 
     // Admin decision -> Employee ---
     public void sendRequestUpdateToEmployee(int employeeId, boolean isApproved, String adminMessage) {
-        if (!areNotificationsEnabled()) return;
-        // store notification first
-        LocalDataService dbHelper = new LocalDataService(context);
+        Log.d(TAG, "sendRequestUpdateToEmployee called for employee: " + employeeId);
+
+        // Just store notification, don't display
         dbHelper.storeEmployeeNotification(employeeId, isApproved, adminMessage);
-
-        // only show if this employee is logged in
-        SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
-        int loggedInEmployeeId = prefs.getInt("logged_in_employee_id", -1);
-
-        boolean isAdmin = dbHelper.isAdminLoggedIn();
-
-        if (employeeId == loggedInEmployeeId && !isAdmin) {
-            PendingIntent pendingIntent = PendingIntent.getActivity(context,
-                    employeeId,
-                    new Intent(context, MainActivity.class),
-                    PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
-            );
-
-            String title = "Leave Request " + (isApproved ? "Approved" : "Denied");
-            String message = String.format("Your leave request has been %s. %s",
-                    isApproved ? "approved" : "denied",
-                    adminMessage != null ? "\nMessage: " + adminMessage : "");
-
-            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL)
-                    .setSmallIcon(R.drawable.bell_icon)
-                    .setContentTitle(title)
-                    .setContentText(message)
-                    .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
-                    .setPriority(NotificationCompat.PRIORITY_HIGH)
-                    .setAutoCancel(true)
-                    .setContentIntent(pendingIntent);
-
-            notificationManager.notify(HOLIDAY_NOTIFICATION_ID + employeeId, builder.build());
-        }
+        Log.d(TAG, "Notification stored in database for employee: " + employeeId);
     }
 
-    // Send notification; utilised in showBroadcastNotification()
-    /**
-     * @param notificationId ID of notification
-     * @param notification Notification to send
-     * @throws Exception if notification permission is not granted
-     */
-    private void sendNotification(int notificationId, android.app.Notification notification) {
+
+    // Broadcast ---
+    public void sendAdminBroadcastMessage(String title, String message) {
+        // store notification in DB first
+        dbHelper.storeBroadcastNotification(title, message);
+    }
+
+    public void showNotificationsFromCursor(Cursor cursor, String channel) {
+        Log.d(TAG, "Showing notifications from cursor. Count: " + cursor.getCount());
+
         try {
-            if (ActivityCompat.checkSelfPermission(context,
-                    android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                notificationManager.notify(notificationId, notification);
-                Log.d(TAG, "Sent notification: " + notificationId);
+            while (cursor.moveToNext()) {
+                String title = cursor.getString(cursor.getColumnIndex("title"));
+                String message = cursor.getString(cursor.getColumnIndex("message"));
+                int id = cursor.getInt(cursor.getColumnIndex("id"));
+                int employeeId = cursor.getInt(cursor.getColumnIndex("employee_id"));
+
+                Log.d(TAG, "Processing notification: " + id + " for employee: " + employeeId);
+
+                PendingIntent pendingIntent = PendingIntent.getActivity(context,
+                        id, // use Unique ID for each notification
+                        new Intent(context, MainActivity.class),
+                        PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+                );
+
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel)
+                        .setSmallIcon(R.drawable.bell_icon)
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .setAutoCancel(true)
+                        .setContentIntent(pendingIntent);
+
+                try {
+                    if (ActivityCompat.checkSelfPermission(context,
+                            android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                        notificationManager.notify(id, builder.build());
+                        Log.d(TAG, "Notification displayed: " + id);
+                    } else {
+                        Log.e(TAG, "Notification permission not granted");
+                    }
+                } catch (Exception e) {
+                    Log.e(TAG, "Failed to show notification: " + e.getMessage());
+                }
+
+                // mark as read
+                ContentValues values = new ContentValues();
+                values.put("is_read", 1);
+                dbHelper.getWritableDatabase().update("pending_notifications",
+                        values, "id = ?", new String[]{String.valueOf(id)});
             }
         } catch (Exception e) {
-            Log.e(TAG, "Failed to send notification", e);
+            Log.e(TAG, "Error showing notifications: " + e.getMessage());
+        } finally {
+            cursor.close();
         }
-    }
-
-
-
-
-
-    // Admin General Broadcast --- OFF; may get working if enough time
-    public void sendAdminBroadcastMessage(String title, String message) {
-        if (!areNotificationsEnabled()) return; // kill function to disabled notifications notifications disabled don't
-        // store notification in DB first
-        LocalDataService dbHelper = new LocalDataService(context);
-        dbHelper.storeBroadcastNotification(title, message);
-
-        // show notification immediately
-        showBroadcastNotification(title, message);
-    }
-
-    public void showBroadcastNotification(String title, String message) { // Create and display a broadcast notification
-        if (!areNotificationsEnabled()) return;
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, ADMIN_CHANNEL)
-                .setSmallIcon(R.drawable.bell_icon) // fetch bell_icon from drawable resources
-                .setContentTitle("Admin Broadcast: " + title)
-                .setContentText(message)
-                .setStyle(new NotificationCompat.BigTextStyle().bigText(message))
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true);
-
-        sendNotification(BASE_NOTIFICATION_ID + 3000, builder.build());
     }
 }

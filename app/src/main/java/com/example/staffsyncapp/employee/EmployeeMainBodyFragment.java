@@ -26,6 +26,9 @@ import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NavigationManager;
 import android.widget.Toast;
 
+import java.time.LocalDate;
+import java.time.Period;
+
 import java.util.List;
 
 import android.content.ContentValues;
@@ -119,6 +122,7 @@ public class EmployeeMainBodyFragment extends Fragment {
         setupPeriodicSync(dbHelper, employeeId);
     }
 
+
     private void loadFromLocalDb(LocalDataService dbHelper, int employeeId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
         Cursor cursor = db.query(
@@ -200,13 +204,18 @@ public class EmployeeMainBodyFragment extends Fragment {
         binding.employeeId.setText("My Employee ID: #" + employee.getId());
         binding.department.setText("Department: " + employee.getDepartment());
 
-        // Calculate years of service
-        // TODO: implement proper date calculation
-        binding.yearsOfService.setText("Years of Service: 2.5 years");
+        LocalDate joinDate = LocalDate.parse(employee.getJoiningDate());
+        Period period = Period.between(joinDate, LocalDate.now());
+        String yearsOfService = period.getYears() + " years, " + period.getMonths() + " months";
+        binding.yearsOfService.setText("Years of Service: " + yearsOfService);
 
-        // Calculate next review
-        // TODO: implement proper review date calculation
-        binding.nextReview.setText("Next Salary Review: 3 months");
+        LocalDate nextReview = joinDate.plusYears(Period.between(joinDate, LocalDate.now()).getYears() + 1);
+        Period timeToReview = Period.between(LocalDate.now(), nextReview);
+        binding.nextReview.setText("Next Salary Review: " + timeToReview.getMonths() + " months");
+
+        SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+        boolean notificationsEnabled = prefs.getBoolean("notifications_enabled", true);
+        binding.notificationStatus.setText("Notifications: " + (notificationsEnabled ? "Enabled" : "Disabled"));
     }
 
     private void setupClickListeners() {

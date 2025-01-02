@@ -48,7 +48,7 @@ public class SalaryIncrementManager {
             cursor.close();
         }
 
-        // apply increments
+        // Apply increments
         dbHelper.checkAndApplySalaryIncrements();
 
         // show dialog with results
@@ -92,7 +92,7 @@ public class SalaryIncrementManager {
                     for (Employee emp : employees) {
                         String name = emp.getFirstname() + " " + emp.getLastname();
                         double salary = emp.getSalary();
-                        long daysSince = calculateDaysSince(emp.getJoiningdate());
+                        long daysSince = calculateDaysSince(emp.getJoiningDate());
 
                         statusList.add(new IncrementStatus(name.trim(), salary, daysSince));
                     }

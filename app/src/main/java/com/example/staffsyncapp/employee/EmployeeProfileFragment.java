@@ -271,7 +271,7 @@ public class EmployeeProfileFragment extends Fragment {
                     newEmail,
                     currentEmployee.getDepartment(), // get existing
                     currentEmployee.getSalary(), // get existing
-                    currentEmployee.getJoiningdate(), // get existing
+                    currentEmployee.getJoiningDate(), // get existing
                     // build off existing data
                     new ApiDataService.EmployeeUpdateListener() {
                         @Override

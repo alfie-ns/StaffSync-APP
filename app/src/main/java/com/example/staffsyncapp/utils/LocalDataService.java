@@ -1,5 +1,7 @@
 package com.example.staffsyncapp.utils;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -9,6 +11,10 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Base64;
 import android.util.Log;
 
+import androidx.core.app.NotificationCompat;
+import androidx.navigation.NavDeepLinkBuilder;
+
+import com.example.staffsyncapp.R;
 import com.example.staffsyncapp.models.LeaveRequest;
 
 import java.text.SimpleDateFormat;
@@ -248,9 +254,11 @@ public class LocalDataService extends SQLiteOpenHelper {
         String message = String.format("%s requests leave from %s to %s\nReason: %s",
                 employeeName, startDate, endDate, reason);
 
+        values.put("employee_id", 0); // mark as admin notification
         values.put("title", title);
         values.put("message", message);
         values.put("is_read", 0);
+        values.put("employee_id", 0); // 0 = admin notification
         values.put("created_at", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.UK).format(new Date()));
 
         db.insert("pending_notifications", null, values);
@@ -320,30 +328,42 @@ public class LocalDataService extends SQLiteOpenHelper {
         db.insert("pending_notifications", null, values);
     }
 
-    public void checkPendingNotifications(Context context) { // check for pending notifications; show if any; mark as read; db query
+    public void checkPendingNotifications(Context context) {
+        Log.d(TAG, "Ensure pending notification is called...");
         NotificationService notificationService = new NotificationService(context);
-        Log.d(TAG, "Check pending notification is called...");
-        Cursor cursor = db.query("pending_notifications",
-                null,
-                "is_read = 0",
-                null, null, null, null);
 
-        if (cursor != null && cursor.moveToFirst()) {
-            do { // do-while loop to ensure at least one notification is processed
-                String title = cursor.getString(cursor.getColumnIndex("title"));
-                String message = cursor.getString(cursor.getColumnIndex("message"));
-                int id = cursor.getInt(cursor.getColumnIndex("id"));
+        if (isAdminLoggedIn()) {
+            // Only get admin notifications (where employee_id = 0)
+            Cursor cursor = getReadableDatabase().query(
+                    "pending_notifications",
+                    null,
+                    "employee_id = 0 AND is_read = 0", // Only admin notifications
+                    null,
+                    null, null,
+                    "created_at DESC"
+            );
 
-                notificationService.showBroadcastNotification(title, message);
+            Log.d(TAG, "Found " + cursor.getCount() + " pending admin notifications");
+            notificationService.showNotificationsFromCursor(cursor, "admin_channel");
+        } else {
+            // Employee notifications
+            SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+            int employeeId = prefs.getInt("logged_in_employee_id", -1);
+            Log.d(TAG, "Current logged in employee ID: " + employeeId);
 
-                // mark read
-                ContentValues values = new ContentValues();
-                values.put("is_read", 1);
-                db.update("pending_notifications", values,
-                        "id = ?", new String[]{String.valueOf(id)});
+            if (employeeId != -1) {
+                Cursor cursor = getReadableDatabase().query(
+                        "pending_notifications",
+                        null,
+                        "employee_id = ? AND is_read = 0",
+                        new String[]{String.valueOf(employeeId)},
+                        null, null,
+                        "created_at DESC"
+                );
 
-            } while (cursor.moveToNext());
-            cursor.close();
+                Log.d(TAG, "Found " + cursor.getCount() + " pending notifications for employee: " + employeeId);
+                notificationService.showNotificationsFromCursor(cursor, "holiday_channel");
+            }
         }
     }
 
@@ -446,46 +466,67 @@ public class LocalDataService extends SQLiteOpenHelper {
 
     public void checkEmployeeNotifications(Context context, int employeeId) {
         NotificationService notificationService = new NotificationService(context);
-        Cursor cursor = db.query("pending_notifications",
+        Cursor cursor = db.query(
+                "pending_notifications",
                 null,
                 "employee_id = ? AND is_read = 0",
                 new String[]{String.valueOf(employeeId)},
-                null, null, null);
+                null, null, null
+        );
 
-        if (cursor != null && cursor.moveToFirst()) {
-            do {
+        try {
+            while (cursor != null && cursor.moveToNext()) {
                 String title = cursor.getString(cursor.getColumnIndex("title"));
                 String message = cursor.getString(cursor.getColumnIndex("message"));
-                int id = cursor.getInt(cursor.getColumnIndex("id"));
+                int notificationId = cursor.getInt(cursor.getColumnIndex("id"));
 
-                notificationService.sendRequestUpdateToEmployee(employeeId,
-                        title.contains("Approved"),
-                        message);
+                // Create notification intent
+                PendingIntent pendingIntent = new NavDeepLinkBuilder(context)
+                        .setGraph(R.navigation.nav_graph)
+                        .setDestination(R.id.employee_navigation_home)
+                        .createPendingIntent();
 
-                // Mark as read
+                // Build and show notification
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "holiday_channel")
+                        .setSmallIcon(R.drawable.bell_icon)
+                        .setContentTitle(title)
+                        .setContentText(message)
+                        .setPriority(NotificationCompat.PRIORITY_HIGH)
+                        .setAutoCancel(true)
+                        .setContentIntent(pendingIntent);
+
+                NotificationManager notificationManager =
+                        (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                notificationManager.notify(notificationId, builder.build());
+
+                // mark as read
                 ContentValues values = new ContentValues();
                 values.put("is_read", 1);
                 db.update("pending_notifications", values,
-                        "id = ?", new String[]{String.valueOf(id)});
-
-            } while (cursor.moveToNext());
-            cursor.close();
+                        "id = ?", new String[]{String.valueOf(notificationId)});
+            }
+        } finally {
+            if (cursor != null) cursor.close();
         }
     }
 
     public void storeEmployeeNotification(int employeeId, boolean isApproved, String adminMessage) {
+        Log.d(TAG, "Storing notification for employee: " + employeeId);
+
         ContentValues values = new ContentValues();
         String title = "Leave Request " + (isApproved ? "Approved" : "Denied");
         String message = String.format("Your leave request has been %s. %s",
                 isApproved ? "approved" : "denied",
                 adminMessage != null ? "\nMessage: " + adminMessage : "");
 
+        values.put("employee_id", employeeId);
         values.put("title", title);
         values.put("message", message);
         values.put("is_read", 0);
         values.put("created_at", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.UK).format(new Date()));
 
-        db.insert("pending_notifications", null, values);
+        long result = db.insert("pending_notifications", null, values); // testing
+        Log.d(TAG, "Notification stored with result: " + result);
     }
 
     public Cursor getEmployeeLeaveRequests(int employeeId) {
@@ -569,17 +610,14 @@ public class LocalDataService extends SQLiteOpenHelper {
                 boolean passwordMatch = hashedAttempt.equals(storedPass);
 
                 if (passwordMatch && isAdmin == 0) {
-                    // store employee ID
+                    // Store employee ID
                     SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
                     prefs.edit().putInt("logged_in_employee_id", empId).apply();
 
-                    // check notifications when login successful
+                    // Check notifications when login successful
                     checkEmployeeNotifications(context, empId);
 
-                    if (firstLogin == 1) {
-                        return 1; // first login
-                    }
-                    return 2; // normal successful login
+                    return firstLogin == 1 ? 1 : 2;
                 }
             }
             return 0; // failure

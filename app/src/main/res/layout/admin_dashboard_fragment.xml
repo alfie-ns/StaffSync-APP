@@ -306,17 +306,17 @@
                         app:cornerRadius="8dp"
                         android:backgroundTint="@color/admin_deep"/>
 
-<!--                    <com.google.android.material.button.MaterialButton-->
-<!--                        android:id="@+id/broadcastMessageBtn"-->
-<!--                        android:layout_width="match_parent"-->
-<!--                        android:layout_height="wrap_content"-->
-<!--                        android:layout_marginTop="6dp"-->
-<!--                        android:text="Send General Broadcast"-->
-<!--                        android:textAllCaps="false"-->
-<!--                        app:iconGravity="textStart"-->
-<!--                        app:icon="@drawable/bell_icon"-->
-<!--                    app:cornerRadius="8dp"-->
-<!--                    android:backgroundTint="@color/admin_deep"/>-->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/broadcastMessageBtn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="6dp"
+                        android:text="Send General Broadcast"
+                        android:textAllCaps="false"
+                        app:iconGravity="textStart"
+                        app:icon="@drawable/bell_icon"
+                    app:cornerRadius="8dp"
+                    android:backgroundTint="@color/admin_deep"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -374,42 +374,6 @@
 
                         <com.google.android.material.materialswitch.MaterialSwitch
                             android:id="@+id/notificationSwitch"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:checked="true"/>
-                    </LinearLayout>
-
-                    <!-- Email Notification Switch -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:layout_marginTop="16dp"
-                        android:gravity="center_vertical">
-
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Email Notifications"
-                                android:textColor="@color/admin_deep"
-                                android:textSize="16sp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Receive email updates for important events"
-                                android:textColor="@color/admin_medium"
-                                android:textSize="14sp"/>
-                        </LinearLayout>
-
-                        <com.google.android.material.materialswitch.MaterialSwitch
-                            android:id="@+id/emailSwitch"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:checked="true"/>

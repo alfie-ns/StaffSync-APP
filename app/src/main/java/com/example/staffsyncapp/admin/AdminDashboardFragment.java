@@ -387,7 +387,7 @@ public class AdminDashboardFragment extends Fragment {
     }
 
     private void showUpdateDialog(Context context, Employee employee) {
-        Log.d(TAG, "Original date from employee: " + employee.getJoiningdate());
+        Log.d(TAG, "Original date from employee: " + employee.getJoiningDate());
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         View dialogView = getLayoutInflater().inflate(R.layout.admin_update_employee_dialog, null);
 
@@ -405,7 +405,7 @@ public class AdminDashboardFragment extends Fragment {
         emailInput.setText(employee.getEmail());
         departmentInput.setText(employee.getDepartment());
         salaryInput.setText(String.valueOf(employee.getSalary()));
-        joiningDateInput.setText(employee.getJoiningdate());
+        joiningDateInput.setText(employee.getJoiningDate());
         Log.d(TAG, "Date after EditText: " + joiningDateInput.getText().toString());
         AlertDialog dialog = builder.setView(dialogView).create();
 
@@ -422,7 +422,7 @@ public class AdminDashboardFragment extends Fragment {
             if (newLastName.isEmpty()) newLastName = employee.getLastname();
             if (newEmail.isEmpty()) newEmail = employee.getEmail();
             if (newDepartment.isEmpty()) newDepartment = employee.getDepartment();
-            if (newJoiningDate.isEmpty()) newJoiningDate = employee.getJoiningdate();
+            if (newJoiningDate.isEmpty()) newJoiningDate = employee.getJoiningDate();
 
             // parse salary, keep original if empty or invalid
             double newSalary = employee.getSalary();
@@ -665,9 +665,6 @@ public class AdminDashboardFragment extends Fragment {
         binding.notificationSwitch.setChecked(
                 sharedPreferences.getBoolean(HOLIDAY_NOTIFICATIONS_KEY, true));
 
-        binding.emailSwitch.setChecked(
-                sharedPreferences.getBoolean(EMAIL_NOTIFICATIONS_KEY, true));
-
         // holiday notifications toggle
         binding.notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             try {
@@ -688,48 +685,30 @@ public class AdminDashboardFragment extends Fragment {
             }
         });
 
-        // email notifications toggle
-        binding.emailSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            try {
-                sharedPreferences.edit()
-                        .putBoolean(EMAIL_NOTIFICATIONS_KEY, isChecked)
-                        .apply();
 
-                if (isChecked) {
-                    notificationService.sendSystemNotification(
-                            "email notifications enabled",
-                            "you will now receive email notifications"
-                    );
-                }
-                Log.d(TAG, "email notifications " + (isChecked ? "enabled" : "disabled"));
-            } catch (Exception e) {
-                Log.e(TAG, "failed to save email notification setting", e);
-            }
+        // Admin General Broadcast TODO: [X] get working; i need to handle leave request notifications unaffected from this
+        binding.broadcastMessageBtn.setOnClickListener(v -> {
+            // Create and show a dialog to input broadcast message
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            View dialogView = getLayoutInflater().inflate(R.layout.admin_broadcast_dialog, null);
+            EditText titleInput = dialogView.findViewById(R.id.broadcast_title_input);
+            EditText messageInput = dialogView.findViewById(R.id.broadcast_message_input);
+
+            builder.setView(dialogView)
+                    .setTitle("Send Broadcast Message")
+                    .setPositiveButton("Send", (dialog, which) -> {
+                        String title = titleInput.getText().toString();
+                        String message = messageInput.getText().toString();
+
+                        if (!title.isEmpty() && !message.isEmpty()) { // if not empty; title and message
+                            notificationService.sendAdminBroadcastMessage(title, message);
+                            Toast.makeText(requireContext(), "Broadcast message sent", Toast.LENGTH_SHORT).show();
+                        }
+                    })
+                    .setNegativeButton("Cancel", null);
+
+            builder.create().show();
         });
-
-        // Admin General Broadcast TODO: get working; i need to handle leave request notifications unaffected from this
-//        binding.broadcastMessageBtn.setOnClickListener(v -> {
-//            // Create and show a dialog to input broadcast message
-//            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-//            View dialogView = getLayoutInflater().inflate(R.layout.admin_broadcast_dialog, null);
-//            EditText titleInput = dialogView.findViewById(R.id.broadcast_title_input);
-//            EditText messageInput = dialogView.findViewById(R.id.broadcast_message_input);
-//
-//            builder.setView(dialogView)
-//                    .setTitle("Send Broadcast Message")
-//                    .setPositiveButton("Send", (dialog, which) -> {
-//                        String title = titleInput.getText().toString();
-//                        String message = messageInput.getText().toString();
-//
-//                        if (!title.isEmpty() && !message.isEmpty()) { // if not empty; title and message
-//                            notificationService.sendAdminBroadcastMessage(title, message);
-//                            Toast.makeText(requireContext(), "Broadcast message sent", Toast.LENGTH_SHORT).show();
-//                        }
-//                    })
-//                    .setNegativeButton("Cancel", null);
-//
-//            builder.create().show();
-//        });
 
         // logout functionality
         binding.logoutBtn.setOnClickListener(v -> {
@@ -837,7 +816,7 @@ public class AdminDashboardFragment extends Fragment {
                     for (Employee emp : employees) {
                         String name = emp.getFirstname() + " " + emp.getLastname();
                         double salary = emp.getSalary();
-                        long daysSince = calculateDaysSince(emp.getJoiningdate());
+                        long daysSince = calculateDaysSince(emp.getJoiningDate());
 
                         statusList.add(new SalaryIncrementManager.IncrementStatus(name.trim(), salary, daysSince));
                     }

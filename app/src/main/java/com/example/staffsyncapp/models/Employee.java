@@ -28,7 +28,7 @@ public class Employee { // Employee model class
     public String getEmail() { return email; }
     public String getDepartment() { return department; }
     public double getSalary() { return salary; }
-    public String getJoiningdate() { return joiningdate; }
+    public String getJoiningDate() { return joiningdate; }
 
     // Helper methods
     public String getName() {
