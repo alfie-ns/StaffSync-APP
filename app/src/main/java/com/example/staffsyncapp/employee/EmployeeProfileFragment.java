@@ -251,6 +251,15 @@ public class EmployeeProfileFragment extends Fragment {
         return validateEmail() && validateEmailMatch();
     }
 
+    /**
+     * Update employee details in API and local DB
+     * - Update employee name and email
+     * - if invalid input kill method
+     * - if valid input, proceed with using workerThread to queue a task to update employee details in API and local DB
+     * - call apiService.updateEmployee() to update employee details in API
+     * - if API change successful, update local DB with new data
+     * @return void
+     */
     private void updateEmployeeDetails() {
         String newName = binding.editName.getText().toString().trim();
         String newEmail = binding.editEmail.getText().toString().trim();

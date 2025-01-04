@@ -1,4 +1,4 @@
-package com.example.staffsyncapp.leave;
+package com.example.staffsyncapp.adapter;
 
 import static android.content.ContentValues.TAG;
 

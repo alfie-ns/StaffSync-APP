@@ -34,11 +34,11 @@ import java.util.Locale;
  * - Notification handling
  * - Automated salary increment management
  *
- * todo:
+ * TODO:
  * - [X] leave request processing
- * - [ ] notification handling from employee and admin
- * - [ ] automated salary increment management
- * - [ ] employee account management
+ * - [X] notification handling from employee and admin
+ * - [X] automated salary increment management
+ * - [X] employee account management
  *
  */
 
@@ -325,7 +325,11 @@ public class LocalDataService extends SQLiteOpenHelper {
         ContentValues values = new ContentValues();
         values.put("title", title);
         values.put("message", message);
-        db.insert("pending_notifications", null, values);
+        values.put("is_read", 0);
+        // no need to set employeeId for general broadcast
+        values.put("created_at", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.UK).format(new Date()));
+
+        getWritableDatabase().insert("pending_notifications", null, values);
     }
 
     public void checkPendingNotifications(Context context) {
@@ -367,62 +371,6 @@ public class LocalDataService extends SQLiteOpenHelper {
         }
     }
 
-    public boolean updateLeaveRequestStatus(int requestId, String status, String adminResponse) {
-        db.beginTransaction();
-        try {
-            Cursor request = db.query(
-                    "leave_requests",
-                    new String[]{"employee_id", "days_requested", "status"},
-                    "id = ?",
-                    new String[]{String.valueOf(requestId)},
-                    null, null, null
-            );
-
-            if (!request.moveToFirst()) {
-                request.close();
-                return false;
-            }
-
-            int employeeId = request.getInt(0);
-            int daysRequested = request.getInt(1);
-            String currentStatus = request.getString(2);
-            request.close();
-
-            // Only update used_leave if request is being approved
-            if (status.equals("approved") && !currentStatus.equals("approved")) {
-                Cursor employee = db.query(
-                        "employee_details",
-                        new String[]{"used_leave"},
-                        "employee_id = ?",
-                        new String[]{String.valueOf(employeeId)},
-                        null, null, null
-                );
-
-                if (employee.moveToFirst()) {
-                    int currentUsedLeave = employee.getInt(0);
-                    ContentValues employeeValues = new ContentValues();
-                    employeeValues.put("used_leave", currentUsedLeave + daysRequested);
-                    db.update("employee_details", employeeValues,
-                            "employee_id = ?", new String[]{String.valueOf(employeeId)});
-                }
-                employee.close();
-            }
-
-            ContentValues values = new ContentValues();
-            values.put("status", status);
-            values.put("admin_response", adminResponse);
-            values.put("updated_at", getCurrentDate());
-
-            db.update("leave_requests", values,
-                    "id = ?", new String[]{String.valueOf(requestId)});
-
-            db.setTransactionSuccessful();
-            return true;
-        } finally {
-            db.endTransaction();
-        }
-    }
-
     private boolean adminExists() {
         Cursor cursor = db.query("Employees", null,
                 "is_admin = 1", null, null, null, null);
@@ -444,9 +392,6 @@ public class LocalDataService extends SQLiteOpenHelper {
         return db.update("employees", values, "email = ?", new String[]{email}) > 0;
     }
 
-
-    // EMPLOYEE-SIDE ---
-
     public void createEmployeeAccount(int employeeId, String email) {
         String tempPassword = generateTempPassword(employeeId);
         ContentValues values = new ContentValues();
@@ -463,6 +408,9 @@ public class LocalDataService extends SQLiteOpenHelper {
             Log.e(TAG, "Failed to create employee account: " + e.getMessage());
         }
     }
+
+
+    // EMPLOYEE-SIDE ---
 
     public void checkEmployeeNotifications(Context context, int employeeId) {
         NotificationService notificationService = new NotificationService(context);
@@ -529,13 +477,14 @@ public class LocalDataService extends SQLiteOpenHelper {
         Log.d(TAG, "Notification stored with result: " + result);
     }
 
-    public Cursor getEmployeeLeaveRequests(int employeeId) {
-        return db.query(
-                "leave_requests",
+    public Cursor getBroadcastNotifications() {
+        return getReadableDatabase().query(
+                "pending_notifications",
                 null,
-                "employee_id = ?",
-                new String[]{String.valueOf(employeeId)},
-                null, null,
+                "employee_id IS NULL AND is_read = 0",  // broadcast messages have no specific employee_id
+                null,
+                null,
+                null,
                 "created_at DESC"
         );
     }
@@ -768,21 +717,69 @@ public class LocalDataService extends SQLiteOpenHelper {
     }
 
     public void updateLeaveRequestStatus(int requestId, String status, String response, StatusUpdateCallback callback) {
-        ContentValues values = new ContentValues();
-        values.put("status", status);
-        values.put("admin_response", response);
-        values.put("updated_at", getCurrentDate());
-
+        db.beginTransaction();
         try {
+            // Get request details
+            Cursor request = db.query(
+                    "leave_requests",
+                    new String[]{"employee_id", "days_requested", "status"},
+                    "id = ?",
+                    new String[]{String.valueOf(requestId)},
+                    null, null, null
+            );
+
+            if (!request.moveToFirst()) {
+                request.close();
+                callback.onSuccess(false);
+                return;
+            }
+
+            int employeeId = request.getInt(0);
+            int daysRequested = request.getInt(1);
+            String currentStatus = request.getString(2);
+            request.close();
+
+            // only update used_leave if request is being approved
+            if (status.equals("approved") && !currentStatus.equals("approved")) {
+                Cursor employee = db.query(
+                        "employee_details",
+                        new String[]{"used_leave"},
+                        "employee_id = ?",
+                        new String[]{String.valueOf(employeeId)},
+                        null, null, null
+                );
+
+                if (employee.moveToFirst()) {
+                    int currentUsedLeave = employee.getInt(0);
+                    ContentValues employeeValues = new ContentValues();
+                    employeeValues.put("used_leave", currentUsedLeave + daysRequested);
+                    db.update("employee_details", employeeValues,
+                            "employee_id = ?", new String[]{String.valueOf(employeeId)});
+                }
+                employee.close();
+            }
+
+            // Update request status
+            ContentValues values = new ContentValues();
+            values.put("status", status);
+            values.put("admin_response", response);
+            values.put("updated_at", getCurrentDate());
+
             int updated = db.update("leave_requests", values,
                     "id = ?", new String[]{String.valueOf(requestId)});
+
+            db.setTransactionSuccessful();
             callback.onSuccess(updated > 0);
+
         } catch (Exception e) {
+            Log.e(TAG, "Error updating leave request: " + e.getMessage());
             callback.onSuccess(false);
+        } finally {
+            db.endTransaction();
         }
     }
 
-    // TESTING METHODS: OFF---
+    // TESTING METHODS: OFF ---
 
     public void testSalaryIncrement(int employeeId) {
         // Get current salary

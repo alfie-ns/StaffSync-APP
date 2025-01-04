@@ -3,6 +3,7 @@ package com.example.staffsyncapp.entry; // Main package for the fragment
 // Android libraries for UI, logging, and data handling
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
 import android.util.Patterns;
@@ -25,6 +26,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.staffsyncapp.R;
 import com.example.staffsyncapp.databinding.LoginFragmentBinding;
 import com.example.staffsyncapp.utils.LocalDataService;
+import com.example.staffsyncapp.utils.NotificationService;
 import com.google.android.material.button.MaterialButton;
 
 // project-specific utility class for location tracking [ ]
@@ -41,6 +43,8 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
     private long lastLoginAttempt = 0;
     private static final long LOCKOUT_DURATION = 900000; // 15-minutes lockout duration in milliseconds
 
+    private LocalDataService dbHelper;
+
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
@@ -53,6 +57,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        dbHelper = new LocalDataService(requireContext()); // initialise dbHelper
 
         // 1- create the admin account
         LocalDataService dbHelper = new LocalDataService(requireContext());
@@ -231,8 +236,17 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
             if (loginStatus == 2) { // normal login
                 Log.d(TAG, "User login successful");
                 loadUserDarkModePreference(email);
-                dbHelper.checkPendingNotifications(requireContext()); // check for general broadcast
-                // TODO: check for notifications regarding the leave request
+
+                dbHelper.checkPendingNotifications(requireContext()); // check for all notifications
+
+                // check for general broadcasts
+                Log.d(TAG, "Fetching broadcast notifications");
+                Cursor broadcasts = dbHelper.getBroadcastNotifications();
+                Log.d(TAG, "Found " + broadcasts.getCount() + " broadcasts");
+
+                NotificationService notificationService = new NotificationService(requireContext());
+                notificationService.showNotificationsFromCursor(broadcasts, "holiday_channel");
+
                 try {
                     NavHostFragment.findNavController(LoginFragment.this)
                             .navigate(R.id.action_LoginFragment_to_EmployeeMainFragment);
@@ -334,7 +348,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
     }
 
     private boolean shouldShowAnomalyAlert() {
-        /*  TODO [ ]: anomaly detection logic/algorithm
+        /*  TODO [ ]: anomaly detection logic/algorithm(may have dreamt to big to think I'll be able to do this in time)
             determine if anomaly alert should be shown
         */
         return false;

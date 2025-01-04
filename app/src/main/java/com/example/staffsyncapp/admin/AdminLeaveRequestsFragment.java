@@ -12,7 +12,6 @@ import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.staffsyncapp.adapter.LeaveRequestAdapter;
-import com.example.staffsyncapp.leave.LeaveHistoryAdapter;
 import com.example.staffsyncapp.databinding.AdminHolidayRequestsFragmentBinding;
 import com.example.staffsyncapp.models.LeaveRequest;
 import com.example.staffsyncapp.utils.LocalDataService;

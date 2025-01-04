@@ -89,8 +89,9 @@ public class NotificationService {
             notificationManager.createNotificationChannel(adminChannel);
             notificationManager.createNotificationChannel(holidayChannel);
         }
-    }/**
-     
+    }
+
+    /**
     * Sends leave request notification to admin
     * 
     * @param employeeName Name of requesting employee
@@ -172,26 +173,6 @@ public class NotificationService {
             Log.e(TAG, "Failed to send holiday notification.", e);
         }
     }
-    
-    // Send system notification i.e. for emails, non-urgent messages ---
-    public void sendSystemNotification(String title, String message) {
-        if (!areNotificationsEnabled()) return;
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, SYSTEM_CHANNEL)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true);
-
-        try { // check if phone has permission to send notifications
-            if (ActivityCompat.checkSelfPermission(context,
-                    android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                notificationManager.notify(NOTIFICATION_ID + 1, builder.build());
-            }
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to send system notification", e);
-        }
-    }
 
     // Admin decision -> Employee ---
     public void sendRequestUpdateToEmployee(int employeeId, boolean isApproved, String adminMessage) {
@@ -202,11 +183,21 @@ public class NotificationService {
         Log.d(TAG, "Notification stored in database for employee: " + employeeId);
     }
 
-
-    // Broadcast ---
-    public void sendAdminBroadcastMessage(String title, String message) {
+    public void sendAdminBroadcastMessage(String title, String message) { // General broadcast
+        Log.d(TAG, "Attempting to store broadcast message: " + title);
         // store notification in DB first
         dbHelper.storeBroadcastNotification(title, message);
+        Log.d(TAG, "Broadcast message stored successfully");
+
+        // if user(someone that's not an admin) is logged in, show notification
+        if (!dbHelper.isAdminLoggedIn()) {
+            Log.d(TAG, "Non-admin logged in, showing broadcast");
+            showNotificationsFromCursor(dbHelper.getBroadcastNotifications(), SYSTEM_CHANNEL);
+        } else {
+            Log.d(TAG, "Admin logged in, not showing broadcast");
+        }
+
+        
     }
 
     public void showNotificationsFromCursor(Cursor cursor, String channel) {
@@ -227,7 +218,7 @@ public class NotificationService {
                         PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
                 );
 
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, channel)
+                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL)
                         .setSmallIcon(R.drawable.bell_icon)
                         .setContentTitle(title)
                         .setContentText(message)

@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.staffsyncapp.adapter.LeaveHistoryAdapter;
 import com.example.staffsyncapp.models.LeaveRequest;
 
 import com.example.staffsyncapp.utils.LocalDataService;
