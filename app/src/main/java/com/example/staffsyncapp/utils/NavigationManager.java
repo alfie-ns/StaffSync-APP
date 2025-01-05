@@ -21,12 +21,20 @@ public class NavigationManager {
     private final BottomNavigationView bottomNav;
 
 
-    public NavigationManager(Fragment fragment, BottomNavigationView bottomNav) {
+    public NavigationManager(Fragment fragment, BottomNavigationView bottomNav) { // constructor, initialise setupBottomNavigation immediately
         this.navController = Navigation.findNavController(fragment.requireActivity(), R.id.nav_host_fragment);
         this.bottomNav = bottomNav;
-        setupBottomNavigation();
+        setupBottomNavigation(); // ensure bottom navigation will always be accessible
+
     }
 
+    /**
+     * Setup bottom navigation bar with error handling and destination checking
+     * - Prevents unnecessary navigation to current destination(if current destination DOESN'T already match the selected item, perform navigation)
+     * - Explicit error handling for navigation failures; catch any errors and log them
+     * - Navigation to Home, Profile and Settings fragments, core user fragments
+     * @return void(however, does return boolean to setOnItemSelectedListener)
+     */
     private void setupBottomNavigation() {
         bottomNav.setOnItemSelectedListener(item -> {
             try {
@@ -51,21 +59,5 @@ public class NavigationManager {
             }
             return false;
         });
-    }
-
-    private void navigateToDestination(int destinationId) {
-        try {
-            navController.navigate(destinationId);
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to navigate to destination " + destinationId + ": " + e.getMessage());
-        }
-    }
-
-    public void navigateToLogin() {
-        try {
-            navController.navigate(R.id.action_EmployeeSettingsFragment_to_SecondFragment);
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to navigate to login: " + e.getMessage());
-        }
     }
 }
