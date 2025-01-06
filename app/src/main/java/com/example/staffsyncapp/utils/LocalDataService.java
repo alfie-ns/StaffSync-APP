@@ -157,6 +157,15 @@ public class LocalDataService extends SQLiteOpenHelper {
                 "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
                 "is_read INTEGER DEFAULT 0)");
 
+        // 7- Offline-sync functionality
+        db.execSQL("CREATE TABLE offline_request_queue (" +
+                "id INTEGER PRIMARY KEY AUTOINCREMENT," +
+                "request_type TEXT," +    // leave_request, profile_update, etc
+                "request_data TEXT," +    // JSON of request data
+                "created_at DATETIME DEFAULT CURRENT_TIMESTAMP," +
+                "attempts INTEGER DEFAULT 0," +
+                "last_attempt DATETIME)");
+
 
         Log.d("StaffDataService", "Database tables created successfully");
 

@@ -4,6 +4,8 @@ package com.example.staffsyncapp.api;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.icu.text.SimpleDateFormat;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.util.Log;
 
 // Volley libraries for making API requests
@@ -13,11 +15,14 @@ import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
 import com.example.staffsyncapp.models.Employee;
+import com.example.staffsyncapp.utils.LocalDataService;
+import com.example.staffsyncapp.utils.OfflineSyncManager;
 
 // JSON handling libraries for parsing and creating JSON objects
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.InetAddress;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -65,6 +70,7 @@ public class ApiDataService {
     private static final String BASE_URL = "http://10.224.41.11/comp2000"; // base url
 
     private static ApiWorkerThread workerThread;
+    private OfflineSyncManager offlineSyncManager;
 
     private static RequestQueue queue; 
     private Context context; 
@@ -73,6 +79,7 @@ public class ApiDataService {
     public ApiDataService(Context context) {
         this.context = context;
         queue = Volley.newRequestQueue(context); // access Volley request queue
+        offlineSyncManager = new OfflineSyncManager(context, new LocalDataService(context).getWritableDatabase(), this);
         workerThread = new ApiWorkerThread(); // 1- initialise worker thread
         workerThread.start(); 
     }
@@ -322,10 +329,12 @@ public class ApiDataService {
 
             try {
                 JSONObject jsonBody = new JSONObject();
-                jsonBody.put("firstname", firstname);
-                jsonBody.put("lastname", lastname);
-                jsonBody.put("email", email);
-                jsonBody.put("department", department);
+                jsonBody.put("action", "edit_employee");
+                jsonBody.put("id", id);
+                jsonBody.put("firstname", firstname.equals("null") ? "" : firstname);
+                jsonBody.put("lastname", lastname.equals("null") ? "" : lastname);
+                jsonBody.put("email", email.equals("null") ? "" : email);
+                jsonBody.put("department", department.equals("null") ? "" : department);
                 jsonBody.put("salary", salary);
 
                 // format date from EditText's timestamp to API format
@@ -352,15 +361,17 @@ public class ApiDataService {
                                 listener.onSuccess("Employee updated successfully");
                             });
                         },
-                        error -> workerThread.postToMainThread(() -> {
-                            String errorMsg = error.networkResponse != null ?
-                                    String.format(Locale.UK, "Network Error (Code %d): %s",
-                                            error.networkResponse.statusCode,
-                                            new String(error.networkResponse.data)) :
-                                    "Error updating employee";
-                            Log.e(TAG, errorMsg);
-                            listener.onError(errorMsg);
-                        })
+                        error -> {
+                            // Queue for offline sync first
+                            offlineSyncManager.enqueueTask(jsonBody);
+
+                            // Then notify via listener if worker thread still exists
+                            if (workerThread != null) {
+                                workerThread.postToMainThread(() -> {
+                                    listener.onError("Update queued for later; API currently unavailable");
+                                });
+                            }
+                        }
                 );
 
                 request.setShouldCache(false);
@@ -397,11 +408,22 @@ public class ApiDataService {
                         });
                     },
                     error -> workerThread.postToMainThread(() -> {
-                        @SuppressLint("DefaultLocale") String errorMsg = error.networkResponse != null ?
-                                String.format(Locale.UK, "Network Error (Code %d)", error.networkResponse.statusCode) :
+                        String errorMsg = error.networkResponse != null ?
+                                String.format("Network Error (Code %d)", error.networkResponse.statusCode) :
                                 "Error deleting employee";
                         Log.e(TAG, errorMsg);
-                        listener.onError(errorMsg);
+
+                        try {
+                            JSONObject jsonBody = new JSONObject();
+                            jsonBody.put("action", "delete_employee");
+                            jsonBody.put("id", employeeId);
+                            offlineSyncManager.enqueueTask(jsonBody);
+
+                            listener.onError(errorMsg + " - Delete queued for later"); // notify UI
+                        } catch (JSONException e) {
+                            Log.e(TAG, "Error queuing delete task", e);
+                            listener.onError(errorMsg); // notify UI without queuing
+                        }
                     })
             );
 
@@ -444,7 +466,81 @@ public class ApiDataService {
         });
     }
 // --------------------------------------------------------------------------------
-    // HELPER FUNCTIONS
+    // OFFLINE-SYNC and HELPER FUNCTIONS
+
+    public void processQueuedTask(JSONObject data) throws JSONException {
+        try {
+            String action = data.getString("action");
+            switch (action) {
+                case "edit_employee":
+                    Log.d(TAG, "Processing queued edit task: " + data);
+                    String url = BASE_URL + "/employees/edit/" + data.getInt("id");
+
+                    // If API isn't reachable, throw exception to keep task in queue
+                    if (!isApiReachable()) {
+                        throw new Exception("API not reachable");
+                    }
+
+                    // Try to make direct API request first, if error(i.e. API connection unsuccesful) queue task
+                    JsonObjectRequest request = new JsonObjectRequest(
+                            Request.Method.PUT,
+                            url,
+                            data,
+                            response -> {
+                                Log.d(TAG, "Successfully processed queued edit task");
+                            },
+                            error -> {
+                                // throw exception on error to keep task in queue
+                                throw new RuntimeException("Failed to process task: " + error.getMessage());
+                            }
+                    );
+
+                    request.setShouldCache(false);
+                    queue.add(request);
+                    break;
+                case "delete_employee":
+                    Log.d(TAG, "Processing queued delete task: " + data);
+                    String deleteUrl = BASE_URL + "/employees/delete/" + data.getInt("id");
+
+                    if (!isApiReachable()) {
+                        throw new Exception("API not reachable");
+                    }
+
+                    JsonObjectRequest deleteRequest = new JsonObjectRequest(
+                            Request.Method.DELETE,
+                            deleteUrl,
+                            data,
+                            response -> {
+                                Log.d(TAG, "Successfully processed queued delete task");
+                            },
+                            error -> {
+                                // keep task on queue
+                                throw new RuntimeException("Failed to process task: " + error.getMessage());
+                            }
+                    );
+                    deleteRequest.setShouldCache(false);
+                    queue.add(deleteRequest);
+                    break;
+
+                default:
+                    Log.e(TAG, "Unsupported action: " + action);
+                    break;
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error processing queued task: " + e.getMessage());
+            throw new JSONException(e.getMessage());  // Rethrow to signal failure
+        }
+    }
+
+    private boolean isApiReachable() {
+        try {
+            InetAddress address = InetAddress.getByName("10.224.41.11");
+            return address.isReachable(1000);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
     public void cleanUp() { // shut down all running workerThreads; clean running threads
         if (workerThread != null) {
             workerThread.shutdown();
