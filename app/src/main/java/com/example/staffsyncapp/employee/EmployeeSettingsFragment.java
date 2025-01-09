@@ -133,8 +133,11 @@ public class EmployeeSettingsFragment extends Fragment {
         });
 
         binding.termsDocs.setOnClickListener(v -> {
-            // TODO: Implement terms & documentation view
-            Toast.makeText(requireContext(), "Documentation coming soon", Toast.LENGTH_SHORT).show();
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            View dialogView = getLayoutInflater().inflate(R.layout.employee_terms_documentation_dialog, null);
+            builder.setView(dialogView);
+            AlertDialog dialog = builder.create();
+            dialog.show();
         });
     }
 
