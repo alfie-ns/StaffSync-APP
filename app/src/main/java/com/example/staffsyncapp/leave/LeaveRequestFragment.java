@@ -18,7 +18,7 @@ import androidx.navigation.Navigation;
 
 // Project-specific
 import com.example.staffsyncapp.api.ApiDataService;
-import com.example.staffsyncapp.databinding.LeaveRequestFragmentBinding;
+import com.example.staffsyncapp.databinding.EmployeeLeaveRequestFragmentBinding;
 import com.example.staffsyncapp.models.Employee;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NotificationService;
@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 
 public class LeaveRequestFragment extends Fragment {
     private static final String TAG = "HolidayRequestFragment";
-    private LeaveRequestFragmentBinding binding;
+    private EmployeeLeaveRequestFragmentBinding binding;
     private LocalDataService dbHelper;
     private NotificationService notificationService;
 
@@ -56,7 +56,7 @@ public class LeaveRequestFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        binding = LeaveRequestFragmentBinding.inflate(inflater, container, false);
+        binding = EmployeeLeaveRequestFragmentBinding.inflate(inflater, container, false);
         dbHelper = new LocalDataService(requireContext());
         notificationService = new NotificationService(requireContext());
         return binding.getRoot();

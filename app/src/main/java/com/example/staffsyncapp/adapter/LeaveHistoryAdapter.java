@@ -59,7 +59,7 @@ public class LeaveHistoryAdapter extends RecyclerView.Adapter<LeaveHistoryAdapte
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.leave_history_item, parent, false);
+                .inflate(R.layout.employee_leave_history_item, parent, false);
         return new ViewHolder(view);
     }
 

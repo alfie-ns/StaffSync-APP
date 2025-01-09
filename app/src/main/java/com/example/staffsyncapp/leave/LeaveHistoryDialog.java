@@ -50,7 +50,7 @@ public class LeaveHistoryDialog extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         // 1- initialise dialog view first
-        dialogView = inflater.inflate(R.layout.leave_history_dialog, container, false);
+        dialogView = inflater.inflate(R.layout.employee_leave_history_dialog, container, false);
 
         // 2- initialise views second
         recyclerView = dialogView.findViewById(R.id.leave_history_recycler);

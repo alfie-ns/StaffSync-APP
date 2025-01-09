@@ -89,7 +89,7 @@
     <fragment
         android:id="@+id/holiday_request_fragment"
         android:name="com.example.staffsyncapp.leave.LeaveRequestFragment"
-        tools:layout="@layout/leave_request_fragment">
+        tools:layout="@layout/employee_leave_request_fragment">
         <action
             android:id="@+id/action_HolidayRequestFragment_to_EmployeeMainFragment"
             app:destination="@id/employee_navigation_home" />

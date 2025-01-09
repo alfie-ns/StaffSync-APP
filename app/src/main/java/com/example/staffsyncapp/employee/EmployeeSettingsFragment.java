@@ -100,7 +100,7 @@ public class EmployeeSettingsFragment extends Fragment {
 
         binding.privacySettings.setOnClickListener(v -> {
             AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
-            View dialogView = getLayoutInflater().inflate(R.layout.privacy_settings_dialog, null);
+            View dialogView = getLayoutInflater().inflate(R.layout.employee_privacy_settings_dialog, null);
             builder.setView(dialogView);
 
             AlertDialog dialog = builder.create();
