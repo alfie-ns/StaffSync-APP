@@ -1,5 +1,7 @@
 package com.example.staffsyncapp.admin;
 
+import android.content.ContentValues;
+import android.icu.text.SimpleDateFormat;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +18,9 @@ import com.example.staffsyncapp.databinding.AdminHolidayRequestsFragmentBinding;
 import com.example.staffsyncapp.models.LeaveRequest;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NotificationService;
+
+import java.util.Date;
+import java.util.Locale;
 
 public class AdminLeaveRequestsFragment extends Fragment implements LeaveRequestAdapter.OnRequestActionListener {
     private static final String TAG = "AdminHolidayRequests";
@@ -132,11 +137,27 @@ public class AdminLeaveRequestsFragment extends Fragment implements LeaveRequest
     }
 
     private void notifyEmployee(int employeeId, boolean isApproved) {
-        Log.d(TAG, "Sending response notification to employee: " + employeeId + " (Approved: " + isApproved + ")");
+        Log.d(TAG, "Sending response notification to employee: " + employeeId);
+        String title = isApproved ? "Leave Request Approved" : "Leave Request Denied";
         String message = isApproved ?
                 "Your leave request has been approved." :
                 "Your leave request has been denied.";
-        notificationService.sendRequestUpdateToEmployee(employeeId, isApproved, message);
+
+        // Store notification in pending_notifications table
+        ContentValues values = new ContentValues();
+        values.put("employee_id", employeeId);
+        values.put("title", title);
+        values.put("message", message);
+        values.put("is_read", 0);
+        values.put("created_at", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.UK)
+                .format(new Date()));
+
+        dbHelper.getWritableDatabase().insert("pending_notifications", null, values);
+
+        // Send Holiday push notification
+        if (notificationService != null) {
+            notificationService.sendHolidayNotification(employeeId, title, message);
+        }
     }
 
     @Override

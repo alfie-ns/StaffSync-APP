@@ -263,7 +263,6 @@ public class LocalDataService extends SQLiteOpenHelper {
         String message = String.format("%s requests leave from %s to %s\nReason: %s",
                 employeeName, startDate, endDate, reason);
 
-        values.put("employee_id", 0); // mark as admin notification
         values.put("title", title);
         values.put("message", message);
         values.put("is_read", 0);

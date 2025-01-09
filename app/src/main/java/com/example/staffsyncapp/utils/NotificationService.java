@@ -102,7 +102,6 @@ public class NotificationService {
     * Store notification in database; fetch and show if admin logs in
     */
     public void sendLeaveRequestToAdmin(String employeeName, String startDate, String endDate, String reason) {
-        if (!areNotificationsEnabled()) return;
         // store notification in DB first
         LocalDataService dbHelper = new LocalDataService(context);
         dbHelper.storeAdminNotification(employeeName, startDate, endDate, reason);
@@ -120,8 +119,7 @@ public class NotificationService {
      * @param endDate
      * @param reason
      */
-    private void showAdminNotification(String employeeName, String startDate, String endDate, String reason) { 
-        if (!areNotificationsEnabled()) return;
+    private void showAdminNotification(String employeeName, String startDate, String endDate, String reason) {
         PendingIntent pendingIntent = PendingIntent.getActivity(context, // create pending intent to open app on notification click
                 0, 
                 new Intent(context, MainActivity.class),
@@ -142,45 +140,40 @@ public class NotificationService {
 
         notificationManager.notify(ADMIN_NOTIFICATION_ID, builder.build()); // notify admin
     }
-
-    private boolean areNotificationsEnabled() { // function to check if notifications are enabled
-        SharedPreferences prefs = context.getSharedPreferences("employeeSettings", Context.MODE_PRIVATE);
-        return prefs.getBoolean("notifications_enabled", true);
-    }
     
-    // Send holiday notification; i.e. for leave request updates ---
+    // Send holiday notification; i.e. leave request updates ---
     public void sendHolidayNotification(int employeeId, String title, String message) {
-        if (!areNotificationsEnabled()) return;
-        // offset notification ID with employeeId to handle multiple active notifications
-        int notificationId = HOLIDAY_NOTIFICATION_ID + employeeId;
 
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL)
-                .setSmallIcon(R.drawable.bell_icon)
-                .setContentTitle(title)
-                .setContentText(message)
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setAutoCancel(true);
+        // Get current logged in user type
+        LocalDataService dbHelper = new LocalDataService(context);
+        boolean isAdminLoggedIn = dbHelper.isAdminLoggedIn();
 
-        try {
-            if (ActivityCompat.checkSelfPermission(context,
-                    android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
-                notificationManager.notify(NOTIFICATION_ID, builder.build());
-                Log.d(TAG, "Granting leave request notifications...");
-            } else {
-                Log.e(TAG, "Notification permission not granted.");
+        // Get current logged in employee ID
+        SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+        int loggedInEmployeeId = prefs.getInt("logged_in_employee_id", -1);
+
+        // Only send notification if:
+        // 1- Current user is NOT admin AND 2-
+        // 2- Logged in employee matches target employee
+        if (!isAdminLoggedIn && loggedInEmployeeId != employeeId) {
+            NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL)
+                    .setSmallIcon(R.drawable.bell_icon)
+                    .setContentTitle(title)
+                    .setContentText(message)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setAutoCancel(true);
+
+            try {
+                if (ActivityCompat.checkSelfPermission(context,
+                        android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) {
+                    int notificationId = HOLIDAY_NOTIFICATION_ID + employeeId;
+                    notificationManager.notify(notificationId, builder.build());
+                    Log.d(TAG, "Holiday notification sent to employee: " + employeeId);
+                }
+            } catch (Exception e) {
+                Log.e(TAG, "Failed to send holiday notification: " + e.getMessage());
             }
-        } catch (Exception e) {
-            Log.e(TAG, "Failed to send holiday notification.", e);
         }
-    }
-
-    // Admin decision -> Employee ---
-    public void sendRequestUpdateToEmployee(int employeeId, boolean isApproved, String adminMessage) {
-        Log.d(TAG, "sendRequestUpdateToEmployee called for employee: " + employeeId);
-
-        // Just store notification, don't display
-        dbHelper.storeEmployeeNotification(employeeId, isApproved, adminMessage);
-        Log.d(TAG, "Notification stored in database for employee: " + employeeId);
     }
 
     public void sendAdminBroadcastMessage(String title, String message) { // General broadcast
