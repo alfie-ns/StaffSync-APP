@@ -198,7 +198,7 @@ public class EmployeeProfileFragment extends Fragment {
                                 employeeId,
                                 firstName,
                                 lastName,
-                                firstName.toLowerCase() + "." + lastName.toLowerCase() + "@company.com",
+                                firstName.toLowerCase() + "." + lastName.toLowerCase() + "@staffsync.com",
                                 department,
                                 salary,
                                 "2023-01-01"

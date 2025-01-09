@@ -62,32 +62,30 @@
 ### Design
 
 - [X] dark mode
-- [ ] dark mode 2; better dark-mode colours; implement dark mode respective current toggle state for dark mode for respective user
-- [ ] implement HCI principles:
+- [X] dark mode 2; better dark-mode colours; implement dark mode respective current toggle state for dark mode for respective user
+- [X] implement HCI principles:
   - [X] clear navigation
-  - [ ] consistent layout
+  - [X] consistent layout
   - [ ] error feedback
-  - [ ] user control
+  - [X] user control
 - [ ] warning message handling
-- [ ] RecyclerViews implementation in user fragments
-- [ ]
+- [X] RecyclerViews implementation in user fragments
 
 ### User
 
 - [X] log into user account
 - [X] bottom nav bar
-- [ ] resize icons to be identical sizes across all user fragments
 - [X] fix logout button in settomgs fragment
-- [ ] get full user features working
+- [X] get full user features working
 
 ---
 
 - [X] get 2000 last lecture checklist
 - [ ] incorporate lecture about notifications in my app
 - [X] LocalDataService
-- [ ] user login; i need to workout why user's not logging in
+- [X] user login; i need to workout why user's not logging in
   it could either be the database account entry or navigation?
-- [ ] ensure the comments are capitialised at the top of the file or important functions
+- [X] ensure the comments are capitialised at the top of the file or important functions
 
 ## Core Technical Implementation (40%)
 
@@ -179,16 +177,11 @@
 - [ ] Implement HCI principles:
 
   - [X] Clear navigation
-  - [ ] Consistent layout
+  - [X] Consistent layout
   - [ ] Error feedback
-  - [ ] User control
-- [ ] Warning message handling
-- [ ] RecyclerViews implementation
-- [ ] Responsive design testing
-- [ ] Style resources implementation
-- [ ] Extract dimension values to dimens.xml
-- [ ] Improve main menu
-- [ ] implement staffsync title underline
+  - [X] User control
+- [X] RecyclerViews implementation
+- [X] Improve main menu
 - [X] Move hardcoded strings to strings.xml
 - [X] Put all strings in LoginFragment.xml into strings.xml
 - [X] Implement onBackPressed for fragments
@@ -196,18 +189,13 @@
 ### Notification System
 
 - [ ] Core notifications for:
-  - [ ] Holiday requests and responses
-  - [ ] Employee detail changes
+  - [X] Holiday requests and responses
   - [ ] Salary increments
   - [X] New employees
   - [ ] Employee departures
-  - [ ] Employee birthdays
-  - [ ] Employee anniversaries
-  - [ ] Employee promotions/demotions
   - [ ] Anomaly detection alerts
 - [ ] User preferences:
   - [ ] Toggle settings
-  - [ ] Notification types
   - [ ] Delivery methods
 
 ### Testing & Evaluation
@@ -219,10 +207,10 @@
   - [ ] Consent forms
 - [ ] Technical testing:
   - [ ] Error handling
-  - [ ] UI components
-  - [ ] API integration
-  - [ ] Thread safety
-  - [ ] Notification system
+  - [X] UI components
+  - [X] API integration
+  - [X] Thread safety
+  - [X] Notification system
 
 ## Documentation & Approach (20%)
 
@@ -238,8 +226,8 @@
   - [ ] Summary
   - [ ] References
 - [ ] Code Documentation:
-  - [ ] Well-commented code
-  - [ ] Use Java-styled commenting with stars
+  - [X] Well-commented code
+  - [X] Use Java-styled commenting with stars
   - [X] Add more comments to code
   - [X] Refactor and rename files
 
@@ -256,6 +244,4 @@
 - [X] Regular GitHub commits:
   - [X] Weekly minimum commits
 - [X] README documentation:
-  - [ ] Setup instructions
-  - [ ] Third-party credits
-  - [ ] Feature documentation
+  - [ ] Feature documentation(put report.md in codebase)
