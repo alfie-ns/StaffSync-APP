@@ -2,6 +2,7 @@ package com.example.staffsyncapp.employee;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -10,6 +11,7 @@ import android.view.ViewGroup;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.Fragment;
 import androidx.navigation.NavOptions;
@@ -21,6 +23,7 @@ import com.example.staffsyncapp.databinding.EmployeeSettingsFragmentBinding;
 import com.example.staffsyncapp.models.Employee;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NavigationManager;
+import com.google.android.material.button.MaterialButton;
 
 /**
 * TODO
@@ -96,8 +99,37 @@ public class EmployeeSettingsFragment extends Fragment {
         });
 
         binding.privacySettings.setOnClickListener(v -> {
-            // TODO: implement privacy settings
-            Toast.makeText(requireContext(), "Privacy settings coming soon", Toast.LENGTH_SHORT).show();
+            AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+            View dialogView = getLayoutInflater().inflate(R.layout.privacy_settings_dialog, null);
+            builder.setView(dialogView);
+
+            AlertDialog dialog = builder.create();
+
+            MaterialButton deleteHistoryBtn = dialogView.findViewById(R.id.delete_history_btn);
+            deleteHistoryBtn.setOnClickListener(buttonView -> {
+                new AlertDialog.Builder(requireContext())
+                        .setTitle("Delete Leave History")
+                        .setMessage("Are you sure you want to delete all your past leave history? This will not affect pending requests.")
+                        .setPositiveButton("Delete All", (confirmDialog, which) -> {
+                            SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+                            int employeeId = prefs.getInt("logged_in_employee_id", -1);
+
+                            if (employeeId != -1) { // if valid
+                                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                                // Only delete requests that have been processed (approved or denied) and thus not pending
+                                db.delete("leave_requests",
+                                        "employee_id = ? AND status != ?",
+                                        new String[]{String.valueOf(employeeId), "pending"}
+                                );
+                                Toast.makeText(requireContext(), "Past leave history deleted", Toast.LENGTH_SHORT).show();
+                            }
+                            dialog.dismiss();
+                        })
+                        .setNegativeButton("Cancel", null)
+                        .show();
+            });
+
+            dialog.show();
         });
 
         binding.termsDocs.setOnClickListener(v -> {
