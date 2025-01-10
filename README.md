@@ -56,7 +56,7 @@ Password: alfie123
 
 Links
 
-- [API Documentation](StaffSync-APP/docs/api-documentation.md)
+- [API Documentation](docs/api-documentation.md)
 - [Project Report](coming-soon)
 - [Set Exercise Repoisitory](https://github.com/Plymouth-COMP2000/set-exercises-alfie-ns/tree/main/scripts)
 
