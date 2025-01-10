@@ -23,6 +23,7 @@ import com.example.staffsyncapp.databinding.EmployeeSettingsFragmentBinding;
 import com.example.staffsyncapp.models.Employee;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.NavigationManager;
+import com.example.staffsyncapp.utils.NotificationService;
 import com.google.android.material.button.MaterialButton;
 
 /**
@@ -75,15 +76,25 @@ public class EmployeeSettingsFragment extends Fragment {
         String employeeDarkModeKey = DARK_MODE_KEY + "_" + employeeId;
         // restore dark mode preference
         binding.darkModeSwitch.setChecked(sharedPreferences.getBoolean(employeeDarkModeKey, false));
-        // restore notification preference
-        binding.notificationsSwitch.setChecked(sharedPreferences.getBoolean(NOTIFICATIONS_KEY, true));
+
+        // forgot i've already change this in notificationService thus removed it and replaced with notification preference check
+        if (employeeId != -1) {
+            NotificationService notificationService = new NotificationService(requireContext());
+            binding.notificationsSwitch.setChecked(notificationService.isNotificationsEnabled(employeeId));
+        }
     }
 
     private void setupClickListeners() {
         binding.logoutBtn.setOnClickListener(v -> handleLogout());
 
         binding.notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            sharedPreferences.edit().putBoolean(NOTIFICATIONS_KEY, isChecked).apply();
+            SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+            int employeeId = prefs.getInt("logged_in_employee_id", -1);
+
+            if (employeeId != -1) {
+                NotificationService notificationService = new NotificationService(requireContext());
+                notificationService.setNotificationsEnabled(employeeId, isChecked);
+            }
         });
 
         binding.darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {

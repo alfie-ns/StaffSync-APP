@@ -422,6 +422,12 @@ public class LocalDataService extends SQLiteOpenHelper {
 
     public void checkEmployeeNotifications(Context context, int employeeId) {
         NotificationService notificationService = new NotificationService(context);
+
+        if (!notificationService.isNotificationsEnabled(employeeId)) {
+            Log.d(TAG, "Notifications disabled for employee: " + employeeId);
+            return;
+        }
+
         Cursor cursor = db.query(
                 "pending_notifications",
                 null,
@@ -435,27 +441,8 @@ public class LocalDataService extends SQLiteOpenHelper {
                 String title = cursor.getString(cursor.getColumnIndex("title"));
                 String message = cursor.getString(cursor.getColumnIndex("message"));
                 int notificationId = cursor.getInt(cursor.getColumnIndex("id"));
-
-                // Create notification intent
-                PendingIntent pendingIntent = new NavDeepLinkBuilder(context)
-                        .setGraph(R.navigation.nav_graph)
-                        .setDestination(R.id.employee_navigation_home)
-                        .createPendingIntent();
-
-                // Build and show notification
-                NotificationCompat.Builder builder = new NotificationCompat.Builder(context, "holiday_channel")
-                        .setSmallIcon(R.drawable.bell_icon)
-                        .setContentTitle(title)
-                        .setContentText(message)
-                        .setPriority(NotificationCompat.PRIORITY_HIGH)
-                        .setAutoCancel(true)
-                        .setContentIntent(pendingIntent);
-
-                NotificationManager notificationManager =
-                        (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                notificationManager.notify(notificationId, builder.build());
-
-                // mark as read
+                notificationService.showNotification(employeeId, title, message, notificationId);
+                // Mark as read
                 ContentValues values = new ContentValues();
                 values.put("is_read", 1);
                 db.update("pending_notifications", values,

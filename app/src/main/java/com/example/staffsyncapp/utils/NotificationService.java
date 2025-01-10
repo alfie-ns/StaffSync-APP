@@ -40,6 +40,9 @@ public class NotificationService {
     private static final String HOLIDAY_CHANNEL = "holiday_channel";
     private static final String SYSTEM_CHANNEL = "system_channel";
     private static final String ADMIN_CHANNEL = "admin_channel";
+    private static final String NOTIFICATION_PREFS = "notification_preferences";
+    private static final String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
+
 
     private static final int ADMIN_NOTIFICATION_ID = 1000;
     private static final int HOLIDAY_NOTIFICATION_ID = 2000;
@@ -140,6 +143,18 @@ public class NotificationService {
 
         notificationManager.notify(ADMIN_NOTIFICATION_ID, builder.build()); // notify admin
     }
+
+    public boolean isNotificationsEnabled(int employeeId) {
+        SharedPreferences prefs = context.getSharedPreferences(NOTIFICATION_PREFS, Context.MODE_PRIVATE);
+        return prefs.getBoolean(KEY_NOTIFICATIONS_ENABLED + "_" + employeeId, true);
+    }
+
+    public void setNotificationsEnabled(int employeeId, boolean enabled) {
+        SharedPreferences prefs = context.getSharedPreferences(NOTIFICATION_PREFS, Context.MODE_PRIVATE);
+        prefs.edit()
+                .putBoolean(KEY_NOTIFICATIONS_ENABLED + "_" + employeeId, enabled)
+                .apply();
+    }
     
     // Send holiday notification; i.e. leave request updates ---
     public void sendHolidayNotification(int employeeId, String title, String message) {
@@ -155,7 +170,8 @@ public class NotificationService {
         // Only send notification if:
         // 1- Current user is NOT admin AND 2-
         // 2- Logged in employee matches target employee
-        if (!isAdminLoggedIn && loggedInEmployeeId != employeeId) {
+        // 3- If notifications is enabled
+        if (!dbHelper.isAdminLoggedIn() && loggedInEmployeeId == employeeId && isNotificationsEnabled(employeeId)) {
             NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL)
                     .setSmallIcon(R.drawable.bell_icon)
                     .setContentTitle(title)
@@ -203,6 +219,11 @@ public class NotificationService {
                 int id = cursor.getInt(cursor.getColumnIndex("id"));
                 int employeeId = cursor.getInt(cursor.getColumnIndex("employee_id"));
 
+                if (!isNotificationsEnabled(employeeId)) {
+                    Log.d(TAG, "Notifications disabled for employee: " + employeeId);
+                    continue;
+                }
+
                 Log.d(TAG, "Processing notification: " + id + " for employee: " + employeeId);
 
                 PendingIntent pendingIntent = PendingIntent.getActivity(context,
@@ -242,6 +263,29 @@ public class NotificationService {
             Log.e(TAG, "Error showing notifications: " + e.getMessage());
         } finally {
             cursor.close();
+        }
+    }
+
+    public void showNotification(int employeeId, String title, String message, int notificationId) {
+        if (!isNotificationsEnabled(employeeId)) { // early-exit function
+            Log.d(TAG, "Notifications disabled for employee: " + employeeId);
+            return;
+        }
+        PendingIntent pendingIntent = new NavDeepLinkBuilder(context) // build pending intent to open app on notification click
+                .setGraph(R.navigation.nav_graph)
+                .setDestination(R.id.employee_navigation_home)
+                .createPendingIntent();
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL) // build nnofication with high priority; holiday channel
+                .setSmallIcon(R.drawable.bell_icon)
+                .setContentTitle(title)
+                .setContentText(message)
+                .setPriority(NotificationCompat.PRIORITY_HIGH)
+                .setAutoCancel(true)
+                .setContentIntent(pendingIntent);
+        if (ActivityCompat.checkSelfPermission(context,
+                android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) { // check if app has permission to post notifications
+            notificationManager.notify(notificationId, builder.build());
+            Log.d(TAG, "Notification displayed for employee: " + employeeId);
         }
     }
 }

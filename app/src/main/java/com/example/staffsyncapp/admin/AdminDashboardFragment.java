@@ -626,7 +626,7 @@ public class AdminDashboardFragment extends Fragment {
             fetchAndShowEmployees(); // effectively refreshes/synchronises the RecyclerView with the API data
         });
 
-        // etch and display all employees
+        // fetch and display all employees
         binding.totalEmployeesCard.setOnClickListener(v -> fetchAndShowEmployees());
 
         // add new employee dialog
@@ -659,30 +659,6 @@ public class AdminDashboardFragment extends Fragment {
         binding.checkIncrementsBtn.setOnClickListener(v -> {
             Log.d(TAG, "checking salary increments...");
             SalaryIncrementManager.showSalaryIncrementStatus(requireContext());
-        });
-
-        // notification controls setup
-        binding.notificationSwitch.setChecked(
-                sharedPreferences.getBoolean(HOLIDAY_NOTIFICATIONS_KEY, true));
-
-        // holiday notifications toggle
-        binding.notificationSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            try {
-                sharedPreferences.edit()
-                        .putBoolean(HOLIDAY_NOTIFICATIONS_KEY, isChecked)
-                        .apply();
-
-                if (isChecked) {
-                    notificationService.sendHolidayNotification(
-                            1,
-                            "Holiday Request Update",
-                            "Request status updated"
-                    );
-                }
-                Log.d(TAG, "holiday notifications " + (isChecked ? "enabled" : "disabled"));
-            } catch (Exception e) {
-                Log.e(TAG, "failed to save holiday notification setting", e);
-            }
         });
 
 
