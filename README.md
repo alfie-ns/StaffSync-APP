@@ -58,6 +58,6 @@ Links
 
 - [API Documentation](docs/api-documentation.md)
 - [Project Report](coming-soon)
-- [Set Exercise Repoisitory](https://github.com/Plymouth-COMP2000/set-exercises-alfie-ns/tree/main/scripts)
+- [Set Exercise Repoisitory](https://github.com/Plymouth-COMP2000/set-exercises-alfie-ns)
 
 Made for **COMP2000** by *alfie-ns*
