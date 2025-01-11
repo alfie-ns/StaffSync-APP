@@ -44,8 +44,6 @@ import java.util.Locale;
 
  ---
 
- - [X] Salary Increment
-
  * These functions use dedicated local worker threads to handle network requests in background;
  * returns data via EmployeeFetchListener callbacks on main thread; they also use
  * Volley's RequestQueue to handle network requests and responses.
@@ -79,7 +77,7 @@ public class ApiDataService {
     public ApiDataService(Context context) {
         this.context = context;
         queue = Volley.newRequestQueue(context); // access Volley request queue
-        offlineSyncManager = new OfflineSyncManager(context, new LocalDataService(context).getWritableDatabase(), this);
+        offlineSyncManager = new OfflineSyncManager(context, new LocalDataService(context).getWritableDatabase(), this); // initialise offline sync manager
         workerThread = new ApiWorkerThread(); // 1- initialise worker thread
         workerThread.start(); 
     }
@@ -109,19 +107,6 @@ public class ApiDataService {
         void onError(String error);
     }
 
-// --------------------------------------------------------------------------------
-    // IncrementStatus class to store employee data for salary increment
-    public static class IncrementStatus {
-        public final String name;
-        public final double salary;
-        public final long daysSince;
-
-        public IncrementStatus(String name, double salary, long daysSince) {
-            this.name = name;
-            this.salary = salary;
-            this.daysSince = daysSince;
-        }
-    }
 // --------------------------------------------------------------------------------
     /** [X] [X]
      * GET request to fetch ALL employees
@@ -337,7 +322,7 @@ public class ApiDataService {
                 jsonBody.put("department", department.equals("null") ? "" : department);
                 jsonBody.put("salary", salary);
 
-                // format date from EditText's timestamp to API format
+                // Format date from EditText's timestamp to API format
                 SimpleDateFormat inputFormat = new SimpleDateFormat("EEE, dd MMM yyyy", Locale.UK);
                 SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
                 try {
@@ -368,7 +353,7 @@ public class ApiDataService {
                             // Then notify via listener if worker thread still exists
                             if (workerThread != null) {
                                 workerThread.postToMainThread(() -> {
-                                    listener.onError("Update queued for later; API currently unavailable");
+                                    listener.onError("Update queued for later; API currently unavailable...");
                                 });
                             }
                         }

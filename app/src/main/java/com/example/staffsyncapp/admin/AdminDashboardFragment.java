@@ -755,6 +755,7 @@ public class AdminDashboardFragment extends Fragment {
     }
     //----------------------------------------------------------------------------------------------
     // Salary increment functions
+    //
     private void showIncrementDialog(String message, int eligibleCount) {
         // create and show dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());

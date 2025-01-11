@@ -1,5 +1,6 @@
 package com.example.staffsyncapp.models;
 
+// Employee model class: Represents an employee with various attributes.
 public class Employee { // Employee model class
     private int id;
     private String firstname;
@@ -9,7 +10,7 @@ public class Employee { // Employee model class
     private double salary;
     private String joiningdate;
 
-    // Constructor
+    // Constructor: define each field in an employee
     public Employee(int id, String firstname, String lastname, String email,
                     String department, double salary, String joiningdate) {
         this.id = id;
@@ -36,5 +37,5 @@ public class Employee { // Employee model class
                 firstname != null ? firstname : "",
                 lastname != null ? lastname : "").trim();
     }
-    // ...
+    // ... don't have the time for more methods
 }

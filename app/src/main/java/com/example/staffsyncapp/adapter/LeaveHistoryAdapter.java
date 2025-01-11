@@ -162,9 +162,8 @@ public class LeaveHistoryAdapter extends RecyclerView.Adapter<LeaveHistoryAdapte
 
     /**
      * ViewHolder:
-     * Holds references to the views for a single item in the RecyclerView.
+     * Holds references to the views for a single item in the RecyclerView i.e. leave request
      */
-
     static class ViewHolder extends RecyclerView.ViewHolder {
         final TextView leaveDates;
         final TextView leaveType;

@@ -66,11 +66,24 @@ public class LocalDataService extends SQLiteOpenHelper {
         db.delete("leave_requests", "id = ?", new String[]{String.valueOf(id)});
     }
 
+    // Interface declarations for callbacks related to leave requests and status updates.
+
     public interface LeaveRequestCallback {
+        /**
+         * Callback method invoked when leave requests are retrieved.
+         *
+         * @param requests List of retrieved leave requests.
+         * @param error    Error message, or null if no error occurred.
+         */
         void onComplete(List<LeaveRequest> requests, String error);
     }
 
     public interface StatusUpdateCallback {
+        /**
+         * Callback method invoked upon status update completion.
+         *
+         * @param success Indicates whether the status update was successful.
+         */
         void onSuccess(boolean success);
     }
 
@@ -423,7 +436,7 @@ public class LocalDataService extends SQLiteOpenHelper {
     public void checkEmployeeNotifications(Context context, int employeeId) {
         NotificationService notificationService = new NotificationService(context);
 
-        if (!notificationService.isNotificationsEnabled(employeeId)) {
+        if (!notificationService.isNotificationsEnabled(employeeId)) { // if notifications are disabled kill method
             Log.d(TAG, "Notifications disabled for employee: " + employeeId);
             return;
         }
@@ -436,7 +449,7 @@ public class LocalDataService extends SQLiteOpenHelper {
                 null, null, null
         );
 
-        try {
+        try { // Try to get notifications while cursor is open
             while (cursor != null && cursor.moveToNext()) {
                 String title = cursor.getString(cursor.getColumnIndex("title"));
                 String message = cursor.getString(cursor.getColumnIndex("message"));
@@ -448,42 +461,32 @@ public class LocalDataService extends SQLiteOpenHelper {
                 db.update("pending_notifications", values,
                         "id = ?", new String[]{String.valueOf(notificationId)});
             }
-        } finally {
+        } finally { // ensure to close cursor
             if (cursor != null) cursor.close();
         }
     }
 
-    public void storeEmployeeNotification(int employeeId, boolean isApproved, String adminMessage) {
-        Log.d(TAG, "Storing notification for employee: " + employeeId);
-
-        ContentValues values = new ContentValues();
-        String title = "Leave Request " + (isApproved ? "Approved" : "Denied");
-        String message = String.format("Your leave request has been %s. %s",
-                isApproved ? "approved" : "denied",
-                adminMessage != null ? "\nMessage: " + adminMessage : "");
-
-        values.put("employee_id", employeeId);
-        values.put("title", title);
-        values.put("message", message);
-        values.put("is_read", 0);
-        values.put("created_at", new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.UK).format(new Date()));
-
-        long result = db.insert("pending_notifications", null, values); // testing
-        Log.d(TAG, "Notification stored with result: " + result);
-    }
-
+    // Query to get all pending notifications for an employee
     public Cursor getBroadcastNotifications() {
         return getReadableDatabase().query(
-                "pending_notifications",
-                null,
-                "employee_id IS NULL AND is_read = 0",  // broadcast messages have no specific employee_id
-                null,
-                null,
-                null,
-                "created_at DESC"
+                "pending_notifications", // table name
+                null, // columns (null means "all columns")
+                "employee_id IS NULL AND is_read = 0",  // WHERE clause broadcast messages have no specific employee_id
+                null, // selectionArgs (no ? parameters to bind)
+                null, // groupBy (no GROUP BY clause)
+                null, // having (no HAVING clause)
+                "created_at DESC" // orderBy
         );
     }
 
+    /**
+     * Submit a leave request for an employee
+     * @param employeeId
+     * @param startDate
+     * @param endDate
+     * @param reason
+     * @return
+     */
     public long submitLeaveRequest(int employeeId, String startDate, String endDate, String reason) {
         int daysRequested = calculateDaysRequested(startDate, endDate);
         int remainingDays = getRemainingLeaveDays(employeeId);
@@ -492,7 +495,7 @@ public class LocalDataService extends SQLiteOpenHelper {
             return -2; // code for insufficient days
         }
 
-        ContentValues values = new ContentValues();
+        ContentValues values = new ContentValues(); // create content values to store leave request
         values.put("employee_id", employeeId);
         values.put("start_date", startDate);
         values.put("end_date", endDate);
@@ -507,7 +510,7 @@ public class LocalDataService extends SQLiteOpenHelper {
             values.put("employee_name", employeeName);
         }
 
-        try {
+        try { // try to insert leave request into database
             return db.insert("leave_requests", null, values);
         } catch (Exception e) {
             Log.e(TAG, "Error submitting leave request: " + e.getMessage());
@@ -515,6 +518,7 @@ public class LocalDataService extends SQLiteOpenHelper {
         }
     }
 
+    // EMPLOYEE ACCOUNT MANAGEMENT ---
     public void logoutEmployee() {
         setEmployeeLoggedIn(false);
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
@@ -524,7 +528,7 @@ public class LocalDataService extends SQLiteOpenHelper {
         Log.d(TAG, "Employee logged out and session cleared");
     }
 
-    public void setEmployeeLoggedIn(boolean status) {
+    public void setEmployeeLoggedIn(boolean status) { // set employee login status
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                 .edit()
                 .putBoolean(KEY_EMPLOYEE_LOGGED_IN, status)

@@ -71,7 +71,7 @@ public class AdminLeaveRequestsFragment extends Fragment implements LeaveRequest
                 return;
             }
 
-            if (requests == null || requests.isEmpty()) {
+            if (requests == null || requests.isEmpty()) { // if no pending requests
                 binding.emptyState.setVisibility(View.VISIBLE);
             } else {
                 binding.pendingCount.setText(String.format("Pending Requests: %d", requests.size()));
@@ -79,7 +79,7 @@ public class AdminLeaveRequestsFragment extends Fragment implements LeaveRequest
             }
         });
     }
-    /*
+    /**
      * Both functions use dbHelper to send a approved or denial
      *
      * @param request LeaveRequest object
@@ -111,10 +111,9 @@ public class AdminLeaveRequestsFragment extends Fragment implements LeaveRequest
                 }
         );
     }
-    /*
+    /**
      * Deny leave request
      * @param request LeaveRequest object
-     * 
      */
     @Override
     public void onDeny(LeaveRequest request) { // deny leave request

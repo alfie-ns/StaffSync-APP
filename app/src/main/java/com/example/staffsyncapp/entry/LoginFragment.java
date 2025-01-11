@@ -113,7 +113,7 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
     }
 
     private void setupClickListeners() {
-        binding.backArrow.setOnClickListener(v -> {
+        binding.backArrow.setOnClickListener(v -> { // didn't comment simplee stuff like this
             Log.d(TAG, "Back arrow clicked");
             try {
                 NavHostFragment.findNavController(LoginFragment.this)
@@ -159,7 +159,8 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
         });
     }
 
-    private void loadUserDarkModePreference(String email) { // load preference for dark mode
+    // Load the user's dark mode preference from SharedPreferences and apply it
+    private void loadUserDarkModePreference(String email) { // load from shared preferences
         SharedPreferences prefs = requireContext().getSharedPreferences("user_preferences", Context.MODE_PRIVATE);
         boolean isDarkMode = prefs.getBoolean("dark_mode_" + email, false);
 

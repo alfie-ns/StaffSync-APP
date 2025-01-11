@@ -34,12 +34,7 @@ import com.example.staffsyncapp.api.ApiWorkerThread;
 import java.util.List;
 import java.util.Locale;
 
-
-/** TODO
-* [ ] implement functionality to edit own details
-* [ ] test that the details change by looking on adminDashboard fragment
-*/
-
+// Employee profile fragment class with methods to update employee details
 public class EmployeeProfileFragment extends Fragment {
     private EmployeeProfileFragmentBinding binding;
     private ApiDataService apiService;
@@ -62,6 +57,7 @@ public class EmployeeProfileFragment extends Fragment {
         return binding.getRoot();
     }
 
+    // Initialise UI and load employee data
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -75,6 +71,7 @@ public class EmployeeProfileFragment extends Fragment {
         setupClickListeners();
     }
 
+    // Update UI with employee data continuously
     @Override
     public void onResume() {
         super.onResume();
@@ -97,8 +94,9 @@ public class EmployeeProfileFragment extends Fragment {
         }
     }
 
+    // Validate email format
     private void setupValidation() {
-        // email validation
+        // email validation: the unused parameters are necessary for the method signature(previously explained somewhere)
         binding.editEmail.addTextChangedListener(new TextWatcher() {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
 
@@ -124,9 +122,10 @@ public class EmployeeProfileFragment extends Fragment {
         });
     }
 
-    private boolean validateEmail() { // validate email format
+    // Validate email format
+    private boolean validateEmail() { 
         String email = binding.editEmail.getText().toString().trim();
-        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches() && !email.isEmpty()) {
+        if (!Patterns.EMAIL_ADDRESS.matcher(email).matches() && !email.isEmpty()) { // if email doesn't match pattern
             binding.emailFormatError.setVisibility(View.VISIBLE);
             return false;
         }
@@ -134,7 +133,8 @@ public class EmployeeProfileFragment extends Fragment {
         return true;
     }
 
-    private boolean validateEmailMatch() { // validate email match
+    // Validate email match
+    private boolean validateEmailMatch() { 
         String email = binding.editEmail.getText().toString().trim();
         String confirmEmail = binding.confirmEditEmail.getText().toString().trim();
         if (!email.equals(confirmEmail) && !confirmEmail.isEmpty()) {
@@ -145,6 +145,7 @@ public class EmployeeProfileFragment extends Fragment {
         return true;
     }
 
+    // Load employee data from API or local DB
     private void loadEmployeeData() {
         LocalDataService dbHelper = new LocalDataService(requireContext());
 
@@ -186,7 +187,7 @@ public class EmployeeProfileFragment extends Fragment {
                     );
 
                     if (cursor != null && cursor.moveToFirst()) {
-                        // if find data in local DB, use it
+                        // If find data in local DB, use it
                         String fullName = cursor.getString(cursor.getColumnIndex("full_name"));
                         String[] names = fullName.split(" ");
                         String firstName = names[0];
@@ -203,7 +204,7 @@ public class EmployeeProfileFragment extends Fragment {
                                 salary,
                                 "2023-01-01"
                         );
-                        updateUIWithEmployeeData(currentEmployee);
+                        updateUIWithEmployeeData(currentEmployee); // Update UI with local DB data
                         cursor.close();
                     } else {
                         // if no data in local DB either
@@ -219,6 +220,7 @@ public class EmployeeProfileFragment extends Fragment {
         }
     }
 
+    // Update UI with employee data
     private void updateUIWithEmployeeData(Employee employee) {
         if (binding == null || employee == null) return;
         // ^ ensure both aren't null to prevent crash
@@ -228,6 +230,7 @@ public class EmployeeProfileFragment extends Fragment {
         binding.currentSalary.setText(String.format(Locale.getDefault(), "£%.2f", employee.getSalary()));
     }
 
+    // Setup click listeners for save and back buttons
     private void setupClickListeners() {
         binding.saveProfile.setOnClickListener(v -> {
             if (validateInput()) {
@@ -240,7 +243,8 @@ public class EmployeeProfileFragment extends Fragment {
         });
     }
 
-    private boolean validateInput() { // validate employee input
+    // Validate employee input
+    private boolean validateInput() {
         String newName = binding.editName.getText().toString().trim();
         if (newName.isEmpty()) {
             binding.nameFormatError.setVisibility(View.VISIBLE);

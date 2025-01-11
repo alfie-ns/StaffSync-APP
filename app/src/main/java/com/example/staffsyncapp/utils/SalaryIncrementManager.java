@@ -82,7 +82,7 @@ public class SalaryIncrementManager {
         void onError(String error);
     }
 
-
+    // Gets all employees and checks the getIncrementStatus(I think I may of made 2 of these
     public static void getIncrementStatus(IncrementStatusListener listener) {
         ApiDataService.getAllEmployees(new ApiDataService.EmployeeFetchListener() {
             @Override

@@ -46,6 +46,7 @@ public class NotificationService {
 
     private static final int ADMIN_NOTIFICATION_ID = 1000;
     private static final int HOLIDAY_NOTIFICATION_ID = 2000;
+    // was thinking I was going to use these but didn't in the end
     private static final int NOTIFICATION_ID = 3000;
     private static final int BASE_NOTIFICATION_ID = 4000;
 
@@ -159,18 +160,19 @@ public class NotificationService {
     // Send holiday notification; i.e. leave request updates ---
     public void sendHolidayNotification(int employeeId, String title, String message) {
 
-        // Get current logged in user type
+        // get current logged in user type
         LocalDataService dbHelper = new LocalDataService(context);
         boolean isAdminLoggedIn = dbHelper.isAdminLoggedIn();
 
-        // Get current logged in employee ID
+        // get current logged in employee ID
         SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
         int loggedInEmployeeId = prefs.getInt("logged_in_employee_id", -1);
 
-        // Only send notification if:
-        // 1- Current user is NOT admin AND 2-
-        // 2- Logged in employee matches target employee
-        // 3- If notifications is enabled
+        /** only send notification if:
+           1- Current user is NOT admin AND 2-
+           2- Logged in employee matches target employee
+           3- If notifications is enabled
+        */
         if (!dbHelper.isAdminLoggedIn() && loggedInEmployeeId == employeeId && isNotificationsEnabled(employeeId)) {
             NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL)
                     .setSmallIcon(R.drawable.bell_icon)
@@ -209,10 +211,15 @@ public class NotificationService {
         
     }
 
+    /**
+     * Show system notifications from cursor
+     * @param cursor
+     * @param channel
+     */
     public void showNotificationsFromCursor(Cursor cursor, String channel) {
         Log.d(TAG, "Showing notifications from cursor. Count: " + cursor.getCount());
 
-        try {
+        try { // iterate through cursor and show notifications
             while (cursor.moveToNext()) {
                 String title = cursor.getString(cursor.getColumnIndex("title"));
                 String message = cursor.getString(cursor.getColumnIndex("message"));
@@ -266,8 +273,15 @@ public class NotificationService {
         }
     }
 
+    /**
+     * Show notification; i.e. leave request updates
+     * @param employeeId
+     * @param title
+     * @param message
+     * @param notificationId
+     */
     public void showNotification(int employeeId, String title, String message, int notificationId) {
-        if (!isNotificationsEnabled(employeeId)) { // early-exit function
+        if (!isNotificationsEnabled(employeeId)) { // early-exit/kill function
             Log.d(TAG, "Notifications disabled for employee: " + employeeId);
             return;
         }
@@ -282,7 +296,7 @@ public class NotificationService {
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setAutoCancel(true)
                 .setContentIntent(pendingIntent);
-        if (ActivityCompat.checkSelfPermission(context,
+        if (ActivityCompat.checkSelfPermission(context, // ensure notifications permission have been granted
                 android.Manifest.permission.POST_NOTIFICATIONS) == PackageManager.PERMISSION_GRANTED) { // check if app has permission to post notifications
             notificationManager.notify(notificationId, builder.build());
             Log.d(TAG, "Notification displayed for employee: " + employeeId);

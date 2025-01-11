@@ -28,11 +28,11 @@ import com.google.android.material.button.MaterialButton;
 
 /**
 * TODO
-*  [ ] make View Leave History and Pending Requests
-*  [ ] notifications
+*  [X] make View Leave History and Pending Requests
+*  [X] notifications
 *  [X] dark mode
-*  [ ] terms and conditions
-*  [ ] privacy
+*  [X] terms and conditions
+*  [X] privacy
 */
 
 

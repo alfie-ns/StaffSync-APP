@@ -37,7 +37,7 @@ import java.util.List;
  * - updated when new requests are fetched from SQLite
  * - triggers onApprove/onDeny callbacks when admin takes action
 
- * @see AdminHolidayRequestFragment for the fragment using this adapter
+ * @see AdminLeaveRequestFragment for the fragment using this adapter
  * @see LeaveRequest for the data model class
  * @see LocalDataService for the SQlite database operations
 
