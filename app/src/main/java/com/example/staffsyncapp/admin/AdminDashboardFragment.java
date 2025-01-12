@@ -6,8 +6,11 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.navigation.Navigation;
 import androidx.navigation.fragment.NavHostFragment;
+import android.database.sqlite.SQLiteDatabase;
 
+import android.content.ContentValues;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.widget.TextView;
 
@@ -641,17 +644,33 @@ public class AdminDashboardFragment extends Fragment {
             showDeleteEmployeeDialog();
         });
 
-        // check salary increments
+        // SALARY INCREMENTS
 
         // TESTING CLICK LISTENER
 //        binding.checkIncrementsBtn.setOnClickListener(v -> {
 //            Log.d(TAG, "checking salary increments...");
 //            LocalDataService dbHelper = new LocalDataService(requireContext());
 //
-//            // 1- set test date for testing an employee
-//            dbHelper.setEmployeeHireDate(1681, "2022-12-26");
+//            ContentValues employeeValues = new ContentValues();
+//            employeeValues.put("employee_id", 10000);
+//            employeeValues.put("full_name", "Test Employee");
+//            employeeValues.put("salary", 50000.00);
+//            employeeValues.put("hire_date", "2022-12-26");
+//            employeeValues.put("last_increment_date", "2022-12-26");
 //
-//            // -2 show increment status dialog
+//            try {
+//                dbHelper.getWritableDatabase().insertWithOnConflict(
+//                        "employee_details",
+//                        null,
+//                        employeeValues,
+//                        SQLiteDatabase.CONFLICT_REPLACE
+//                );
+//
+//                Log.d(TAG, "Test record updated");
+//            } catch (Exception e) {
+//                Log.e(TAG, "Error: " + e.getMessage());
+//            }
+//
 //            SalaryIncrementManager.showSalaryIncrementStatus(requireContext());
 //        });
 
@@ -755,7 +774,6 @@ public class AdminDashboardFragment extends Fragment {
     }
     //----------------------------------------------------------------------------------------------
     // Salary increment functions
-    //
     private void showIncrementDialog(String message, int eligibleCount) {
         // create and show dialog
         AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
