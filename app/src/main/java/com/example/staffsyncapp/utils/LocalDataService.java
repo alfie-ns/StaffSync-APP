@@ -400,19 +400,6 @@ public class LocalDataService extends SQLiteOpenHelper {
         return exists;
     }
 
-    // [ ]
-    public boolean unlockEmployeeAccount(String email) { // account management methods
-        ContentValues values = new ContentValues();
-        values.put("is_locked", 0);
-        return db.update("employees", values, "email = ?", new String[]{email}) > 0;
-    }
-    // [ ]
-    public boolean lockEmployeeAccount(String email) { // method to lock Employee account
-        ContentValues values = new ContentValues();
-        values.put("is_locked", 1); // set is_locked to 1(success)
-        return db.update("employees", values, "email = ?", new String[]{email}) > 0;
-    }
-
     public void createEmployeeAccount(int employeeId, String email) {
         String tempPassword = generateTempPassword(employeeId);
         ContentValues values = new ContentValues();

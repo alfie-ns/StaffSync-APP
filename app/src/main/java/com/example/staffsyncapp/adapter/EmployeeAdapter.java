@@ -46,8 +46,6 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
         Log.d(TAG, "EmployeeAdapter initialised with " + employees.size() + " employees");
     }
 
-
-
     public interface OnEmployeeDeleteListener {
         void onDeleteClicked(Employee employee);
     }
@@ -118,7 +116,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
         this.updateListener = listener;
     }
     
-    // update adapter's list without changing total employee count
+    // Update adapter's list without changing total employee count
     public void updateDisplayList(List<Employee> displayedEmployees) {
         this.employees.clear();
         this.employees.addAll(displayedEmployees);
@@ -170,7 +168,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
         }
     }
 
-    // define ViewModel for employee data
+    // Define ViewModel for employee data
     public static class EmployeeViewModel extends ViewModel {
         private MutableLiveData<Employee> employeeLiveData = new MutableLiveData<>();
 
@@ -183,7 +181,7 @@ public class EmployeeAdapter extends RecyclerView.Adapter<EmployeeAdapter.ViewHo
         }
     }
 
-    // define ViewHolder for caching employee data views thus no repeated findViewById() calls
+    // Define ViewHolder for caching employee data views thus no repeated findViewById() calls
     public static class ViewHolder extends RecyclerView.ViewHolder { // ViewHolder for caching employee data views thus no repeated findViewById() calls
         final TextView nameTextView;
         final TextView idTextView;
