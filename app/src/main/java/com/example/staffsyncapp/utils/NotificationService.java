@@ -24,7 +24,6 @@ import com.example.staffsyncapp.R;
  * Manages three notification channels:
  * - Admin channel: High priority, red LED for leave requests
  * - Holiday channel: High priority, blue LED for request updates
- * - System channel: Default priority for general updates
 
  * @since 1.0
  * @see android.app.NotificationManager
@@ -38,7 +37,6 @@ public class NotificationService {
     private LocalDataService dbHelper;
     
     private static final String HOLIDAY_CHANNEL = "holiday_channel";
-    private static final String SYSTEM_CHANNEL = "system_channel";
     private static final String ADMIN_CHANNEL = "admin_channel";
     private static final String NOTIFICATION_PREFS = "notification_preferences";
     private static final String KEY_NOTIFICATIONS_ENABLED = "notifications_enabled";
@@ -46,9 +44,25 @@ public class NotificationService {
 
     private static final int ADMIN_NOTIFICATION_ID = 1000;
     private static final int HOLIDAY_NOTIFICATION_ID = 2000;
-    // was thinking I was going to use these but didn't in the end
-    private static final int NOTIFICATION_ID = 3000;
-    private static final int BASE_NOTIFICATION_ID = 4000;
+    // was thinking I was going to use more IDs for different notifications, but I didn't end up needing them
+
+    // destinations if notification is clicked
+    private static final int DESTINATION_ADMIN_REQUESTS = R.id.admin_leave_requests_fragment;
+    private static final int DESTINATION_EMPLOYEE_HISTORY = R.id.employee_navigation_home;
+
+    private PendingIntent createPendingIntent(int destination, boolean isAdmin) {
+        NavDeepLinkBuilder builder = new NavDeepLinkBuilder(context)
+                .setGraph(R.navigation.nav_graph);
+        
+        if (isAdmin) {
+            builder.setDestination(DESTINATION_ADMIN_REQUESTS);
+        } else {
+            builder.setDestination(DESTINATION_EMPLOYEE_HISTORY);
+        }
+        
+        return builder.createPendingIntent();
+    }
+
 
     /**
      * Creates notification service and initialises channels
@@ -124,11 +138,7 @@ public class NotificationService {
      * @param reason
      */
     private void showAdminNotification(String employeeName, String startDate, String endDate, String reason) {
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, // create pending intent to open app on notification click
-                0, 
-                new Intent(context, MainActivity.class),
-                PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT // immutable flag for security
-        );
+        PendingIntent pendingIntent = createPendingIntent(DESTINATION_ADMIN_REQUESTS, true);
 
         String title = "New Leave Request";
         String message = String.format("%s requests leave from %s to %s\nReason: %s",
@@ -145,11 +155,21 @@ public class NotificationService {
         notificationManager.notify(ADMIN_NOTIFICATION_ID, builder.build()); // notify admin
     }
 
+    /**
+     * Check if notifications are enabled for employee
+     * @param employeeId
+     * @return preference value
+     */
     public boolean isNotificationsEnabled(int employeeId) {
         SharedPreferences prefs = context.getSharedPreferences(NOTIFICATION_PREFS, Context.MODE_PRIVATE);
         return prefs.getBoolean(KEY_NOTIFICATIONS_ENABLED + "_" + employeeId, true);
     }
 
+    /**
+     * Set notifications enabled/disabled for employee
+     * @param employeeId
+     * @param enabled
+     */
     public void setNotificationsEnabled(int employeeId, boolean enabled) {
         SharedPreferences prefs = context.getSharedPreferences(NOTIFICATION_PREFS, Context.MODE_PRIVATE);
         prefs.edit()
@@ -157,7 +177,12 @@ public class NotificationService {
                 .apply();
     }
     
-    // Send holiday notification; i.e. leave request updates ---
+    /**
+     * Send holiday notification to employee if notifications enabled
+     * @param employeeId
+     * @param title
+     * @param message
+     */
     public void sendHolidayNotification(int employeeId, String title, String message) {
 
         // get current logged in user type
@@ -168,7 +193,7 @@ public class NotificationService {
         SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
         int loggedInEmployeeId = prefs.getInt("logged_in_employee_id", -1);
 
-        /** only send notification if:
+        /* Only send notification if:
            1- Current user is NOT admin AND 2-
            2- Logged in employee matches target employee
            3- If notifications is enabled
@@ -194,6 +219,11 @@ public class NotificationService {
         }
     }
 
+    /**
+     * Send broadcast message from admin to all employees
+     * @param title
+     * @param message
+     */
     public void sendAdminBroadcastMessage(String title, String message) { // General broadcast
         Log.d(TAG, "Attempting to store broadcast message: " + title);
         // store notification in DB first
@@ -213,8 +243,8 @@ public class NotificationService {
 
     /**
      * Show system notifications from cursor
-     * @param cursor
-     * @param channel
+     * @param cursor: database cursor data: title, message and ids
+     * @param channel: channel i.e. Holiday
      */
     public void showNotificationsFromCursor(Cursor cursor, String channel) {
         Log.d(TAG, "Showing notifications from cursor. Count: " + cursor.getCount());
@@ -233,12 +263,11 @@ public class NotificationService {
 
                 Log.d(TAG, "Processing notification: " + id + " for employee: " + employeeId);
 
-                PendingIntent pendingIntent = PendingIntent.getActivity(context,
-                        id, // use Unique ID for each notification
-                        new Intent(context, MainActivity.class),
-                        PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT
+                boolean isAdminNotification = employeeId == 0;
+                    PendingIntent pendingIntent = createPendingIntent(
+                        isAdminNotification ? DESTINATION_ADMIN_REQUESTS : DESTINATION_EMPLOYEE_HISTORY,
+                        isAdminNotification
                 );
-
                 NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL)
                         .setSmallIcon(R.drawable.bell_icon)
                         .setContentTitle(title)
@@ -285,10 +314,8 @@ public class NotificationService {
             Log.d(TAG, "Notifications disabled for employee: " + employeeId);
             return;
         }
-        PendingIntent pendingIntent = new NavDeepLinkBuilder(context) // build pending intent to open app on notification click
-                .setGraph(R.navigation.nav_graph)
-                .setDestination(R.id.employee_navigation_home)
-                .createPendingIntent();
+        PendingIntent pendingIntent = createPendingIntent(DESTINATION_EMPLOYEE_HISTORY, false);
+
         NotificationCompat.Builder builder = new NotificationCompat.Builder(context, HOLIDAY_CHANNEL) // build nnofication with high priority; holiday channel
                 .setSmallIcon(R.drawable.bell_icon)
                 .setContentTitle(title)

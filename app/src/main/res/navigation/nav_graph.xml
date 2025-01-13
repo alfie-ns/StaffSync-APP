@@ -38,7 +38,7 @@
             app:destination="@id/SecondFragment"/>
         <action
             android:id="@+id/action_AdminDashboardFragment_to_AdminHolidayRequestsFragment"
-            app:destination="@id/admin_holiday_requests_fragment" />
+            app:destination="@id/admin_leave_requests_fragment" />
     </fragment>
 
     <!-- employee fragments -->
@@ -96,9 +96,9 @@
     </fragment>
 
     <fragment
-        android:id="@+id/admin_holiday_requests_fragment"
+        android:id="@+id/admin_leave_requests_fragment"
         android:name="com.example.staffsyncapp.admin.AdminLeaveRequestsFragment"
-        tools:layout="@layout/admin_holiday_requests_fragment">
+        tools:layout="@layout/admin_leave_requests_fragment">
         <action
             android:id="@+id/action_AdminHolidayRequestsFragment_to_AdminDashboardFragment"
             app:destination="@id/AdminDashboardFragment" />
