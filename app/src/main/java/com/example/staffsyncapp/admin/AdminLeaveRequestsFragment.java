@@ -13,6 +13,7 @@ import androidx.fragment.app.Fragment;
 import androidx.navigation.Navigation;
 import androidx.recyclerview.widget.LinearLayoutManager;
 
+import com.example.staffsyncapp.R;
 import com.example.staffsyncapp.adapter.LeaveRequestAdapter;
 import com.example.staffsyncapp.databinding.AdminHolidayRequestsFragmentBinding;
 import com.example.staffsyncapp.models.LeaveRequest;
@@ -48,7 +49,7 @@ public class AdminLeaveRequestsFragment extends Fragment implements LeaveRequest
         adapter = new LeaveRequestAdapter(this);
 
         binding.backArrow.setOnClickListener(v ->
-                Navigation.findNavController(v).navigateUp());
+                Navigation.findNavController(v).navigate(R.id.AdminDashboardFragment)); // before this clicking on the notification sent the user to the entry point before
 
         binding.requestsRecyclerView.setLayoutManager(
                 new LinearLayoutManager(requireContext()));

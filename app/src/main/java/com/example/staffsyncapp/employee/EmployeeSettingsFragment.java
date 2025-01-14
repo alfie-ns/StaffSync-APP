@@ -74,6 +74,7 @@ public class EmployeeSettingsFragment extends Fragment {
         SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
         int employeeId = prefs.getInt("logged_in_employee_id", -1);
         String employeeDarkModeKey = DARK_MODE_KEY + "_" + employeeId;
+        binding.notificationsSwitch.setChecked(prefs.getBoolean("notifications_enabled_" + employeeId, true));
         // restore dark mode preference
         binding.darkModeSwitch.setChecked(sharedPreferences.getBoolean(employeeDarkModeKey, false));
 
@@ -90,6 +91,7 @@ public class EmployeeSettingsFragment extends Fragment {
         binding.notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
             SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
             int employeeId = prefs.getInt("logged_in_employee_id", -1);
+            prefs.edit().putBoolean("notifications_enabled_" + employeeId, isChecked).apply();
 
             if (employeeId != -1) {
                 NotificationService notificationService = new NotificationService(requireContext());

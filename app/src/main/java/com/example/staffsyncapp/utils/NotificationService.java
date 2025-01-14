@@ -32,6 +32,7 @@ import com.example.staffsyncapp.R;
 
 public class NotificationService {
     private static final String TAG = "NotificationService";
+    private static final String SYSTEM_CHANNEL = "system_channel";
     private final Context context;
     private final NotificationManager notificationManager;
     private LocalDataService dbHelper;
@@ -124,8 +125,12 @@ public class NotificationService {
         LocalDataService dbHelper = new LocalDataService(context);
         dbHelper.storeAdminNotification(employeeName, startDate, endDate, reason);
 
+        // get current logged in employee ID to make sure sender doesn't get notification
+        SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+        int loggedInEmployeeId = prefs.getInt("logged_in_employee_id", -1);
+
         // only show if admin is logged in
-        if (dbHelper.isAdminLoggedIn()) {
+        if (dbHelper.isAdminLoggedIn() && !employeeName.contains(String.valueOf(loggedInEmployeeId))) {
             showAdminNotification(employeeName, startDate, endDate, reason);
         }
     }
@@ -304,10 +309,10 @@ public class NotificationService {
 
     /**
      * Show notification; i.e. leave request updates
-     * @param employeeId
-     * @param title
-     * @param message
-     * @param notificationId
+     * @param employeeId: to send respective notification
+     * @param title: notification title
+     * @param message: notification message
+     * @param notificationId: unique notification id
      */
     public void showNotification(int employeeId, String title, String message, int notificationId) {
         if (!isNotificationsEnabled(employeeId)) { // early-exit/kill function

@@ -36,13 +36,6 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
     private LoginFragmentBinding binding;
     private static final String TAG = "LoginFragment";
     private boolean isPasswordVisible = false; // initialise password visibility state as non visible
-
-    // security constants
-    private static final int MAX_LOGIN_ATTEMPTS = 3;
-    private int loginAttempts = 0;
-    private long lastLoginAttempt = 0;
-    private static final long LOCKOUT_DURATION = 900000; // 15-minutes lockout duration in milliseconds
-
     private LocalDataService dbHelper;
 
 

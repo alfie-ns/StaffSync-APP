@@ -70,18 +70,18 @@ public class AdminDashboardFragment extends Fragment {
         - [X] AdminDashboardFragmentBinding
         - [X] incorporate local db
         - [X] logout functionality
-        - [ ] notifications 1: get notifications alerting
+        - [X] notifications 1: get notifications alerting
         - [X] fetch ALL employees from comp2000
         - [X] list employees searched for; filteredList
         - [X] EmployeeList2: when an id is searched for, allow to remove the id and thus the app stops searching for it
-        - [ ] notifications 2; make notification allow to be pressed
+        - [X] notifications 2; make notification allow to be pressed
               on to take them to the relevant info, add actions
               to notifications, it should let the admin
               approve or deny directly from the notification(maybe,
               and if so it should probably give some insight in
               the notification(maybe using Gemini?)
-        - [ ] employee account to submit leave requests
-        - [ ] login to respective account based on employee id
+        - [X] employee account to submit leave requests
+        - [X] login to respective account based on employee id
 
 
     */

@@ -181,7 +181,7 @@ public class EmployeeProfileFragment extends Fragment {
                     Cursor cursor = db.query(
                             "employee_details",
                             null,
-                            "employee_id = ?",
+                            "id = ?",
                             new String[]{String.valueOf(employeeId)},
                             null, null, null
                     );
@@ -290,29 +290,32 @@ public class EmployeeProfileFragment extends Fragment {
                         @Override
                         public void onSuccess(String message) {
                             workerThread.postToMainThread(() -> {
-                                Log.d(TAG, "Worker thread successfully used in profile customisation");
                                 LocalDataService dbHelper = new LocalDataService(requireContext());
+                                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                                db.beginTransaction();
+                                try {
+                                    // Update employee details
+                                    ContentValues values = new ContentValues();
+                                    values.put("full_name", newName);
+                                    db.update("employee_details", values,
+                                            "employee_id = ?",
+                                            new String[]{String.valueOf(currentEmployee.getId())});
 
-                                // update API data in local DB
-                                ContentValues values = new ContentValues();
-                                values.put("full_name", newName);
+                                    // Update login email
+                                    ContentValues loginValues = new ContentValues();
+                                    loginValues.put("email", newEmail);
+                                    int rows = db.update("employees", loginValues,
+                                            "employee_id = ?",
+                                            new String[]{String.valueOf(currentEmployee.getId())});
+                                    Log.d("ProfileUpdate", "Updated " + rows + " rows in employees table");
 
-                                dbHelper.getWritableDatabase().update("employee_details",
-                                        values,
-                                        "employee_id = ?",
-                                        new String[]{String.valueOf(currentEmployee.getId())});
-
-                                // update login credentials
-                                ContentValues emailValues = new ContentValues();
-                                emailValues.put("email", newEmail);
-
-                                dbHelper.getWritableDatabase().update("employees",
-                                        emailValues,
-                                        "id = ?",
-                                        new String[]{String.valueOf(currentEmployee.getId())});
+                                    db.setTransactionSuccessful();
+                                } finally {
+                                    db.endTransaction();
+                                }
 
                                 Toast.makeText(requireContext(), "Profile updated successfully", Toast.LENGTH_SHORT).show();
-                                loadEmployeeData(); // Refresh display
+                                loadEmployeeData();
                                 Navigation.findNavController(requireView()).navigateUp();
                             });
                         }
@@ -327,7 +330,6 @@ public class EmployeeProfileFragment extends Fragment {
             );
         });
     }
-
 
     @Override
     public void onDestroyView() {

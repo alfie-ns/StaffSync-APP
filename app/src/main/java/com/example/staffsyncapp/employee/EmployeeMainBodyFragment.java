@@ -29,16 +29,25 @@ import android.widget.Toast;
 import java.time.LocalDate;
 import java.time.Period;
 
+import java.time.YearMonth;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 import android.content.ContentValues;
 
+import java.time.format.DateTimeFormatter;
+import java.util.Locale;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+
 
 /**
  * TODO
- *  [ ] book leave
- *  [ ] pending requests
- *  [ ] view leave history
+ *  [X] book leave
+ *  [X] pending requests
+ *  [X] view leave history
  */
 public class EmployeeMainBodyFragment extends Fragment {
     private EmployeeMainBodyFragmentBinding binding;
@@ -125,32 +134,36 @@ public class EmployeeMainBodyFragment extends Fragment {
 
     private void loadFromLocalDb(LocalDataService dbHelper, int employeeId) {
         SQLiteDatabase db = dbHelper.getReadableDatabase();
-        Cursor cursor = db.query(
-                "employee_details",
-                null,
-                "employee_id = ?",
-                new String[]{String.valueOf(employeeId)},
-                null, null, null
-        );
+
+        Cursor cursor = db.rawQuery("SELECT * FROM employee_details WHERE employee_id = ?",
+                new String[]{String.valueOf(employeeId)});
 
         if (cursor != null && cursor.moveToFirst()) {
-            String fullName = cursor.getString(cursor.getColumnIndex("full_name"));
-            String[] names = fullName.split(" ");
-            String firstName = names[0];
-            String lastName = names.length > 1 ? names[1] : "";
-            String department = cursor.getString(cursor.getColumnIndex("department"));
-            double salary = cursor.getDouble(cursor.getColumnIndex("salary"));
+            try {
+                String fullName = cursor.getString(cursor.getColumnIndex("full_name"));
+                String[] names = fullName.split(" ");
+                String firstName = names[0];
+                String lastName = names.length > 1 ? names[1] : "";
+                String department = cursor.getString(cursor.getColumnIndex("department"));
+                double salary = cursor.getDouble(cursor.getColumnIndex("salary"));
 
-            currentEmployee = new Employee(
-                    employeeId,
-                    firstName,
-                    lastName,
-                    firstName.toLowerCase() + "." + lastName.toLowerCase() + "@staffsync.com",
-                    department,
-                    salary,
-                    "2023-01-01"
-            );
-            updateUIWithEmployeeData(currentEmployee);
+                // Get and log the hire date; debugging
+                String hireDate = cursor.getString(cursor.getColumnIndex("hire_date"));
+                Log.d("EmployeeData", "Raw hire date from DB: " + hireDate);
+
+                currentEmployee = new Employee(
+                        employeeId,
+                        firstName,
+                        lastName,
+                        firstName.toLowerCase() + "." + lastName.toLowerCase() + "@staffsync.com",
+                        department,
+                        salary,
+                        hireDate
+                );
+                updateUIWithEmployeeData(currentEmployee);
+            } catch (Exception e) {
+                Log.e("EmployeeData", "Error loading employee data", e);
+            }
             cursor.close();
         }
         db.close();
@@ -160,28 +173,42 @@ public class EmployeeMainBodyFragment extends Fragment {
         syncRunnable = new Runnable() {
             @Override
             public void run() {
-                // sync with API; call get Employee By ID API method
                 apiService.getEmployeeById(employeeId, new ApiDataService.EmployeeFetchListener() {
                     @Override
                     public void onEmployeesFetched(List<Employee> employees) {
                         if (employees != null && !employees.isEmpty()) {
                             Employee apiEmployee = employees.get(0);
+                            currentEmployee = apiEmployee;
 
-                            // update UI if data changed and update local DB
-                            if (currentEmployee == null || !currentEmployee.equals(apiEmployee)) {
-                                currentEmployee = apiEmployee;
-                                updateUIWithEmployeeData(currentEmployee);
+                            // parses the GMT date string from API to a proper date format
+                            String apiDate = apiEmployee.getJoiningDate(); // "Thu, 04 Mar 2021 00:00:00 GMT" -> "2021-03-04"
+                            try {
+                                SimpleDateFormat inputFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.UK);
+                                SimpleDateFormat outputFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.UK);
+                                Date date = inputFormat.parse(apiDate);
+                                String formattedDate = outputFormat.format(date);
+
+                                // update local DB with properly formatted date
+                                ContentValues values = new ContentValues();
+                                values.put("employee_id", employeeId);
+                                values.put("full_name", apiEmployee.getFirstname() + " " + apiEmployee.getLastname());
+                                values.put("department", apiEmployee.getDepartment());
+                                values.put("salary", apiEmployee.getSalary());
+                                values.put("hire_date", formattedDate); // Store the parsed date
+
+                                SQLiteDatabase db = dbHelper.getWritableDatabase();
+                                db.insertWithOnConflict("employee_details", null, values, SQLiteDatabase.CONFLICT_REPLACE);
+                                db.close();
+
+                                // update UI with the employee data
+                                if(isAdded()) {
+                                    requireActivity().runOnUiThread(() -> {
+                                        updateUIWithEmployeeData(currentEmployee);
+                                    });
+                                }
+                            } catch (ParseException e) {
+                                Log.e("EmployeeSync", "Error parsing date from API", e);
                             }
-
-                            ContentValues values = new ContentValues();
-                            values.put("employee_id", employeeId);
-                            values.put("full_name", apiEmployee.getFirstname() + " " + apiEmployee.getLastname());
-                            values.put("department", apiEmployee.getDepartment());
-                            values.put("salary", apiEmployee.getSalary());
-
-                            SQLiteDatabase db = dbHelper.getWritableDatabase();
-                            db.insertWithOnConflict("employee_details", null, values, SQLiteDatabase.CONFLICT_REPLACE);
-                            db.close();
                         }
                     }
 
@@ -191,7 +218,6 @@ public class EmployeeMainBodyFragment extends Fragment {
                     }
                 });
 
-                // schedule next sync
                 syncHandler.postDelayed(this, SYNC_INTERVAL);
             }
         };
@@ -201,20 +227,62 @@ public class EmployeeMainBodyFragment extends Fragment {
     }
 
     private void updateUIWithEmployeeData(Employee employee) {
+        if (binding == null || employee == null) return; // null check to prevent crash
+
         binding.employeeId.setText("My Employee ID: #" + employee.getId());
         binding.department.setText("Department: " + employee.getDepartment());
 
-        LocalDate joinDate = LocalDate.parse(employee.getJoiningDate());
-        Period period = Period.between(joinDate, LocalDate.now());
-        String yearsOfService = period.getYears() + " years, " + period.getMonths() + " months";
-        binding.yearsOfService.setText("Years of Service: " + yearsOfService);
+        try {
+            String hireDateStr = employee.getJoiningDate();
+            LocalDate hireDate;
+            LocalDate now = LocalDate.now();
 
-        LocalDate nextReview = joinDate.plusYears(Period.between(joinDate, LocalDate.now()).getYears() + 1);
-        Period timeToReview = Period.between(LocalDate.now(), nextReview);
-        binding.nextReview.setText("Next Salary Review: " + timeToReview.getMonths() + " months");
+            if (hireDateStr == null || hireDateStr.isEmpty()) {
+                Log.d("EmployeeData", "No hire date found, using default");
+                hireDate = LocalDate.of(2021, 3, 4);
+            } else {
+                try {
+                    // Try parse API format
+                    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("EEE, dd MMM yyyy HH:mm:ss z", Locale.UK);
+                    hireDate = LocalDate.parse(hireDateStr, formatter);
+                } catch (Exception e) {
+                    // if fail try DB format
+                    hireDate = LocalDate.parse(hireDateStr);
+                }
+            }
+
+            Period serviceTime = Period.between(hireDate, now);
+
+            Log.d("EmployeeData", "Hire date: " + hireDate);
+            Log.d("EmployeeData", "Service time: " + serviceTime.getYears() + "y " + serviceTime.getMonths() + "m");
+
+            binding.yearsOfService.setText("Years of Service: " +
+                    serviceTime.getYears() + " years, " + serviceTime.getMonths() + " months");
+
+            // Calculate next review
+            LocalDate nextReview = hireDate.withYear(now.getYear());
+            if (nextReview.isBefore(now)) {
+                nextReview = nextReview.plusYears(1);
+            }
+
+            Log.d("DateCheck", String.format( // PROOF LOGGING
+                    "Now: %s\nHire: %s\nNext: %s",
+                    now.toString(),
+                    hireDate.toString(),
+                    nextReview.toString()
+            ));
+
+            long monthsToReview = ChronoUnit.MONTHS.between(now, nextReview);
+            binding.nextReview.setText("Next Salary Review: " + monthsToReview + " months");
+
+        } catch (Exception e) {
+            Log.e("EmployeeData", "Error calculating dates", e);
+            binding.yearsOfService.setText("Years of Service: Not available");
+            binding.nextReview.setText("Next Salary Review: Not available");
+        }
 
         SharedPreferences prefs = requireContext().getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
-        boolean notificationsEnabled = prefs.getBoolean("notifications_enabled", true);
+        boolean notificationsEnabled = prefs.getBoolean("notifications_enabled_" + employee.getId(), true);
         binding.notificationStatus.setText("Notifications: " + (notificationsEnabled ? "Enabled" : "Disabled"));
     }
 

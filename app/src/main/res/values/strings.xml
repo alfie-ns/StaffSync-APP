@@ -60,6 +60,6 @@
     <string name="profile_navbar_menu">Profile</string>
     <string name="settings_navbar_menu">Settings</string>
     <string name="employee_settings_dark_mode">Dark Mode</string>
-    <string name="manage_holiday_requests">Manage Holiday Requests</string>
+    <string name="manage_leave_requests">Manage Leave Requests</string>
     <string name="terms_and_documentation"><![CDATA[StaffSync Terms & Documentation\n\n Legal:\n - Personal data protection for employee records\n - Secure storage of leave request history\n - Controlled access to employee information\n\n Social:\n - Standardised 30-day annual leave system\n - Transparent leave request approvals\n - Equal access to salary information\n\n Ethical:\n - Automatic 5% annual salary increment\n - Secure password management\n - Protected employee privacy settings\n\n Professional:\n - COMP2000 API integration\n - SQLite data persistence\n - Secure login authentication\n\n Version: 1.0\n Last Updated: January 2024]]></string>
 </resources>
