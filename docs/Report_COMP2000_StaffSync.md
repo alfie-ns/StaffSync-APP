@@ -2,35 +2,7 @@
 
 # Table of Contents
 
-1. [Introduction](#introduction)
-2. [UML Diagrams](#uml-diagrams)
-   - [Admin-SIDE](#admin-side)
-   - [User-SIDE](#user-side)
-3. [Background](#background)
-4. [Legal, Social, Ethical, and Professional Considerations](#legal-social-ethical-and-professional-considerations)
-   - [Privacy Considerations](#privacy-considerations)
-   - [Data Integrity](#data-integrity)
-   - [Security Measures](#security-measures)
-5. [Design](#design)
-6. [Implementation](#implementation)
-   - [Core Functionalities](#core-functionalities)
-   - [Admin-SIDE](#admin-side-1)
-   - [Employee-SIDE](#employee-side)
-7. [Insight](#insight)
-   - [Adapter](#adapter)
-   - [Admin](#admin)
-   - [API](#api)
-   - [Employee](#employee)
-   - [Entry](#entry)
-   - [Leave](#leave)
-   - [Models](#models)
-   - [Utils](#utils)
-8. [Normal and Dark Mode Themes](#normal-and-dark-mode-themes)
-   - [Normal Theme](#normal-theme)
-   - [Dark Mode](#dark-mode)
-9. [Evaluation](#evaluation)
-10. [Summary](#summary)
-11. [References](#references)
+Didn’t have enough time at the last minute to debug and create the table of contents, so I used VSCode’s Markdown feature to auto-generate an outline. Not sure if it’s an extension or a built-in VSCode feature.
 
 ## Introduction
 
@@ -105,7 +77,6 @@ Along with the legal and social implications, the application also raises ethica
 - Employee data protection
 
   - The application handles sensitive personal information including salaries and joining dates
-  - All data is transmitted securely through HTTPS
   - Users can only access their own information
   - Administrators have restricted access based on their role
 
@@ -114,7 +85,6 @@ Along with the legal and social implications, the application also raises ethica
 - Ensuring accurate employee records
 
   - Input validation on all forms
-  - Audit trail of changes
   - Automatic salary calculations to prevent manual errors
 
 ### Security Measures
@@ -123,15 +93,13 @@ Along with the legal and social implications, the application also raises ethica
 
   - Secure login system; when admin creates a new employee, on the first-time login, the employee will change the password to what THEY want, it's initially autocreated as EMP{employeeId}
   - Session management
-  - Protection against common mobile app vulnerabilities
-  - Regular security updates
 
 The final component of LSEP is ensuring that Professional standards are met which meant following best practices such as:
 
 - Regular code commits
 - Clean code principles
 - Comprehensive documentation
-- Testing procedures i.e. logging**
+- Testing procedures i.e. *logging*
 
 ## Design
 
@@ -227,7 +195,7 @@ The logs verify correct date handling for employee ID **3228** and correct respo
 2025-01-14 02:22:55.890  9358-9358  ApiDataService          com.example.staffsyncapp             D  API response: {"department":"Sales","email":"tom_west@user.com","firstname":"Tom","id":3228,"joiningdate":"Tue, 05 Apr 2022 00:00:00 GMT","lastname":"West","leaves":30,"salary":"100000.00"}
 ```
 
-The **system** retrieves and processes the `joiningdate` and `salary` values correctly. The data aligns with the employee's hire anniversary, ensuring correct increment calculations.
+The system retrieves and processes the `joiningdate` and `salary` values correctly. The data aligns with the employee's hire anniversary, ensuring correct increment calculations.
 
 **Succesful API Call for Employee ID 3239:**
 
@@ -410,6 +378,8 @@ This fragment incorporates notification features to enhance usability:
 
 ## EMPLOYEE-SIDE
 
+In the last minute I got the user's self profile customisation working completely i.e. changing the email for the login
+
 ### Nav Bar
 
 The bottom-navigation bar is implemented using the NavigationManager class, in particular, the setupBottomNavigation() function which handles navigation between each employee-fragment defined in bottom_nav_menu.xml, that defines the respective icons and titles.
@@ -502,7 +472,7 @@ When the user toggles the dark mode switch in the UserSettingsFragment, the app 
 
 The colours defined in both the normal and dark themes are used layout files to ensure a cohesive design across the app;
 
-the colours are dynamically applied based on the current theme (light or dark), providing a consistent and user-friendly experience.
+the colours are dynamically applied based on the current theme (light or dark); providing a consistent and user-friendly experience.
 
 #### **Normal Theme in Layouts**
 
@@ -606,7 +576,7 @@ The reason this looks so similar to the previous one is I structured it this way
 
 ## Summary
 
-StaffSync: developed for the COMP2000 Software Engineering 2 module, is an Android-based employee management system designed for administrators and employees; the app provides employee record management, leave request handling, salary tracking, and user preference management with a fully functional darkmode.
+StaffSync: developed for the COMP2000 Software Engineering 2 module, is an Android-based employee management system designed for administrators and employees; the app provides Admin-employee record management, leave request handling, salary tracking, employee full control of their data and user preference management with a fully functional *darkmode*.
 
 This report documents the app's development process, from design and architecture to implementation and evaluation. It showcases the use of design patterns, adherence to SOLID principles, and the app's offline capabilities.
 
@@ -668,7 +638,7 @@ Reference: https://developer.android.com/guide/components/processes-and-threads
 
 3- Finally, dealing with notification preferences in Android was quite complicated and thus took me a lot of trial-and-error time i.e. testing; due to the distributed nature of the Android notification system between uses of the apps (Admins and Employees) but now it seems I have finally done it and thus I think all the functionalties required
 
-The notification system is primarily handled by NotificationService, which manages three distinct notification channels: admin (high priority with red LED for leave requests), holiday (high priority with cyan LED for request updates), and system (default priority for general updates). The service integrates with LocalDataService for storing pending notifications and uses Android's NotificationManager for delivery. Notifications are permission-aware for Android 13+ and support both immediate delivery and stored notifications that trigger upon user login
+The notification system is primarily handled by NotificationService, which manages three distinct notification channels: admin (high priority with red LED for leave requests), holiday (high priority with cyan LED for request updates), and system (default priority for general updates). The service integrates with LocalDataService for storing pending notifications and uses Android's NotificationManager for delivery. Notifications are permission-aware for Android 13+ and support both immediate delivery and stored notifications that trigger upon user login; finally, I make the pending intents work as I previously strived for it to JUST work and thus was lazy; fixed now.
 
 [low-level intricacies is explained here](#utils)
 
@@ -682,18 +652,18 @@ There's also more and more things I discover daily regarding markdown developing
 
 ## Clarifications
 
-**Main:** I have honestly sustained a documented "very severe brain injury" but I thankfully have retained my skills in computers and thus can provide a good solution, however my memory impairments mean that I honestly
+**Main:** I have honestly sustained a documented "very severe brain injury" but I have retained my skills in computers and thus can provide a good solution; not asking for special treat but
 
 - Kill function = early exit (later choose early exit>kill)
-- My old salary increment functions did work but in the last minute there was no one else trying on the API so I had to create that uses own test employee I'd create in the function
+- Proven the salary incrememnt can work if needed (year passes)
 - I was trying to stay consistent with my Git commits however I had to spend time on COMP2001 coursework to ensure I provide a sufficent report for them, also am developing a Unity game in my 2003. However, this was the module I spent my primary focus on.
 - I admit AI helps to teach me things one to one; I utilised AI for the final-lecture.pdf notes with Glean-provided transcripts, this has been essentiall to me remembering everything you've taught; my short-term and long-term memory is very poor and Glean is an app given to me by the DSA, they even have their own AI summariser now.
-- Because my short-term memory has been significantly impaired, I would do git commit -m "test" to check that I've talk about everything i've done in the commit, would git reset --soft HEAD~1 to do the commit properly once I've checked everything that's happening
+- Because my short-term memory has been significantly impaired, I would do git commit -m "test" to check that I've talk about everything i've done in the commit, would git reset --soft HEAD~{1} to do the commit properly once I've checked everything that's happening
 - My feedback on my last coursework for the 81.6(second-highest) was just "overcommented"; therefore, I was mindful of that this time round.
-- Changd my development style quite a few times,
 - In regard to capitalisation and style of comments, this is something I change my mind on different times I look at it, you may see that I de-capitialise stuff in some commits, make sure to see in other where I capitialise some words, especially if they have a deeper meaning and if they're something in themself e.g. "RecyclerView"; my apologies for this inconsistency, I change my mind consistently and forget what my mindset was before; e.g. using "..." and changing my mind on how I should use it as I realised it really should be used if there's more coming... later.
 - Some Java holds more importance in regard to functionality of the code, so their comments deserve capitalisation
 - I didn't comment the XML as you said one lecture we don't need to anymore, just the Java
+- I didn't manage to get all my last-minute changes into a video but the system also now allows user their log in email address, also all the admin stuff works perfectly, I think the system is very good now, I'm happy with it now.
 
 ## Version Control
 
