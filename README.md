@@ -61,3 +61,5 @@ Links
 - [Set Exercise Repoisitory](https://github.com/Plymouth-COMP2000/set-exercises-alfie-ns)
 
 Made for **COMP2000** by *alfie-ns*
+
+![grade](docs/images/README/grade.png)

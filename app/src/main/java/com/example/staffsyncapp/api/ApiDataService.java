@@ -14,6 +14,7 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.JsonArrayRequest;
 import com.android.volley.toolbox.JsonObjectRequest;
 import com.android.volley.toolbox.Volley;
+import com.example.staffsyncapp.api.ApiDataService.EmployeeFetchListener;
 import com.example.staffsyncapp.models.Employee;
 import com.example.staffsyncapp.utils.LocalDataService;
 import com.example.staffsyncapp.utils.OfflineSyncManager;
@@ -65,7 +66,7 @@ import java.util.Locale;
 
 public class ApiDataService {
     private static final String TAG = "ApiDataService"; // log tag
-    private static final String BASE_URL = "http://10.224.41.11/comp2000"; // base url
+    private static final String BASE_URL = "http://10.0.2.2:8000/comp2000"; // base url
 
     private static ApiWorkerThread workerThread;
     private OfflineSyncManager offlineSyncManager;
