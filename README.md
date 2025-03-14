@@ -62,4 +62,4 @@ Links
 
 Made for **COMP2000** by *alfie-ns*
 
-![grade](docs/images/README/grade.png)
+![grade](docs/images/README/Grade.jpeg "Grade")
