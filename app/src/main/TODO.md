@@ -1,28 +1,11 @@
 # TODO
 
 - [ ] CHANGE PASSWORD OPTION IN USER SETTINGS
-
-
-
 - [ ] check is apiWorkerThread is null before queting getEmployeeById task
-
-
-
 - [ ] ensure current leave days balance is defined and always shown
-
-
-
 - [ ] talk about the singleton pattern learnt in week11
-
-
-
 - [ ] highly secure password to be fetched and pasted in one click
-
-
-
 - [ ] thread-safe initialisation happens if the synchronized keyword is used
-
-
 - [X] get delete employee button working; pass the id to delete any employee regardless of where it is in the list
 - [X] reinstate bare notification system
 - [ ] implement the notification system i.e. holiday requests, employee detail changes, salary increments, new employees, employee departures, employee birthdays, employee anniversaries, employee promotions/demotions, anomaly detection alerts
@@ -121,16 +104,16 @@
 
 #### Admin Features
 
-- [ ] Employee management:
+- [X] Employee management:
   - [X] Add new employee user details
   - [X] View employee details for verification
-  - [ ] Edit employee details
+  - [X] Edit employee details
   - [X] Delete employee records
-- [ ] Automatic 5% salary increment after one year
-- [ ] View and manage holiday requests
-- [ ] Push notification system
+- [X] Automatic 5% salary increment after one year
+- [X] View and manage holiday requests
+- [X] Push notification system
 - [X] Implement collapse/minimize employee list functionality
-- [ ] Enhance view of clicked employee in list
+- [X] Enhance view of clicked employee in list
 - [X] Search employee functionality
 - [X] Improve search employee functionality filter function
 
@@ -150,12 +133,12 @@
 
 #### Employee Features
 
-- [ ] View personal details
-- [ ] Edit personal details
-- [ ] Holiday request submission
-- [ ] Notification preferences management
-- [ ] 30-day holiday allowance management
-- [ ] Remember getIncrementStatus for employee-side fragments
+- [X] View personal details
+- [X] Edit personal details
+- [X] Holiday request submission
+- [X] Notification preferences management
+- [X] 30-day holiday allowance management
+- [X] Remember getIncrementStatus for employee-side fragments
 
 ### Database Implementation
 
@@ -174,7 +157,7 @@
 ### UI/UX Implementation
 
 - [ ] Screen size adaptation
-- [ ] Implement HCI principles:
+- [X] Implement HCI principles:
 
   - [X] Clear navigation
   - [X] Consistent layout
@@ -200,13 +183,14 @@
 
 ### Testing & Evaluation
 
-- [ ] Summative usability evaluation:
-  - [ ] Minimum two users
-  - [ ] Testing documentation
-  - [ ] Demographics collection
-  - [ ] Consent forms
-- [ ] Technical testing:
-  - [ ] Error handling
+- [X] Summative usability evaluation:
+
+  - [X] Minimum two users
+  - [X] Demographics collection
+  - [X] Consent forms
+- [X] Technical testing:
+
+  - [X] Error handling
   - [X] UI components
   - [X] API integration
   - [X] Thread safety
@@ -216,32 +200,17 @@
 
 ### Documentation Requirements
 
-- [ ] PDF Report (~2000 words):
-  - [ ] Introduction
-  - [ ] Background
-  - [ ] LSEP considerations
-  - [ ] Design documentation
-  - [ ] Implementation details
-  - [ ] Evaluation results
-  - [ ] Summary
-  - [ ] References
-- [ ] Code Documentation:
+- [X] PDF Report (~2000 words):
+  - [X] Introduction
+  - [X] Background
+  - [X] LSEP considerations
+  - [X] Design documentation
+  - [X] Implementation details
+  - [X] Evaluation results
+  - [X] Summary
+  - [X] References
+- [X] Code Documentation:
   - [X] Well-commented code
   - [X] Use Java-styled commenting with stars
   - [X] Add more comments to code
   - [X] Refactor and rename files
-
-### Video Documentation
-
-- [ ] 3-5 minute video demonstration:
-  - [ ] Design pattern explanations
-  - [ ] Code walkthrough
-  - [ ] Live data demonstration
-  - [ ] Running application showcase
-
-### Version Control
-
-- [X] Regular GitHub commits:
-  - [X] Weekly minimum commits
-- [X] README documentation:
-  - [ ] Feature documentation(put report.md in codebase)
