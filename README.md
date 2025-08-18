@@ -57,7 +57,6 @@ Password: alfie123
 Links
 
 - [API Documentation](docs/api-documentation.md)
-- [Project Report](docs/Report_COMP2000_StaffSync.md)
 - [Set Exercise Repoisitory](https://github.com/Plymouth-COMP2000/set-exercises-alfie-ns)
 
 Made for **COMP2000** by *alfie-ns*

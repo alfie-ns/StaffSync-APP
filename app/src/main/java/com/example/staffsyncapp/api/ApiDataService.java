@@ -65,7 +65,7 @@ import java.util.Locale;
 
 public class ApiDataService {
     private static final String TAG = "ApiDataService"; // log tag
-    private static final String BASE_URL = "http://10.224.41.11/comp2000"; // base url
+    private static final String BASE_URL = "http://10.0.2.2:8000/comp2000";
 
     private static ApiWorkerThread workerThread;
     private OfflineSyncManager offlineSyncManager;

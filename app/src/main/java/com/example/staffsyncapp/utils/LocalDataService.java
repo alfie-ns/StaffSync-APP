@@ -466,6 +466,49 @@ public class LocalDataService extends SQLiteOpenHelper {
         );
     }
 
+    public int verifyEmployeeLogin(String email, String password) {
+        Log.d(TAG, "Attempting employee login for: " + email);
+
+        Cursor cursor = db.query(
+                "employees",
+                new String[]{"password", "is_admin", "employee_id", "first_login", "id"},
+                "email = ?",
+                new String[]{email},
+                null, null, null
+        );
+
+        try {
+            if (cursor.moveToFirst()) {
+                String storedPass = cursor.getString(0);
+                int isAdmin = cursor.getInt(1);
+                int empId = cursor.getInt(2);
+                int firstLogin = cursor.getInt(3);
+                int recordId = cursor.getInt(4);
+
+                Log.d(TAG, "Found user - Record ID: " + recordId + ", Employee ID: " + empId);
+
+                String hashedAttempt = hashPassword(password);
+                boolean passwordMatch = hashedAttempt.equals(storedPass);
+
+                if (passwordMatch && isAdmin == 0) {
+                    // Store employee ID
+                    SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
+                    prefs.edit().putInt("logged_in_employee_id", empId).apply();
+
+                    Log.d(TAG, "Login successful, stored employee ID: " + empId);
+
+                    // Check notifications when login successful
+                    checkEmployeeNotifications(context, empId);
+
+                    return firstLogin == 1 ? 1 : 2;
+                }
+            }
+            return 0; // failure
+        } finally {
+            cursor.close();
+        }
+    }
+
     /**
      * Submit a leave request for an employee
      * @param employeeId
@@ -523,43 +566,6 @@ public class LocalDataService extends SQLiteOpenHelper {
         Log.d(TAG, "Employee login status updated: " + status);
     }
 
-    public int verifyEmployeeLogin(String email, String password) {
-        Log.d(TAG, "Attempting employee login for: " + email);
-
-        Cursor cursor = db.query(
-                "employees",
-                new String[]{"password", "is_admin", "employee_id", "first_login"},
-                "email = ?",
-                new String[]{email},
-                null, null, null
-        );
-
-        try {
-            if (cursor.moveToFirst()) {
-                String storedPass = cursor.getString(0);
-                int isAdmin = cursor.getInt(1);
-                int empId = cursor.getInt(2);
-                int firstLogin = cursor.getInt(3);
-
-                String hashedAttempt = hashPassword(password);
-                boolean passwordMatch = hashedAttempt.equals(storedPass);
-
-                if (passwordMatch && isAdmin == 0) {
-                    // Store employee ID
-                    SharedPreferences prefs = context.getSharedPreferences("employee_prefs", Context.MODE_PRIVATE);
-                    prefs.edit().putInt("logged_in_employee_id", empId).apply();
-
-                    // Check notifications when login successful
-                    checkEmployeeNotifications(context, empId);
-
-                    return firstLogin == 1 ? 1 : 2;
-                }
-            }
-            return 0; // failure
-        } finally {
-            cursor.close();
-        }
-    }
 
     // HELPER METHODS ---
 

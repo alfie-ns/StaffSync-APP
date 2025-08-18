@@ -251,7 +251,7 @@ public class EmployeeMainBodyFragment extends Fragment {
                 }
             }
 
-            Period serviceTime = Period.between(hireDate, now);
+            Period serviceTime = Period.between(hireDate, now); // calculates years/months since hire date
 
             Log.d("EmployeeData", "Hire date: " + hireDate);
             Log.d("EmployeeData", "Service time: " + serviceTime.getYears() + "y " + serviceTime.getMonths() + "m");
@@ -265,7 +265,7 @@ public class EmployeeMainBodyFragment extends Fragment {
                 nextReview = nextReview.plusYears(1);
             }
 
-            Log.d("DateCheck", String.format( // PROOF LOGGING
+            Log.d("DateCheck", String.format(
                     "Now: %s\nHire: %s\nNext: %s",
                     now.toString(),
                     hireDate.toString(),

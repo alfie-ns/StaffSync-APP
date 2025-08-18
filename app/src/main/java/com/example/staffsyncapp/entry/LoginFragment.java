@@ -50,60 +50,98 @@ public class LoginFragment extends Fragment { // core tracking variables for sec
     @Override
     public void onViewCreated(@NonNull View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        dbHelper = new LocalDataService(requireContext()); // initialise dbHelper
+        dbHelper = new LocalDataService(requireContext());
 
-        // 1- create the admin account
-        LocalDataService dbHelper = new LocalDataService(requireContext());
+        // CLEAR OLD DATA
+        dbHelper.getWritableDatabase().execSQL("DELETE FROM employees");
+        dbHelper.getWritableDatabase().execSQL("DELETE FROM employee_details");
+        Log.d(TAG, "Cleared all data");
+
+        // Create admin account
         ContentValues adminValues = new ContentValues();
         adminValues.put("email", "alfie@staffsync.com");
         adminValues.put("password", dbHelper.hashPassword("alfie123"));
         adminValues.put("is_admin", 1);
+        adminValues.put("employee_id", 0); // Admin doesn't need employee_id
 
         try {
-            dbHelper.getWritableDatabase().insertOrThrow("employees", null, adminValues);
-            Log.d(TAG, "Created new admin account successfully");
+            dbHelper.getWritableDatabase().insert("employees", null, adminValues);
+            Log.d(TAG, "Admin account created");
         } catch (Exception e) {
-            Log.d(TAG, "Admin creation failed");
+            Log.e(TAG, "Admin creation failed: " + e.getMessage());
         }
 
-        // 2a - create a test user account
-        ContentValues userValues = new ContentValues();
-        userValues.put("email", "user@staffsync.com");
-        userValues.put("password", dbHelper.hashPassword("user123"));
-        userValues.put("is_admin", 0); // not admin
+        // Create test employee with CORRECT ID
+        ContentValues testEmployeeValues = new ContentValues();
+        testEmployeeValues.put("email", "user@staffsync.com");
+        testEmployeeValues.put("password", dbHelper.hashPassword("test123"));
+        testEmployeeValues.put("is_admin", 0);
+        testEmployeeValues.put("employee_id", 6);  // MUST BE 6!
+        testEmployeeValues.put("first_login", 0);
 
-        long userId = -1; // if failure, maintain, thus ...
-        try {
-            userId = dbHelper.getWritableDatabase().insertOrThrow("users", null, userValues);
-            Log.d(TAG, "Created new user account successfully");
-        } catch (Exception e) {
-            Log.d(TAG, "User creation failed");
-        }
+        long userId = dbHelper.getWritableDatabase().insert("employees", null, testEmployeeValues);
+        Log.d(TAG, "Created employee account with ID: " + userId + ", employee_id: 6");
 
-        // 2b- create a test employee account if user creation succeeded
-        if (userId != -1) {
-            ContentValues employeeValues = new ContentValues();
-            Log.d(TAG, "Attempting to create employee details for user ID: " + userId);
-            employeeValues.put("user_id", userId);
-            employeeValues.put("full_name", "Test User");
-            employeeValues.put("department", "IT");
-            employeeValues.put("salary", 50000);
-            employeeValues.put("hire_date", "2024-01-01");
+        // Create employee details
+        ContentValues employeeDetails = new ContentValues();
+        employeeDetails.put("employee_id", 6);  // MUST MATCH!
+        employeeDetails.put("full_name", "Test User");
+        employeeDetails.put("department", "IT");
+        employeeDetails.put("salary", 45000.00);
+        employeeDetails.put("hire_date", "2024-01-15");
 
-            try {
-                dbHelper.getWritableDatabase().insertOrThrow("employee_details", null, employeeValues);
-                Log.d(TAG, "Created employee details successfully");
-            } catch (Exception e) {
-                Log.d(TAG, "Employee details creation failed");
-            }
-        }
-
-        Log.d(TAG, "Created test user with ID: " + userId);
+        dbHelper.getWritableDatabase().insert("employee_details", null, employeeDetails);
+        Log.d(TAG, "Created employee details for employee_id: 6");
 
         setupClickListeners();
-
         hideAllErrorMessages();
     }
+
+        // 2a - create a test user account
+        // Create a new employee account to match own-made API
+//        int testEmployeeId = 7;  // Use the ID from Django
+//        // First check if account already exists
+//        Cursor checkCursor = dbHelper.getReadableDatabase().query(
+//            "employees",
+//            new String[]{"id"},
+//            "employee_id = ?",
+//            new String[]{String.valueOf(testEmployeeId)},
+//            null, null, null
+//        );
+            
+//        if (checkCursor.getCount() == 0) {  // Only create if doesn't exist
+//            // Create login account
+//            ContentValues testEmployeeValues = new ContentValues();
+//            testEmployeeValues.put("email", "user@staffsync.com");
+//            testEmployeeValues.put("password", dbHelper.hashPassword("test123"));
+//            testEmployeeValues.put("is_admin", 0);
+//            testEmployeeValues.put("employee_id", 7);
+//            testEmployeeValues.put("first_login", 0);  // Skip password change
+//
+//            try {
+//                long userId = dbHelper.getWritableDatabase().insertOrThrow("employees", null, testEmployeeValues);
+//                Log.d(TAG, "Created test employee account with ID: " + userId);
+//
+//                // Create employee details (will sync from API later)
+//                ContentValues employeeDetails = new ContentValues();
+//                employeeDetails.put("employee_id", testEmployeeId);
+//                employeeDetails.put("full_name", "Test User");
+//                employeeDetails.put("department", "IT");
+//                employeeDetails.put("salary", 45000.00);
+//                employeeDetails.put("hire_date", "2024-01-15");
+//
+//                dbHelper.getWritableDatabase().insertOrThrow("employee_details", null, employeeDetails);
+//                Log.d(TAG, "Created employee details successfully");
+//            } catch (Exception e) {
+//                Log.d(TAG, "Test employee account creation failed: " + e.getMessage());
+//            }
+//        }
+//        checkCursor.close();
+//
+//        setupClickListeners();
+//
+//        hideAllErrorMessages();
+//    }
 
     private void setupClickListeners() {
         binding.backArrow.setOnClickListener(v -> { // didn't comment simplee stuff like this

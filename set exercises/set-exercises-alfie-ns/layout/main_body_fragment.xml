@@ -1,0 +1,284 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".DashboardFragment">
+
+    <!-- top primary deep teal header bar -->
+    <View
+        android:id="@+id/header_bar"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:background="@color/teal_deep"
+        app:layout_constraintTop_toTopOf="parent" />
+    <!-- user icon on the left side of the header bar, sized 32dp -->
+    <ImageView
+        android:id="@+id/user"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:layout_marginStart="16dp"
+        android:src="@drawable/user_icon"
+        app:tint="@android:color/white"
+        app:layout_constraintBottom_toBottomOf="@id/header_bar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/header_bar" />
+    <!-- textview displaying employee name, inbetween back-arrow icon and settings icon -->
+    <TextView
+        android:id="@+id/employee_name"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="48dp"
+        android:text="Sarah Johnson"
+        android:textColor="@android:color/white"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="@id/header_bar"
+        app:layout_constraintStart_toEndOf="@id/user"
+        app:layout_constraintEnd_toStartOf="@id/settings_icon"
+        app:layout_constraintTop_toTopOf="@id/header_bar" />
+    <!-- settings icon on the right side of the header bar, sized 48dp; clickable to take user to settings -->
+    <ImageView
+        android:id="@+id/settings_icon"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginEnd="4dp"
+        android:padding="12dp"
+        android:src="@drawable/settings_icon"
+        app:tint="@android:color/white"
+        android:clickable="true"
+        android:focusable="true"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:layout_constraintBottom_toBottomOf="@id/header_bar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="@id/header_bar" />
+
+    <!-- END OF TOP-BAR -->
+    
+    <!-- card view for annual leave status, with elevation and rounded corners -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/leave_status_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/header_bar">
+        <!-- vertical layout within the card, contains leave information and action button -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+            <!-- title text for the card -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Annual Leave Status"
+                android:textColor="@color/teal_deep"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+            <!-- horizontal layout(row) for leave days remaining and book leave button -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <!-- textview displaying days remaining -->
+                <TextView
+                    android:id="@+id/days_remaining"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Days Remaining: 24/30"
+                    android:textColor="@color/teal_deep"
+                    android:textSize="16sp" />
+                <!-- button to book leave: will take user to leave booking screen -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/book_leave_btn"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Book Leave"
+                    android:textAllCaps="false"
+                    app:cornerRadius="8dp"
+                    android:backgroundTint="@color/teal_deep"
+                    app:rippleColor="@color/teal_deep" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+    <!-- card view for personal details, with elevation and rounded corners -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/personal_details_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/leave_status_card">
+        <!-- vertical layout within the card, contains personal details -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+            <!-- horizontal layout(row) for title and edit icon -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+                <!-- textview displaying title -->
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Personal Details"
+                    android:textColor="@color/teal_deep"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+                <!-- edit icon: clickable to take user to edit profile fragment -->
+                <ImageView
+                    android:id="@+id/edit_details"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/edit_icon"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless" />
+            </LinearLayout>
+            <!-- textview displaying employee id -->
+            <TextView
+                android:id="@+id/employee_id"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="My Employee ID: #17345"
+                android:textColor="@color/teal_deep"
+                android:textSize="16sp" />
+            <!-- textview displaying department -->
+            <TextView
+                android:id="@+id/department"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Department: Engineering"
+                android:textColor="@color/teal_deep"
+                android:textSize="16sp" />
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+    <!-- horizontal layout for view history and pending requests buttons -->
+    <LinearLayout
+        android:id="@+id/request_section"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@id/personal_details_card">
+        <!-- button to view leave history -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/view_history_btn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:text="View Leave History"
+            android:textColor="@color/teal_deep"
+            android:textAllCaps="false"
+            app:cornerRadius="8dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+        <!-- button to view pending leave requests -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/pending_requests_btn"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:layout_weight="1"
+            android:text="Pending Requests (1)"
+            android:textAllCaps="false"
+            app:cornerRadius="8dp"
+            android:backgroundTint="@color/teal_deep"
+            app:rippleColor="@color/teal_deep" />
+    </LinearLayout>
+
+    <!-- employment summary - moved margin bottom to handle nav spacing -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/quick_stats_card"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="16dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="4dp"
+        app:layout_constraintTop_toBottomOf="@id/request_section"
+        app:layout_constraintBottom_toTopOf="@id/bottom_navigation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Employment Summary"
+                android:textColor="@color/teal_deep"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/years_of_service"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Years of Service: 2.5 years"
+                    android:textColor="@color/teal_deep"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/next_review"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Next Salary Review: 3 months"
+                    android:textColor="@color/teal_deep"
+                    android:textSize="16sp" />
+
+                <TextView
+                    android:id="@+id/notification_status"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Notifications: Enabled"
+                    android:textColor="@color/teal_deep"
+                    android:textSize="16sp" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="?android:attr/windowBackground"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:menu="@menu/bottom_nav_menu" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>
